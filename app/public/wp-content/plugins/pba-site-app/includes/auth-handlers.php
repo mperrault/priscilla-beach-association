@@ -4,11 +4,72 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+add_action('admin_post_nopriv_pba_member_login', 'pba_handle_member_login');
+add_action('admin_post_pba_member_login', 'pba_handle_member_login');
+
 add_action('admin_post_nopriv_pba_house_admin_verify', 'pba_handle_house_admin_verify');
 add_action('admin_post_pba_house_admin_verify', 'pba_handle_house_admin_verify');
 
 add_action('admin_post_nopriv_pba_house_admin_create_user', 'pba_handle_house_admin_create_user');
 add_action('admin_post_pba_house_admin_create_user', 'pba_handle_house_admin_create_user');
+
+function pba_handle_member_login() {
+    if (
+        !isset($_POST['pba_member_login_nonce']) ||
+        !wp_verify_nonce($_POST['pba_member_login_nonce'], 'pba_member_login_action')
+    ) {
+        pba_registration_redirect('invalid_nonce');
+    }
+
+    $email    = isset($_POST['log']) ? sanitize_text_field(wp_unslash($_POST['log'])) : '';
+    $password = isset($_POST['pwd']) ? (string) wp_unslash($_POST['pwd']) : '';
+
+    if ($email === '' || $password === '') {
+        $redirect_url = add_query_arg(
+            array(
+                'pba_register_status' => 'missing_login_fields',
+                'login_email'         => rawurlencode($email),
+            ),
+            home_url('/login/')
+        );
+        wp_safe_redirect($redirect_url);
+        exit;
+    }
+
+    $creds = array(
+        'user_login'    => $email,
+        'user_password' => $password,
+        'remember'      => false,
+    );
+
+    $user = wp_signon($creds, false);
+
+    if (is_wp_error($user)) {
+        $status = 'login_failed';
+
+        if ($user->get_error_code() === 'pba_account_disabled') {
+            $status = 'account_disabled';
+        }
+
+        $redirect_url = add_query_arg(
+            array(
+                'pba_register_status' => $status,
+                'login_email'         => rawurlencode($email),
+            ),
+            home_url('/login/')
+        );
+        wp_safe_redirect($redirect_url);
+        exit;
+    }
+
+    if (in_array('pba_house_admin', (array) $user->roles, true)) {
+        wp_safe_redirect(home_url('/household/'));
+        exit;
+    }
+
+    wp_safe_redirect(home_url('/member-home/'));
+    exit;
+}
 
 function pba_handle_house_admin_verify() {
     if (
@@ -74,12 +135,33 @@ function pba_handle_house_admin_verify() {
         pba_registration_redirect('no_match');
     }
 
+    $household_id = isset($rows[0]['household_id']) ? (int) $rows[0]['household_id'] : 0;
+
+    if ($household_id < 1) {
+        pba_registration_redirect('lookup_failed');
+    }
+
+    $existing_people = pba_supabase_get('Person', array(
+        'select'        => 'person_id,household_id,email_address,status,wp_user_id',
+        'household_id'  => 'eq.' . $household_id,
+        'email_address' => 'eq.' . $email,
+        'limit'         => 1,
+    ));
+
+    if (is_wp_error($existing_people)) {
+        pba_registration_redirect('lookup_failed');
+    }
+
+    if (!empty($existing_people)) {
+        pba_registration_redirect('person_exists');
+    }
+
     $token = wp_generate_password(64, false, false);
 
     set_transient(
         'pba_house_admin_email_verify_' . $token,
         array(
-            'household_id' => isset($rows[0]['household_id']) ? (string) $rows[0]['household_id'] : '',
+            'household_id' => (string) $household_id,
             'email'        => $email,
             'first_name'   => $first_name,
             'last_name'    => $last_name,
@@ -250,8 +332,14 @@ function pba_handle_house_admin_create_user() {
 
     delete_transient('pba_house_admin_email_verify_' . $email_token);
 
+    wp_clear_auth_cookie();
     wp_set_current_user($user_id);
     wp_set_auth_cookie($user_id, true);
+
+    $user = get_user_by('id', $user_id);
+    if ($user instanceof WP_User) {
+        do_action('wp_login', $user->user_login, $user);
+    }
 
     pba_household_redirect('account_created');
 }

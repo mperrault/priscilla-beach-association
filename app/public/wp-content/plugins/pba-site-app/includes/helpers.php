@@ -90,7 +90,7 @@ function pba_format_datetime_display($value) {
         $dt = new DateTime($value);
         $tz = new DateTimeZone('America/New_York');
         $dt->setTimezone($tz);
-        return $dt->format('m/d/Y h:i A T');
+        return $dt->format('m/d/y h:i A');
     } catch (Exception $e) {
         return (string) $value;
     }
@@ -196,14 +196,16 @@ function pba_get_member_invite_data_by_person($person_id) {
 }
 
 function pba_delete_member_invite_transients($person_id, $invite_token = '') {
-    delete_transient(pba_member_invite_person_key((int) $person_id));
+    $person_key = pba_member_invite_person_key((int) $person_id);
+    $person_data = get_transient($person_key);
+
+    delete_transient($person_key);
 
     if ($invite_token !== '') {
         delete_transient(pba_member_invite_token_key($invite_token));
         return;
     }
 
-    $person_data = get_transient(pba_member_invite_person_key((int) $person_id));
     if (is_array($person_data) && !empty($person_data['invite_token'])) {
         delete_transient(pba_member_invite_token_key($person_data['invite_token']));
     }
@@ -222,7 +224,7 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
         'household_id'         => 'eq.' . $household_id,
         'invited_by_person_id' => 'eq.' . $invited_by_person_id,
         'status'               => 'eq.Pending',
-        'order'                => 'created_at.desc',
+        'order'                => 'person_id.desc',
     ));
 
     if (is_wp_error($pending_rows) || empty($pending_rows)) {
@@ -249,6 +251,7 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
                 'Person',
                 array(
                     'status' => 'Expired',
+                    'last_modified_at' => gmdate('c'),
                 ),
                 array(
                     'person_id' => 'eq.' . $person_id,

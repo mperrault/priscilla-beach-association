@@ -200,6 +200,7 @@ function pba_create_person_record($args) {
         'email_verified'       => isset($args['email_verified']) ? (int) $args['email_verified'] : 0,
         'wp_user_id'           => array_key_exists('wp_user_id', $args) ? $args['wp_user_id'] : null,
         'status'               => isset($args['status']) ? $args['status'] : 'Pending',
+        'last_modified_at'     => gmdate('c'),
     );
 
     if (empty($payload['household_id'])) {
@@ -222,11 +223,11 @@ function pba_get_people_for_household_by_status($household_id, $invited_by_perso
     }
 
     $rows = pba_supabase_get('Person', array(
-        'select'               => 'person_id,first_name,last_name,email_address,status,created_at,invited_by_person_id,household_id,wp_user_id',
+        'select'               => 'person_id,first_name,last_name,email_address,status,last_modified_at,invited_by_person_id,household_id,wp_user_id',
         'household_id'         => 'eq.' . (int) $household_id,
         'invited_by_person_id' => 'eq.' . (int) $invited_by_person_id,
         'status'               => 'eq.' . $status,
-        'order'                => 'created_at.desc',
+        'order'                => 'person_id.desc',
     ));
 
     if (is_wp_error($rows) || !is_array($rows)) {

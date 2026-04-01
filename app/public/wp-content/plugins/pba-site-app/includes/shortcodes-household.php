@@ -16,14 +16,22 @@ function pba_render_household_previous_invitations_table($rows, $title) {
     <div class="pba-household-section">
         <h3><?php echo esc_html($title); ?></h3>
         <table class="pba-household-table">
+            <colgroup>
+                <col>
+                <col>
+                <col>
+                <col style="width: 130px;">
+                <col style="width: 170px;">
+                <col style="width: 170px;">
+            </colgroup>
             <thead>
                 <tr>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Email Address</th>
                     <th>Status</th>
-                    <th>Date</th>
-                    <th>Action</th>
+                    <th>Last Status Update</th>
+                    <th class="pba-household-action-col">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,28 +51,35 @@ function pba_render_household_previous_invitations_table($rows, $title) {
                             <td><?php echo esc_html(isset($row['last_name']) ? $row['last_name'] : ''); ?></td>
                             <td><?php echo esc_html(isset($row['email_address']) ? $row['email_address'] : ''); ?></td>
                             <td><?php echo esc_html($display_status); ?></td>
-                            <td><?php echo esc_html(pba_format_datetime_display(isset($row['created_at']) ? $row['created_at'] : '')); ?></td>
-                            <td>
+                            <td><?php echo esc_html(pba_format_datetime_display(isset($row['last_modified_at']) ? $row['last_modified_at'] : '')); ?></td>
+                            <td class="pba-household-action-col">
                                 <?php if ($status === 'Active') : ?>
-                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
                                         <?php wp_nonce_field('pba_household_disable_action', 'pba_household_disable_nonce'); ?>
                                         <input type="hidden" name="action" value="pba_household_disable_member">
                                         <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
-                                        <button type="submit" class="pba-household-btn secondary">Disable</button>
+                                        <button type="submit" class="pba-household-btn secondary pba-household-action-btn" data-processing-text="Disabling...">Disable</button>
                                     </form>
                                 <?php elseif ($status === 'Pending') : ?>
-                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
                                         <?php wp_nonce_field('pba_household_cancel_action', 'pba_household_cancel_nonce'); ?>
                                         <input type="hidden" name="action" value="pba_household_cancel_invite">
                                         <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
-                                        <button type="submit" class="pba-household-btn secondary">Cancel</button>
+                                        <button type="submit" class="pba-household-btn secondary pba-household-action-btn" data-processing-text="Cancelling...">Cancel</button>
                                     </form>
                                 <?php elseif ($status === 'Expired') : ?>
-                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
                                         <?php wp_nonce_field('pba_household_resend_action', 'pba_household_resend_nonce'); ?>
                                         <input type="hidden" name="action" value="pba_household_resend_invite">
                                         <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
-                                        <button type="submit" class="pba-household-btn">Resend</button>
+                                        <button type="submit" class="pba-household-btn pba-household-action-btn" data-processing-text="Resending...">Resend</button>
+                                    </form>
+                                <?php elseif ($status === 'Disabled') : ?>
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
+                                        <?php wp_nonce_field('pba_household_enable_action', 'pba_household_enable_nonce'); ?>
+                                        <input type="hidden" name="action" value="pba_household_enable_member">
+                                        <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                        <button type="submit" class="pba-household-btn pba-household-action-btn" data-processing-text="Enabling...">Enable</button>
                                     </form>
                                 <?php else : ?>
                                     —
@@ -110,6 +125,12 @@ function pba_render_household_dashboard() {
         is_array($disabled_rows) ? $disabled_rows : array()
     );
 
+    usort($previous_rows, function ($a, $b) {
+        $a_id = isset($a['person_id']) ? (int) $a['person_id'] : 0;
+        $b_id = isset($b['person_id']) ? (int) $b['person_id'] : 0;
+        return $b_id <=> $a_id;
+    });
+
     $status = isset($_GET['pba_household_status']) ? sanitize_text_field(wp_unslash($_GET['pba_household_status'])) : '';
     $duplicate_messages = get_transient('pba_household_duplicate_messages_' . get_current_user_id());
 
@@ -125,7 +146,7 @@ function pba_render_household_dashboard() {
         .pba-household-wrap { max-width: 1100px; margin: 0 auto; }
         .pba-household-message { padding: 12px 16px; margin: 0 0 20px; border-radius: 6px; background: #eef6ee; }
         .pba-household-message.error { background: #f8e9e9; }
-        .pba-household-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .pba-household-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; table-layout: fixed; }
         .pba-household-table th, .pba-household-table td { border: 1px solid #d7d7d7; padding: 10px; text-align: left; vertical-align: middle; }
         .pba-household-table th { background: #f3f3f3; }
         .pba-household-section { margin: 28px 0; }
@@ -144,6 +165,7 @@ function pba_render_household_dashboard() {
             line-height: 1.3;
             font-weight: 600;
             text-decoration: none;
+            white-space: nowrap;
         }
         .pba-household-btn:hover {
             background: #0b3154;
@@ -160,6 +182,16 @@ function pba_render_household_dashboard() {
             background: #f3f7fb;
             color: #0d3b66;
             border-color: #0d3b66;
+        }
+        .pba-household-btn[disabled] {
+            opacity: 0.7;
+            cursor: wait;
+        }
+        .pba-household-action-col {
+            width: 170px;
+        }
+        .pba-household-action-btn {
+            min-width: 130px;
         }
         .pba-household-note { color: #555; margin-top: -8px; margin-bottom: 18px; }
         .pba-household-table .pba-household-field { max-width: 100%; min-width: 0; margin: 0; }
@@ -179,6 +211,13 @@ function pba_render_household_dashboard() {
         .pba-household-duplicate-list {
             margin: 10px 0 0 18px;
             padding: 0;
+        }
+        body.pba-household-submitting,
+        html.pba-household-submitting {
+            cursor: wait !important;
+        }
+        body.pba-household-submitting * {
+            cursor: wait !important;
         }
     </style>
 
@@ -237,12 +276,16 @@ function pba_render_household_dashboard() {
             <div class="pba-household-message error">The same email address was entered more than once in the invite table.</div>
         <?php elseif ($status === 'member_disabled') : ?>
             <div class="pba-household-message">The member was disabled successfully.</div>
+        <?php elseif ($status === 'member_enabled') : ?>
+            <div class="pba-household-message">The member was enabled successfully.</div>
         <?php elseif ($status === 'invite_cancelled') : ?>
             <div class="pba-household-message">The pending invitation was cancelled successfully.</div>
         <?php elseif ($status === 'invite_resent') : ?>
             <div class="pba-household-message">The invitation was resent successfully.</div>
         <?php elseif ($status === 'disable_failed') : ?>
             <div class="pba-household-message error">We could not disable that member.</div>
+        <?php elseif ($status === 'enable_failed') : ?>
+            <div class="pba-household-message error">We could not enable that member.</div>
         <?php elseif ($status === 'cancel_failed') : ?>
             <div class="pba-household-message error">We could not cancel that invitation.</div>
         <?php elseif ($status === 'resend_failed') : ?>
@@ -295,7 +338,7 @@ function pba_render_household_dashboard() {
 
                 <div class="pba-household-actions">
                     <button type="button" class="pba-household-btn secondary" id="pba-household-add-row">Add More</button>
-                    <button type="submit" class="pba-household-btn" id="pba-household-invite-all">Invite All</button>
+                    <button type="submit" class="pba-household-btn" id="pba-household-invite-all" data-processing-text="Inviting...">Invite All</button>
                 </div>
             </form>
         </div>
@@ -309,6 +352,7 @@ function pba_render_household_dashboard() {
             var addRowBtn = document.getElementById('pba-household-add-row');
             var tableBody = document.querySelector('#pba-household-invite-table tbody');
             var errorBox = document.getElementById('pba-household-form-error');
+            var actionForms = document.querySelectorAll('.pba-household-action-form');
 
             if (!form || !addRowBtn || !tableBody || !errorBox) {
                 return;
@@ -428,6 +472,37 @@ function pba_render_household_dashboard() {
                 return '';
             }
 
+            function setSubmittingState(targetForm) {
+                if (!targetForm) {
+                    return;
+                }
+
+                document.documentElement.classList.add('pba-household-submitting');
+                document.body.classList.add('pba-household-submitting');
+
+                var buttons = targetForm.querySelectorAll('button, input[type="submit"]');
+                buttons.forEach(function (btn) {
+                    btn.disabled = true;
+
+                    var processingText = btn.getAttribute('data-processing-text');
+                    if (!processingText) {
+                        processingText = 'Processing...';
+                    }
+
+                    if (btn.tagName === 'BUTTON') {
+                        if (!btn.dataset.originalText) {
+                            btn.dataset.originalText = btn.textContent;
+                        }
+                        btn.textContent = processingText;
+                    } else if (btn.tagName === 'INPUT' && btn.type === 'submit') {
+                        if (!btn.dataset.originalValue) {
+                            btn.dataset.originalValue = btn.value;
+                        }
+                        btn.value = processingText;
+                    }
+                });
+            }
+
             addRowBtn.addEventListener('click', function () {
                 tableBody.appendChild(createRow());
                 bindRemoveButtons();
@@ -441,7 +516,16 @@ function pba_render_household_dashboard() {
                 if (validationMessage) {
                     event.preventDefault();
                     showError(validationMessage);
+                    return;
                 }
+
+                setSubmittingState(form);
+            });
+
+            actionForms.forEach(function (actionForm) {
+                actionForm.addEventListener('submit', function () {
+                    setSubmittingState(actionForm);
+                });
             });
 
             bindRemoveButtons();

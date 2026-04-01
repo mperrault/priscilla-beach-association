@@ -5,55 +5,57 @@
 
 get_header();
 
-$status = isset($_GET['pba_register_status']) ? sanitize_text_field(wp_unslash($_GET['pba_register_status'])) : '';
+$status      = isset($_GET['pba_register_status']) ? sanitize_text_field(wp_unslash($_GET['pba_register_status'])) : '';
 $email_token = isset($_GET['email_token']) ? sanitize_text_field(wp_unslash($_GET['email_token'])) : '';
+$login_email = isset($_GET['login_email']) ? sanitize_text_field(wp_unslash($_GET['login_email'])) : '';
 
 $show_password_setup = false;
 $setup_data = null;
 
-// Check if email_token exists in the URL to determine if we should show the password setup form
 if ($email_token !== '') {
     $setup_data = get_transient('pba_house_admin_email_verify_' . $email_token);
 
     if (is_array($setup_data) && !empty($setup_data['email'])) {
-        $show_password_setup = true; // Show the password setup form if the email token is valid
+        $show_password_setup = true;
     }
 }
 
 $messages = array(
-    'missing_fields'       => 'Please complete all required fields.',
-    'invalid_email'        => 'Please enter a valid email address.',
-    'invalid_house_number' => 'Please enter a valid house number.',
-    'invalid_street'       => 'Please select a valid street name.',
-    'invalid_nonce'        => 'Security check failed. Please try again.',
-    'lookup_failed'        => 'We could not verify your House Admin record right now.',
-    'no_match'             => 'We could not find a matching House Admin record for the information entered.',
-    'user_exists'          => 'An account already exists for that email address.',
-    'check_email'          => 'We found your House Admin record. Check your email for a secure link to finish setting up your account.',
-    'email_send_failed'    => 'We verified your record, but could not send the email right now.',
-    'invalid_token'        => 'This setup link is invalid or has expired.',
-    'missing_password'     => 'Please enter and verify your password.',
-    'password_mismatch'    => 'The password fields do not match.',
-    'password_too_short'   => 'Password must be at least 8 characters.',
-    'create_failed'        => 'We could not create your account right now.',
-    'account_created'      => 'Your account was created successfully. You may now sign in.',
+    'missing_fields'        => 'Please complete all required fields.',
+    'invalid_email'         => 'Please enter a valid email address.',
+    'invalid_house_number'  => 'Please enter a valid house number.',
+    'invalid_street'        => 'Please select a valid street name.',
+    'invalid_nonce'         => 'Security check failed. Please try again.',
+    'lookup_failed'         => 'We could not verify your House Admin record right now.',
+    'no_match'              => 'We could not find a matching House Admin record for the information entered.',
+    'user_exists'           => 'An account already exists for that email address.',
+    'check_email'           => 'We found your House Admin record. Check your email for a secure link to finish setting up your account.',
+    'email_send_failed'     => 'We verified your record, but could not send the email right now.',
+    'invalid_token'         => 'This setup link is invalid or has expired.',
+    'missing_password'      => 'Please enter and verify your password.',
+    'password_mismatch'     => 'The password fields do not match.',
+    'password_too_short'    => 'Password must be at least 8 characters.',
+    'create_failed'         => 'We could not create your account right now.',
+    'account_created'       => 'Your account was created successfully. You may now sign in.',
+    'login_failed'          => 'The email address or password you entered is incorrect.',
+    'account_disabled'      => 'Your membership has been disabled. Please contact the PBA Admin.',
+    'missing_login_fields'  => 'Please enter both email address and password.',
+    'person_exists'         => 'We found an existing registration for this household and email address. Please contact the PBA Admin if you need assistance.'
 );
 
-$is_success_message = ($status === 'account_created' || $status === 'check_email');
+$is_success_message = in_array($status, array('account_created', 'check_email'), true);
 ?>
 
 <main class="site-main">
   <div class="pba-auth-wrap">
 
-    <!-- Display success or error message -->
-    <?php if (isset($messages[$status])): ?>
+    <?php if (isset($messages[$status])) : ?>
       <div class="pba-form-notice <?php echo $is_success_message ? 'pba-form-notice-success' : 'pba-form-notice-error'; ?>">
         <?php echo esc_html($messages[$status]); ?>
       </div>
     <?php endif; ?>
 
-    <!-- Display the Set My Password form -->
-    <?php if ($show_password_setup): ?>
+    <?php if ($show_password_setup) : ?>
       <section class="pba-auth-card">
         <h1>Set Your Password</h1>
         <p>Your House Admin record was verified. Create your password to finish setting up your account.</p>
@@ -98,14 +100,16 @@ $is_success_message = ($status === 'account_created' || $status === 'check_email
           </div>
         </form>
       </section>
-    <?php else: ?>
+    <?php else : ?>
 
-      <!-- Login Form for Existing Users -->
-      <section class="pba-auth-card">
+      <section class="pba-auth-card" id="pba-login-section">
         <h1>Member Login</h1>
         <p>Please sign in to access member-only content.</p>
 
-        <form class="pba-auth-form pba-login-form" method="post" action="<?php echo esc_url(wp_login_url(home_url('/member-home/'))); ?>">
+        <form class="pba-auth-form pba-login-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+          <input type="hidden" name="action" value="pba_member_login">
+          <?php wp_nonce_field('pba_member_login_action', 'pba_member_login_nonce'); ?>
+
           <div class="pba-form-row pba-field-login-email">
             <label for="pba-login-email">Email Address</label>
             <input
@@ -114,6 +118,7 @@ $is_success_message = ($status === 'account_created' || $status === 'check_email
               name="log"
               maxlength="254"
               autocomplete="username"
+              value="<?php echo esc_attr($login_email); ?>"
               required
             >
           </div>
@@ -130,7 +135,6 @@ $is_success_message = ($status === 'account_created' || $status === 'check_email
             >
           </div>
 
-          <input type="hidden" name="redirect_to" value="">
           <div class="pba-form-actions">
             <button type="submit">Submit</button>
             <button type="button" onclick="window.location.href='<?php echo esc_url(home_url('/')); ?>'">Cancel</button>
@@ -143,7 +147,6 @@ $is_success_message = ($status === 'account_created' || $status === 'check_email
         </div>
       </section>
 
-      <!-- House Admin Registration Form -->
       <section class="pba-auth-card pba-register-card" id="pba-register-section" style="display:none;">
         <h2>House Admin Registration</h2>
         <p>Please complete this form to request a new account.</p>
@@ -250,10 +253,16 @@ document.addEventListener('DOMContentLoaded', function () {
   var showLink = document.getElementById('show-pba-register');
   var registerSection = document.getElementById('pba-register-section');
   var cancelButton = document.getElementById('cancel-pba-register');
+  var loginSection = document.getElementById('pba-login-section');
 
   if (showLink && registerSection) {
     showLink.addEventListener('click', function (e) {
       e.preventDefault();
+
+      if (loginSection) {
+        loginSection.style.display = 'none';
+      }
+
       registerSection.style.display = 'block';
       registerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -262,6 +271,10 @@ document.addEventListener('DOMContentLoaded', function () {
   if (cancelButton && registerSection) {
     cancelButton.addEventListener('click', function () {
       registerSection.style.display = 'none';
+
+      if (loginSection) {
+        loginSection.style.display = 'block';
+      }
     });
   }
 });

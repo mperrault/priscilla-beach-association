@@ -9,6 +9,7 @@ add_action('admin_post_nopriv_pba_accept_member_invite', 'pba_handle_member_invi
 add_action('admin_post_pba_accept_member_invite', 'pba_handle_member_invite_accept');
 
 add_action('admin_post_pba_household_disable_member', 'pba_handle_household_disable_member');
+add_action('admin_post_pba_household_enable_member', 'pba_handle_household_enable_member');
 add_action('admin_post_pba_household_cancel_invite', 'pba_handle_household_cancel_invite');
 add_action('admin_post_pba_household_resend_invite', 'pba_handle_household_resend_invite');
 
@@ -173,6 +174,7 @@ function pba_handle_household_send_invites() {
                     'email_verified'       => 0,
                     'wp_user_id'           => null,
                     'status'               => 'Pending',
+                    'last_modified_at'     => gmdate('c'),
                 ),
                 array(
                     'person_id' => 'eq.' . $person_id,
@@ -364,9 +366,10 @@ function pba_handle_member_invite_accept() {
     $updated = pba_supabase_update(
         'Person',
         array(
-            'status'         => 'Active',
-            'email_verified' => 1,
-            'wp_user_id'     => (string) $user_id,
+            'status'           => 'Active',
+            'email_verified'   => 1,
+            'wp_user_id'       => (string) $user_id,
+            'last_modified_at' => gmdate('c'),
         ),
         array(
             'person_id' => 'eq.' . $person_id,
@@ -381,16 +384,16 @@ function pba_handle_member_invite_accept() {
 
     pba_delete_member_invite_transients($person_id, $invite_token);
 
+    wp_clear_auth_cookie();
     wp_set_current_user($user_id);
     wp_set_auth_cookie($user_id, true);
 
-    wp_safe_redirect(
-        add_query_arg(
-            'pba_register_status',
-            'member_account_created',
-            home_url('/login/')
-        )
-    );
+    $user = get_user_by('id', $user_id);
+    if ($user instanceof WP_User) {
+        do_action('wp_login', $user->user_login, $user);
+    }
+
+    wp_safe_redirect(home_url('/member-home/'));
     exit;
 }
 
@@ -404,7 +407,7 @@ function pba_household_get_action_person() {
     }
 
     $rows = pba_supabase_get('Person', array(
-        'select'               => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id',
+        'select'               => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id,last_modified_at',
         'person_id'            => 'eq.' . $person_id,
         'household_id'         => 'eq.' . $household_id,
         'invited_by_person_id' => 'eq.' . $inviter_person_id,
@@ -449,7 +452,8 @@ function pba_handle_household_disable_member() {
     $updated = pba_supabase_update(
         'Person',
         array(
-            'status' => 'Disabled',
+            'status'           => 'Disabled',
+            'last_modified_at' => gmdate('c'),
         ),
         array(
             'person_id' => 'eq.' . $person_id,
@@ -466,6 +470,48 @@ function pba_handle_household_disable_member() {
     }
 
     pba_household_redirect('member_disabled');
+}
+
+function pba_handle_household_enable_member() {
+    if (!is_user_logged_in() || !pba_current_user_has_house_admin_access()) {
+        wp_die('Unauthorized', 403);
+    }
+
+    if (
+        !isset($_POST['pba_household_enable_nonce']) ||
+        !wp_verify_nonce($_POST['pba_household_enable_nonce'], 'pba_household_enable_action')
+    ) {
+        pba_household_redirect('invalid_nonce');
+    }
+
+    list($person, $context) = pba_household_get_action_person();
+
+    if (!$person) {
+        pba_household_redirect('enable_failed');
+    }
+
+    if ((string) $person['status'] !== 'Disabled') {
+        pba_household_redirect('enable_failed');
+    }
+
+    $person_id = (int) $person['person_id'];
+
+    $updated = pba_supabase_update(
+        'Person',
+        array(
+            'status'           => 'Active',
+            'last_modified_at' => gmdate('c'),
+        ),
+        array(
+            'person_id' => 'eq.' . $person_id,
+        )
+    );
+
+    if (is_wp_error($updated)) {
+        pba_household_redirect('enable_failed');
+    }
+
+    pba_household_redirect('member_enabled');
 }
 
 function pba_handle_household_cancel_invite() {
@@ -556,6 +602,7 @@ function pba_handle_household_resend_invite() {
             'wp_user_id'           => null,
             'invited_by_person_id' => $inviter_person_id,
             'household_id'         => $household_id,
+            'last_modified_at'     => gmdate('c'),
         ),
         array(
             'person_id' => 'eq.' . $person_id,
