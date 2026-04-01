@@ -130,8 +130,7 @@ $is_success_message = ($status === 'account_created' || $status === 'check_email
             >
           </div>
 
-          <input type="hidden" name="redirect_to" value="<?php echo esc_url(home_url('/member-home/')); ?>">
-
+          <input type="hidden" name="redirect_to" value="">
           <div class="pba-form-actions">
             <button type="submit">Submit</button>
             <button type="button" onclick="window.location.href='<?php echo esc_url(home_url('/')); ?>'">Cancel</button>
