@@ -1,0 +1,588 @@
+5 WELLINGTON RD
+PLYMOUTH 02360
+Owner: HOUDE KATHY R N/K/A
+Owner Address:
+5 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$197,800
+Land Value:	$291,700
+Other Value:	$3,200
+Total Value:	$492,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$122,000
+Last Sale Date:	19920803
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,569 Sq. Ft.
+Building Style:	New England
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-079-000
+Location ID:  	F_910829_2802250
+
+5 WELLINGTON RD
+PLYMOUTH 02360
+Owner: HOUDE KATHY R N/K/A
+Owner Address:
+5 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$0
+Land Value:	$29,200
+Other Value:	$0
+Total Value:	$29,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$122,000
+Last Sale Date:	19920803
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	,
+Property ID:	044-006-078-000
+Location ID:  	F_910796_2802212
+
+11 WELLINGTON RD
+PLYMOUTH 02360
+Owner: CALHOUN JOHN C JR
+Owner Address:
+11 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$685,200
+Land Value:	$308,900
+Other Value:	$2,500
+Total Value:	$996,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$104,500
+Last Sale Date:	19980803
+Use Code:	101
+Year Built:	2022
+Residential Area:  	3,892 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	D431714,
+Property ID:	044-006-076-000
+Location ID:  	F_910747_2802155
+
+15 WELLINGTON RD
+PLYMOUTH 02360
+Owner: NAUGLER FAMILY TRUST
+Owner Address:
+15 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$488,900
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$779,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20201022
+Use Code:	101
+Year Built:	2021
+Residential Area:  	2,174 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C130966,
+Property ID:	044-006-075-000
+Location ID:  	F_910699_2802098
+
+17 WELLINGTON RD
+PLYMOUTH 02360
+Owner: 17 WELLINGTON ROAD RLTY TR
+Owner Address:
+PO BOX 116
+PINEHURST, MA 01866
+
+Building Value:  	$230,700
+Land Value:	$307,500
+Other Value:	$800
+Total Value:	$539,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170831
+Use Code:	101
+Year Built:	1947
+Residential Area:  	1,849 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C125702,
+Property ID:	044-006-074-000Z
+Location ID:  	F_910650_2802041
+
+21 WELLINGTON RD
+PLYMOUTH 02360
+Owner: ROGERS KENNETH L
+Owner Address:
+1 MACONE CIR
+STONEHAM, MA 02180
+
+Building Value:  	$250,000
+Land Value:	$308,900
+Other Value:	$0
+Total Value:	$558,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20091221
+Use Code:	101
+Year Built:	1972
+Residential Area:  	2,150 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C114152,
+Property ID:	044-006-071-000
+Location ID:  	F_910585_2801965
+
+23 WELLINGTON RD
+PLYMOUTH 02360
+Owner: REARDON MATTHEW G TR
+Owner Address:
+23 WELLINGTON DR
+PLYMOUTH, MA 02360
+
+Building Value:  	$164,600
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$455,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210128
+Use Code:	101
+Year Built:	1955
+Residential Area:  	840 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C131476,
+Property ID:	044-006-070-000
+Location ID:  	F_910536_2801908
+
+25 WELLINGTON RD
+PLYMOUTH 02360
+Owner: TOCCI RICHARD F
+Owner Address:
+25 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$132,000
+Land Value:	$291,000
+Other Value:	$300
+Total Value:	$423,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$250,000
+Last Sale Date:	20040910
+Use Code:	101
+Year Built:	1950
+Residential Area:  	765 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	3
+
+Book, Page:	C106077,
+Property ID:	044-006-069-000
+Location ID:  	F_910503_2801870
+
+29 WELLINGTON RD
+PLYMOUTH 02360
+Owner: SCHINDLER DEBRA K
+Owner Address:
+C/O BARBARA MEARLS
+WOBURN, MA 01801
+
+Building Value:  	$167,900
+Land Value:	$291,000
+Other Value:	$900
+Total Value:	$459,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	19900101
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,124 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-068-000
+Location ID:  	F_910471_2801832
+
+34 WELLINGTON RD
+PLYMOUTH 02360
+Owner: TOCCI RICHARD J
+Owner Address:
+PO Box 254
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$407,800
+Land Value:	$333,800
+Other Value:	$700
+Total Value:	$742,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$0
+Last Sale Date:	
+Use Code:	104
+Year Built:	1937
+Residential Area:  	3,242 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	11
+
+Book, Page:	,
+Property ID:	044-006-064B-000
+Location ID:  	F_910457_2801627
+
+32 WELLINGTON RD
+PLYMOUTH 02360
+Owner: MAGALDI DENNIS M
+Owner Address:
+23 MARGARET DR
+BRAINTREE, MA 02184
+
+Building Value:  	$122,000
+Land Value:	$294,000
+Other Value:	$500
+Total Value:	$416,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$174,000
+Last Sale Date:	20160506
+Use Code:	101
+Year Built:	1940
+Residential Area:  	688 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C123363,
+Property ID:	044-006-063A-000
+Location ID:  	F_910504_2801667
+
+30 WELLINGTON RD
+PLYMOUTH 02360
+Owner: GILLETTE ROBERT W
+Owner Address:
+30 WELLINGTON ROAD
+PLYMOUTH, MA 02360
+
+Building Value:  	$151,200
+Land Value:	$308,900
+Other Value:	$800
+Total Value:	$460,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$204,000
+Last Sale Date:	20020829
+Use Code:	101
+Year Built:	1950
+Residential Area:  	864 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-061-000
+Location ID:  	F_910561_2801722
+
+26 WELLINGTON RD
+PLYMOUTH 02360
+Owner: TOCCI JOHN E
+Owner Address:
+26 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$514,800
+Land Value:	$308,900
+Other Value:	$0
+Total Value:	$823,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$75,000
+Last Sale Date:	20010810
+Use Code:	101
+Year Built:	2001
+Residential Area:  	2,424 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C99754,
+Property ID:	044-006-059-000
+Location ID:  	F_910626_2801798
+
+22 WELLINGTON RD
+PLYMOUTH 02360
+Owner: WILLETT JOHN G
+Owner Address:
+22 WELLIGNTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$195,000
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$486,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$260,000
+Last Sale Date:	20150904
+Use Code:	101
+Year Built:	1950
+Residential Area:  	895 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C122384,
+Property ID:	044-006-058-000
+Location ID:  	F_910675_2801855
+
+20 WELLINGTON RD
+PLYMOUTH 02360
+Owner: GEORGE FAMILY REVOCABLE TRUST
+Owner Address:
+20 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$234,100
+Land Value:	$291,000
+Other Value:	$2,600
+Total Value:	$527,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200827
+Use Code:	101
+Year Built:	1970
+Residential Area:  	1,710 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C130656,
+Property ID:	044-006-057-000
+Location ID:  	F_910707_2801893
+
+18 WELLINGTON RD
+PLYMOUTH 02360
+Owner: FIORE TIMOTHY J
+Owner Address:
+18 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$674,500
+Land Value:	$323,900
+Other Value:	$9,800
+Total Value:	$1,008,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.33 Acres
+Last Sale Price:	$103,000
+Last Sale Date:	19931222
+Use Code:	101
+Year Built:	2018
+Residential Area:  	3,706 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	,
+Property ID:	044-006-055-000
+Location ID:  	F_910774_2801936
+
+14 WELLINGTON RD
+PLYMOUTH 02360
+Owner: WISEMAN HELEN J
+Owner Address:
+990 MASS AVE APT 70
+ARLINGTON, MA 02476
+
+Building Value:  	$144,700
+Land Value:	$300,000
+Other Value:	$600
+Total Value:	$445,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	19870101
+Use Code:	101
+Year Built:	1948
+Residential Area:  	955 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-054-000
+Location ID:  	F_910824_2801991
+
+12 WELLINGTON RD
+PLYMOUTH 02360
+Owner: SANOUSSI HEIDI S
+Owner Address:
+79 CABOT ST
+MILTON, MA 02186
+
+Building Value:  	$165,000
+Land Value:	$300,000
+Other Value:	$0
+Total Value:	$465,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20221024
+Use Code:	101
+Year Built:	1947
+Residential Area:  	930 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C134655,
+Property ID:	044-006-053-000
+Location ID:  	F_910856_2802029
+
+10 WELLINGTON RD
+PLYMOUTH 02360
+Owner: DONNELLY JACQUELINE M
+Owner Address:
+10 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$251,800
+Land Value:	$300,000
+Other Value:	$0
+Total Value:	$551,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$495,000
+Last Sale Date:	20210916
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,588 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C132675,
+Property ID:	044-006-052-000
+Location ID:  	F_910889_2802066
+
+8 WELLINGTON RD
+PLYMOUTH 02360
+Owner: ARSENAULT ROBERT J
+Owner Address:
+54 ARAPAHOE RD
+NEWTON, MA 02465
+
+Building Value:  	$136,100
+Land Value:	$300,000
+Other Value:	$0
+Total Value:	$436,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	19860101
+Use Code:	101
+Year Built:	1948
+Residential Area:  	912 Sq. Ft.
+Building Style:	Cottage
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	,
+Property ID:	044-006-051-000
+Location ID:  	F_910912_2802111
+
+4 WELLINGTON RD
+PLYMOUTH 02360
+Owner: WALSH MARY ELLEN LIFE ESTATE
+Owner Address:
+4 WELLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$269,600
+Land Value:	$455,900
+Other Value:	$6,200
+Total Value:	$731,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.40 Acres
+Last Sale Price:	$0
+Last Sale Date:	20201118
+Use Code:	101
+Year Built:	1938
+Residential Area:  	1,800 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C131105,
+Property ID:	044-006-048-000
+Location ID:  	F_910977_2802206
+

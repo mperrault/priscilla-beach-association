@@ -1,0 +1,56 @@
+7 MORSE RD
+PLYMOUTH 02360
+Owner: KOZMA JANOS A
+Owner Address:
+51 NOURSE RD
+BOLTON, MA 01740
+
+Building Value:  	$534,000
+Land Value:	$351,000
+Other Value:	$1,600
+Total Value:	$886,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.62 Acres
+Last Sale Price:	$561,000
+Last Sale Date:	20190409
+Use Code:	101
+Year Built:	1865
+Residential Area:  	3,610 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	14
+
+Book, Page:	C128341,
+Property ID:	044-006-012-506
+Location ID:  	F_910190_2801831
+
+15 MORSE RD
+PLYMOUTH 02360
+Owner: TOCCI RICHARD
+Owner Address:
+P.O. BOX 254
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$0
+Land Value:	$30,900
+Other Value:	$30,000
+Total Value:	$60,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$130,000
+Last Sale Date:	20010709
+Use Code:	106
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C99581,
+Property ID:	044-006-065A-000
+Location ID:  	F_910349_2801687
+

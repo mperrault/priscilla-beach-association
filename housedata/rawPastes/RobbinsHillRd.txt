@@ -1,0 +1,225 @@
+2 ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: DEL CANTO NICOLE
+Owner Address:
+2 ROBBINS HILL RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$200,900
+Land Value:	$283,700
+Other Value:	$1,000
+Total Value:	$485,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.48 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170803
+Use Code:	101
+Year Built:	1974
+Residential Area:  	1,234 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C125555,
+Property ID:	044-006-553-000
+Location ID:  	F_910953_2801814
+
+6 ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: STACHELSKI FAMILY 2014 IRREV JOINT TRUST
+Owner Address:
+6 ROBBINS HILL RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$351,100
+Land Value:	$311,000
+Other Value:	$0
+Total Value:	$662,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.51 Acres
+Last Sale Price:	$0
+Last Sale Date:	20140311
+Use Code:	101
+Year Built:	1976
+Residential Area:  	2,202 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C120174,
+Property ID:	044-006-554-000
+Location ID:  	F_910974_2801901
+
+12 ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: HUMFRYES BRUCE P
+Owner Address:
+12 ROBBINS HILL RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$443,600
+Land Value:	$312,300
+Other Value:	$19,200
+Total Value:	$775,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.54 Acres
+Last Sale Price:	$681,525
+Last Sale Date:	20211018
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,152 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C132860,
+Property ID:	044-006-045-000Z
+Location ID:  	F_911020_2802019
+
+14 ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: KENNETH A SENTER JR TRUST
+Owner Address:
+14 ROBBINS HILL RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$181,700
+Land Value:	$268,700
+Other Value:	$0
+Total Value:	$450,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120125
+Use Code:	101
+Year Built:	1937
+Residential Area:  	1,033 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C116994,
+Property ID:	044-006-046-000
+Location ID:  	F_911045_2802116
+
+ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: WARD MARYELLEN
+Owner Address:
+PO BOX 31
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$0
+Land Value:	$27,100
+Other Value:	$0
+Total Value:	$27,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.16 Acres
+Last Sale Price:	$0
+Last Sale Date:	19931115
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C81856,
+Property ID:	044-006-578-000L
+Location ID:  	F_911198_2801901
+
+ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: WARD FAMILY IRREVOCABLE TRUST
+Owner Address:
+26 MASSAPOAG ST
+WEYMOUTH, MA 02190
+
+Building Value:  	$0
+Land Value:	$26,700
+Other Value:	$0
+Total Value:	$26,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120817
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C117894,
+Property ID:	044-006-577-000L
+Location ID:  	F_911152_2801936
+
+9 ROBBINS HILL RD
+PLYMOUTH 02360
+Owner: WARD FAMILY IRREVOCABLE TRUST
+Owner Address:
+26 MASSAPOAG ST
+WEYMOUTH, MA 02190
+
+Building Value:  	$123,000
+Land Value:	$262,200
+Other Value:	$4,700
+Total Value:	$389,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.10 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120817
+Use Code:	101
+Year Built:	1928
+Residential Area:  	1,100 Sq. Ft.
+Building Style:	Cottage
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C117897,
+Property ID:	044-006-035-000
+Location ID:  	F_911180_2802010
+
+PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: WARD FAMILY IRREVOCABLE TRUST
+Owner Address:
+26 MASSAPOAG ST
+WEYMOUTH, MA 02190
+
+Building Value:  	$0
+Land Value:	$27,400
+Other Value:	$0
+Total Value:	$27,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.19 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120817
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C117896,
+Property ID:	044-006-034-000
+Location ID:  	F_911190_2802104
+
+

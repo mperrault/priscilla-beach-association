@@ -1,0 +1,812 @@
+6 ARLINGTON RD
+PLYMOUTH 02360
+Owner: CHAMPAGNE PAUL J
+Owner Address:
+6 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$190,500
+Land Value:	$295,500
+Other Value:	$0
+Total Value:	$486,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$135,900
+Last Sale Date:	19860527
+Use Code:	101
+Year Built:	1949
+Residential Area:  	1,026 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C73292, D25473
+Property ID:	044-006-139-000
+Location ID:  	F_909832_2801950
+
+18 ARLINGTON RD
+PLYMOUTH 02360
+Owner: COTONE JAMES V
+Owner Address:
+18 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$637,600
+Land Value:	$341,800
+Other Value:	$18,300
+Total Value:	$997,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.45 Acres
+Last Sale Price:	$330,000
+Last Sale Date:	20180827
+Use Code:	101
+Year Built:	1955
+Residential Area:  	2,879 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C127375,
+Property ID:	044-006-141-000Z
+Location ID:  	F_909933_2801962
+
+22 ARLINGTON RD
+PLYMOUTH 02360
+Owner: COUGHLIN MICHAEL P
+Owner Address:
+PO BOX 205
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$230,600
+Land Value:	$319,400
+Other Value:	$700
+Total Value:	$550,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$790,000
+Last Sale Date:	20240916
+Use Code:	101
+Year Built:	1942
+Residential Area:  	1,832 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C137253,
+Property ID:	044-006-143-000
+Location ID:  	F_910014_2802060
+
+28 ARLINGTON RD
+PLYMOUTH 02360
+Owner: BARRETT FAMILY TRUST
+Owner Address:
+28 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$243,300
+Land Value:	$341,800
+Other Value:	$0
+Total Value:	$585,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.45 Acres
+Last Sale Price:	$0
+Last Sale Date:	20201023
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,798 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C130981,
+Property ID:	044-006-146-000Z
+Location ID:  	F_910095_2802155
+
+32 ARLINGTON RD
+PLYMOUTH 02360
+Owner: DOOLEY FAMILY 2021 IRREVOCABLE TRUST
+Owner Address:
+15 HUNTER LANE
+CANTON, MA 02021
+
+Building Value:  	$137,500
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$434,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210805
+Use Code:	101
+Year Built:	1950
+Residential Area:  	672 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C132470,
+Property ID:	044-006-148-000
+Location ID:  	F_910160_2802231
+
+34 ARLINGTON RD
+PLYMOUTH 02360
+Owner: CAMPBELL REALTY TRUST OF 2005
+Owner Address:
+12 KIMBERLEE AVE
+FRANKLIN, MA 02038
+
+Building Value:  	$175,700
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$472,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20151124
+Use Code:	101
+Year Built:	1946
+Residential Area:  	1,008 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C/122720,
+Property ID:	044-006-149-000
+Location ID:  	F_910193_2802269
+
+36 ARLINGTON RD
+PLYMOUTH 02360
+Owner: MULA ANDREW G TR
+Owner Address:
+36 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$306,900
+Land Value:	$319,400
+Other Value:	$2,200
+Total Value:	$628,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230501
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,931 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C135329,
+Property ID:	044-006-150-000Z
+Location ID:  	F_910242_2802326
+
+40 ARLINGTON RD
+PLYMOUTH 02360
+Owner: CROWLEY TRUST
+Owner Address:
+40 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$518,100
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$815,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20151002
+Use Code:	101
+Year Built:	2013
+Residential Area:  	2,532 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C/122526,
+Property ID:	044-006-152-000
+Location ID:  	F_910290_2802383
+
+44 ARLINGTON RD
+PLYMOUTH 02360
+Owner: GAROFALO CHRISTOPHER TR
+Owner Address:
+10 STUART DR
+OLD GREENWICH, CT 06870
+
+Building Value:  	$492,000
+Land Value:	$341,800
+Other Value:	$8,100
+Total Value:	$841,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.45 Acres
+Last Sale Price:	$1,150,000
+Last Sale Date:	20240718
+Use Code:	101
+Year Built:	2015
+Residential Area:  	1,491 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C136999,
+Property ID:	044-006-154-000Z
+Location ID:  	F_910356_2802458
+
+48 ARLINGTON RD
+PLYMOUTH 02360
+Owner: COUGHLIN MICHAEL P
+Owner Address:
+PO BOX 205
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$241,800
+Land Value:	$405,000
+Other Value:	$0
+Total Value:	$646,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$325,000
+Last Sale Date:	20140718
+Use Code:	101
+Year Built:	1951
+Residential Area:  	1,530 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C120693,
+Property ID:	044-006-156-000
+Location ID:  	F_910421_2802534
+
+50 ARLINGTON RD
+PLYMOUTH 02360
+Owner: RISSO WILLIAM S
+Owner Address:
+155 WOLF ROCK RD
+CARLISLE, MA 01741
+
+Building Value:  	$126,200
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$423,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$70,000
+Last Sale Date:	19980424
+Use Code:	101
+Year Built:	1947
+Residential Area:  	720 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	D425986,
+Property ID:	044-006-157-000
+Location ID:  	F_910453_2802572
+
+52 ARLINGTON RD
+PLYMOUTH 02360
+Owner: MARIAN F HYDER IRREVOC TRUST
+Owner Address:
+52 ARLINGON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$182,600
+Land Value:	$297,000
+Other Value:	$8,000
+Total Value:	$487,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20160427
+Use Code:	101
+Year Built:	1930
+Residential Area:  	1,350 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C123315,
+Property ID:	044-006-158-000
+Location ID:  	F_910486_2802610
+
+54 ARLINGTON RD
+PLYMOUTH 02360
+Owner: CALHOUN JOHN C JR TR
+Owner Address:
+54 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$299,100
+Land Value:	$405,000
+Other Value:	$700
+Total Value:	$704,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230810
+Use Code:	101
+Year Built:	1987
+Residential Area:  	1,740 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C135732,
+Property ID:	044-006-159-000
+Location ID:  	F_910518_2802648
+
+51 ARLINGTON RD
+PLYMOUTH 02360
+Owner: LINDSTROM ELIZABETH M
+Owner Address:
+51 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$571,900
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$862,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$317,000
+Last Sale Date:	20151104
+Use Code:	101
+Year Built:	2021
+Residential Area:  	2,700 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C/122655,
+Property ID:	044-006-115-000
+Location ID:  	F_910603_2802509
+
+47 ARLINGTON RD
+PLYMOUTH 02360
+Owner: STEFANI PATRICE E
+Owner Address:
+47 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$327,200
+Land Value:	$441,700
+Other Value:	$13,600
+Total Value:	$782,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.33 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220926
+Use Code:	101
+Year Built:	1936
+Residential Area:  	2,184 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C134523,
+Property ID:	044-006-117-000
+Location ID:  	F_910538_2802433
+
+41 ARLINGTON RD
+PLYMOUTH 02360
+Owner: COUGHLIN COLLEEN A TR
+Owner Address:
+PO BOX 205
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$225,100
+Land Value:	$308,900
+Other Value:	$0
+Total Value:	$534,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230316
+Use Code:	101
+Year Built:	1967
+Residential Area:  	1,512 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C135158,
+Property ID:	044-006-119-000
+Location ID:  	F_910457_2802338
+
+37 ARLINGTON RD
+PLYMOUTH 02360
+Owner: RAYMOND CAROLINE T
+Owner Address:
+37 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$424,400
+Land Value:	$307,500
+Other Value:	$0
+Total Value:	$731,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170518
+Use Code:	101
+Year Built:	2020
+Residential Area:  	1,518 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C125153,
+Property ID:	044-006-122-000Z
+Location ID:  	F_910392_2802263
+
+35 ARLINGTON RD
+PLYMOUTH 02360
+Owner: ALBANESE FAMILY REVOC TRUST
+Owner Address:
+35 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$223,700
+Land Value:	$291,000
+Other Value:	$200
+Total Value:	$514,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210111
+Use Code:	101
+Year Built:	1947
+Residential Area:  	1,596 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C131392,
+Property ID:	044-006-123-000
+Location ID:  	F_910343_2802206
+
+33 ARLINGTON RD
+PLYMOUTH 02360
+Owner: JSB 2020 REVOCABLE LIVING TR
+Owner Address:
+33 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$309,300
+Land Value:	$291,000
+Other Value:	$1,500
+Total Value:	$601,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200318
+Use Code:	101
+Year Built:	1955
+Residential Area:  	2,395 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C129978,
+Property ID:	044-006-124-000
+Location ID:  	F_910310_2802168
+
+31 ARLINGTON RD
+PLYMOUTH 02360
+Owner: JOHNSON GEORGE L JR LE
+Owner Address:
+19 COBURN RD
+DERRY, NH 03038
+
+Building Value:  	$228,100
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$519,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230623
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,418 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C135548,
+Property ID:	044-006-125-000
+Location ID:  	F_910278_2802130
+
+29 ARLINGTON RD
+PLYMOUTH 02360
+Owner: GEARY JOANNE D TR
+Owner Address:
+29 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$176,500
+Land Value:	$308,900
+Other Value:	$200
+Total Value:	$485,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220330
+Use Code:	101
+Year Built:	1960
+Residential Area:  	928 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C133646,
+Property ID:	044-006-126-000
+Location ID:  	F_910229_2802073
+
+25 ARLINGTON RD
+PLYMOUTH 02360
+Owner: GILLAND WENDELL G
+Owner Address:
+302 OLD FOREST CREEK DR
+CHAPEL HILL, NC 27514
+
+Building Value:  	$149,000
+Land Value:	$291,000
+Other Value:	$700
+Total Value:	$440,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$150,000
+Last Sale Date:	20001107
+Use Code:	101
+Year Built:	1955
+Residential Area:  	720 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C98345,
+Property ID:	044-006-128-000
+Location ID:  	F_910181_2802016
+
+21 ARLINGTON RD
+PLYMOUTH 02360
+Owner: PASILLO SUSAN
+Owner Address:
+21 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$405,100
+Land Value:	$328,400
+Other Value:	$0
+Total Value:	$733,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.36 Acres
+Last Sale Price:	$300,000
+Last Sale Date:	20181102
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,770 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C127708,
+Property ID:	044-006-129-000Z
+Location ID:  	F_910086_2801906
+
+15 ARLINGTON RD
+PLYMOUTH 02360
+Owner: FAHEY JOHN C
+Owner Address:
+15 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$276,800
+Land Value:	$306,000
+Other Value:	$0
+Total Value:	$582,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.21 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200214
+Use Code:	101
+Year Built:	1987
+Residential Area:  	2,032 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C129827,
+Property ID:	044-006-132-000
+Location ID:  	F_910009_2801805
+
+11 ARLINGTON RD
+PLYMOUTH 02360
+Owner: BRIAN G BISHOP NOMINEE TRUST
+Owner Address:
+11 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$125,000
+Land Value:	$300,000
+Other Value:	$500
+Total Value:	$425,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20150507
+Use Code:	101
+Year Built:	1955
+Residential Area:  	840 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C121788,
+Property ID:	044-006-133-000
+Location ID:  	F_909942_2801777
+
+9 ARLINGTON RD
+PLYMOUTH 02360
+Owner: FIORENZA DEBORAH A
+Owner Address:
+9 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$227,100
+Land Value:	$307,400
+Other Value:	$0
+Total Value:	$534,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$50,000
+Last Sale Date:	19961122
+Use Code:	101
+Year Built:	1953
+Residential Area:  	1,726 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-134-000
+Location ID:  	F_909858_2801803
+
+7 ARLINGTON RD
+PLYMOUTH 02360
+Owner: MULA ANDREW G TR
+Owner Address:
+36 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$142,500
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$433,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230501
+Use Code:	101
+Year Built:	1957
+Residential Area:  	672 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C135330,
+Property ID:	044-006-136-000
+Location ID:  	F_909785_2801822
+
+5 ARLINGTON RD
+PLYMOUTH 02360
+Owner: MCDONOUGH EDWARD T
+Owner Address:
+5 ARLINGTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$184,900
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$475,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$115,000
+Last Sale Date:	19980918
+Use Code:	101
+Year Built:	1960
+Residential Area:  	960 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	D434316,
+Property ID:	044-006-137-000
+Location ID:  	F_909737_2801834
+
+1 ARLINGTON RD
+PLYMOUTH 02360
+Owner: COUGHLIN COLLEEN A TR
+Owner Address:
+PO BOX 205
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$112,700
+Land Value:	$300,000
+Other Value:	$1,200
+Total Value:	$413,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230316
+Use Code:	101
+Year Built:	1954
+Residential Area:  	672 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C135159,
+Property ID:	044-006-138-000
+Location ID:  	F_909676_2801857
+

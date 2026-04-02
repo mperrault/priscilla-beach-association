@@ -1,0 +1,1177 @@
+62 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: RITA + DANIEL KEATING FAM TR ETAL
+Owner Address:
+21 CROSS WIND
+PLYMOUTH, MA 02360
+
+Building Value:  	$0
+Land Value:	$136,500
+Other Value:	$0
+Total Value:	$136,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.62 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200902
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C108595,
+Property ID:	044-006-030N-000
+Location ID:  	F_911494_2802230
+
+61 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: WARD ROBERT A
+Owner Address:
+PO BOX 101
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$0
+Land Value:	$29,500
+Other Value:	$0
+Total Value:	$29,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	,
+Property ID:	044-006-031-000
+Location ID:  	F_911326_2802009
+
+59 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: CAPPELLA ROBERTA L
+Owner Address:
+P O BOX 31
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$209,100
+Land Value:	$293,400
+Other Value:	$0
+Total Value:	$502,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20100709
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,559 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C114883,
+Property ID:	044-006-032-000
+Location ID:  	F_911282_2802036
+
+PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: WARD FAMILY IRREVOCABLE TRUST
+Owner Address:
+26 MASSAPOAG ST
+WEYMOUTH, MA 02190
+
+Building Value:  	$0
+Land Value:	$26,500
+Other Value:	$0
+Total Value:	$26,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120817
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C117895,
+Property ID:	044-006-033-000
+Location ID:  	F_911240_2802064
+
+PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: WARD FAMILY IRREVOCABLE TRUST
+Owner Address:
+26 MASSAPOAG ST
+WEYMOUTH, MA 02190
+
+Building Value:  	$0
+Land Value:	$27,400
+Other Value:	$0
+Total Value:	$27,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.19 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120817
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C117896,
+Property ID:	044-006-034-000
+Location ID:  	F_911190_2802104
+
+58 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: MERCURIO SHERI PRINCE
+Owner Address:
+PO BOX 115
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$237,000
+Land Value:	$1,082,900
+Other Value:	$7,700
+Total Value:	$1,327,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.44 Acres
+Last Sale Price:	$175,000
+Last Sale Date:	19940202
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,655 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	,
+Property ID:	044-006-029-000
+Location ID:  	F_911427_2802252
+
+54 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: BRAHMAVAR SAMEER S
+Owner Address:
+4616 W 70TH ST
+PRAIRIE VILLAGE, KS 66208
+
+Building Value:  	$479,300
+Land Value:	$1,092,500
+Other Value:	$0
+Total Value:	$1,571,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.47 Acres
+Last Sale Price:	$0
+Last Sale Date:	20180103
+Use Code:	101
+Year Built:	2004
+Residential Area:  	1,953 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C126271,
+Property ID:	044-006-576-000
+Location ID:  	F_911352_2802264
+
+52 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: LLMZ LLC
+Owner Address:
+124 31ST ST
+MANHATTAN BCH, CA 90266
+
+Building Value:  	$764,200
+Land Value:	$1,097,800
+Other Value:	$1,000
+Total Value:	$1,863,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.58 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220817
+Use Code:	101
+Year Built:	1920
+Residential Area:  	3,893 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C134347,
+Property ID:	044-006-575-000
+Location ID:  	F_911393_2802393
+
+50 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: PRISCILLA BEACH REALTY TRUST
+Owner Address:
+PO BOX 116
+PINEHURST, MA 01866
+
+Building Value:  	$997,500
+Land Value:	$1,075,800
+Other Value:	$900
+Total Value:	$2,074,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.43 Acres
+Last Sale Price:	$840,000
+Last Sale Date:	20161101
+Use Code:	101
+Year Built:	2017
+Residential Area:  	4,566 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C124328,
+Property ID:	044-006-025-000Z
+Location ID:  	F_911261_2802366
+
+48 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: ARCURI-5 REALTY TRUST
+Owner Address:
+132 CHARLES ST SUITE 202
+NEWTON, MA 02466
+
+Building Value:  	$280,600
+Land Value:	$1,049,600
+Other Value:	$4,100
+Total Value:	$1,334,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.37 Acres
+Last Sale Price:	$0
+Last Sale Date:	20061214
+Use Code:	101
+Year Built:	1937
+Residential Area:  	2,277 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	,
+Property ID:	044-006-024-000
+Location ID:  	F_911215_2802394
+
+
+46 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: MCTAGGART DONALD MICHAEL TR
+Owner Address:
+710 WENTWOOD DR
+SOUTHLAKE, TX 76092
+
+Building Value:  	$187,800
+Land Value:	$1,049,600
+Other Value:	$0
+Total Value:	$1,237,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.37 Acres
+Last Sale Price:	$596,910
+Last Sale Date:	20241220
+Use Code:	101
+Year Built:	1942
+Residential Area:  	1,029 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C137646,
+Property ID:	044-006-023-000
+Location ID:  	F_911173_2802422
+
+44 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: GRAZIANO RICHARD
+Owner Address:
+44 PRISCILLA BCH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$464,100
+Land Value:	$1,049,600
+Other Value:	$600
+Total Value:	$1,514,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.37 Acres
+Last Sale Price:	$0
+Last Sale Date:	20070910
+Use Code:	101
+Year Built:	1986
+Residential Area:  	2,282 Sq. Ft.
+Building Style:	Salt Box
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	,
+Property ID:	044-006-022-000
+Location ID:  	F_911132_2802450
+
+42 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: BENSE KEVIN W TR
+Owner Address:
+5830 BALAO WAY
+ST PETERSBURG, FL 33706
+
+Building Value:  	$524,400
+Land Value:	$1,021,100
+Other Value:	$1,500
+Total Value:	$1,547,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.31 Acres
+Last Sale Price:	$1,675,000
+Last Sale Date:	20220113
+Use Code:	101
+Year Built:	1949
+Residential Area:  	2,701 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C133322,
+Property ID:	044-006-021-000
+Location ID:  	F_911086_2802465
+
+40 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: BURRELLI ROBERT J
+Owner Address:
+40 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$351,300
+Land Value:	$1,025,800
+Other Value:	$0
+Total Value:	$1,377,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.32 Acres
+Last Sale Price:	$380,000
+Last Sale Date:	19910531
+Use Code:	101
+Year Built:	1945
+Residential Area:  	2,459 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C/81515,
+Property ID:	044-006-020-000
+Location ID:  	F_911050_2802491
+
+40 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: BURRELLI ROBERT J
+Owner Address:
+40 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$351,300
+Land Value:	$1,025,800
+Other Value:	$0
+Total Value:	$1,377,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.32 Acres
+Last Sale Price:	$380,000
+Last Sale Date:	19910531
+Use Code:	101
+Year Built:	1945
+Residential Area:  	2,459 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C/81515,
+Property ID:	044-006-020-000
+Location ID:  	F_911050_2802491
+
+38 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: PMU REALTY LLC
+Owner Address:
+65 BELLEVUE ST
+NEWTON, MA 02458
+
+Building Value:  	$287,200
+Land Value:	$1,030,600
+Other Value:	$0
+Total Value:	$1,317,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.33 Acres
+Last Sale Price:	$0
+Last Sale Date:	20181228
+Use Code:	101
+Year Built:	1930
+Residential Area:  	2,559 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C127961,
+Property ID:	044-006-019-000
+Location ID:  	F_911014_2802518
+
+36 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: SULLIVAN MARK J
+Owner Address:
+9 WHARF DR
+GROVELAND, MA 01834
+
+Building Value:  	$179,300
+Land Value:	$1,021,100
+Other Value:	$0
+Total Value:	$1,200,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.31 Acres
+Last Sale Price:	$0
+Last Sale Date:	20070412
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,332 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-018-000
+Location ID:  	F_910976_2802555
+
+34 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: MALONE ROBERT E
+Owner Address:
+34 PRISCILLA BCH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$467,200
+Land Value:	$1,016,300
+Other Value:	$0
+Total Value:	$1,483,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$649,000
+Last Sale Date:	20090410
+Use Code:	101
+Year Built:	1950
+Residential Area:  	3,093 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	10
+
+Book, Page:	C113172,
+Property ID:	044-006-017-000
+Location ID:  	F_910946_2802588
+
+32 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: LOOK A MOOSE REALTY TRUST
+Owner Address:
+83 RUSSELL MILLS RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$245,600
+Land Value:	$1,035,000
+Other Value:	$0
+Total Value:	$1,280,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.34 Acres
+Last Sale Price:	$1,050,000
+Last Sale Date:	20210527
+Use Code:	101
+Year Built:	1951
+Residential Area:  	1,680 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C132053,
+Property ID:	044-006-016-000
+Location ID:  	F_910925_2802630
+
+30 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: JOYCE CATHERINE E
+Owner Address:
+PO BOX 157
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$309,100
+Land Value:	$1,025,800
+Other Value:	$0
+Total Value:	$1,334,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.32 Acres
+Last Sale Price:	$0
+Last Sale Date:	20150605
+Use Code:	101
+Year Built:	1927
+Residential Area:  	2,432 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C121934,
+Property ID:	044-006-015-000
+Location ID:  	F_910889_2802666
+
+28 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: ZANI SIMONE
+Owner Address:
+114 GERRY RD
+OTISFIELD, ME 04270
+
+Building Value:  	$321,700
+Land Value:	$1,021,100
+Other Value:	$500
+Total Value:	$1,343,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.31 Acres
+Last Sale Price:	$0
+Last Sale Date:	20240610
+Use Code:	101
+Year Built:	1940
+Residential Area:  	2,500 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C136833,
+Property ID:	044-006-014-000
+Location ID:  	F_910854_2802702
+
+26 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: S S HOULLAHAN LLC
+Owner Address:
+5 SACHEM RD
+WINCHESTER, MA 01890
+
+Building Value:  	$295,700
+Land Value:	$1,012,000
+Other Value:	$0
+Total Value:	$1,307,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$849,000
+Last Sale Date:	20230516
+Use Code:	101
+Year Built:	1940
+Residential Area:  	2,520 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C135384,
+Property ID:	044-006-013-000
+Location ID:  	F_910818_2802738
+
+24 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: ALAN ORANSKY AND JULIA ORANSKY
+Owner Address:
+24 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$733,300
+Land Value:	$1,324,500
+Other Value:	$16,500
+Total Value:	$2,074,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.75 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190404
+Use Code:	109
+Year Built:	1926
+Residential Area:  	6,291 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C128317,
+Property ID:	044-006-557-000
+Location ID:  	F_910752_2802808
+
+18 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: JCM PLYMOUTH ACQUISITIONS IV
+Owner Address:
+50 RESNIK RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$1,304,900
+Land Value:	$1,092,400
+Other Value:	$30,200
+Total Value:	$2,427,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.46 Acres
+Last Sale Price:	$0
+Last Sale Date:	20101110
+Use Code:	101
+Year Built:	2009
+Residential Area:  	4,842 Sq. Ft.
+Building Style:	Contemporary
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C115365,
+Property ID:	044-006-555-000
+Location ID:  	F_910659_2802895
+
+12 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: GFJ REALTY TRUST
+Owner Address:
+50 RESNIK RD UNIT 300
+PLYMOUTH, MA 02360
+
+Building Value:  	$1,252,000
+Land Value:	$1,049,600
+Other Value:	$3,600
+Total Value:	$2,305,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.37 Acres
+Last Sale Price:	$0
+Last Sale Date:	20020625
+Use Code:	101
+Year Built:	1994
+Residential Area:  	5,044 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	11
+
+Book, Page:	C101523,
+Property ID:	044-006-007-000Z
+Location ID:  	F_910589_2802970
+
+10 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: DONNA M NATALE 2003 TRUST
+Owner Address:
+2 KATHLEEN DR
+WOBURN, MA 01801
+
+Building Value:  	$576,600
+Land Value:	$1,044,800
+Other Value:	$0
+Total Value:	$1,621,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.36 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120501
+Use Code:	101
+Year Built:	1940
+Residential Area:  	3,303 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	10
+
+Book, Page:	C117372,
+Property ID:	044-006-005-000Z
+Location ID:  	F_910510_2803045
+
+4 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: SEA WELL REALTY TRUST
+Owner Address:
+2 BRIANT DR
+SUDBURY, MA 01776
+
+Building Value:  	$629,000
+Land Value:	$972,700
+Other Value:	$0
+Total Value:	$1,601,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.21 Acres
+Last Sale Price:	$960,000
+Last Sale Date:	20090814
+Use Code:	101
+Year Built:	1928
+Residential Area:  	3,904 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	10
+
+Book, Page:	C113644,
+Property ID:	044-006-592-000
+Location ID:  	F_910429_2803104
+
+2 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: WJM REALTY LLC
+Owner Address:
+2 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$417,200
+Land Value:	$975,800
+Other Value:	$0
+Total Value:	$1,393,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.21 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220915
+Use Code:	101
+Year Built:	1954
+Residential Area:  	2,146 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C134487,
+Property ID:	044-006-593-000
+Location ID:  	F_910372_2803152
+
+PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: PRISCILLA BEACH ASSN INC.
+Owner Address:
+PO Box 17
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$0
+Land Value:	$248,800
+Other Value:	$0
+Total Value:	$248,800
+
+Assessment data from FY 2026
+
+Lot Size:	4.46 Acres
+Last Sale Price:	$0
+Last Sale Date:	
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	,
+Property ID:	044-006-000A-000
+Location ID:  	F_911031_2802780
+
+3 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: CRONIN MICHAEL H
+Owner Address:
+3 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$255,700
+Land Value:	$400,900
+Other Value:	$0
+Total Value:	$656,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	19900101
+Use Code:	101
+Year Built:	1947
+Residential Area:  	1,764 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-212-000
+Location ID:  	F_910292_2803013
+
+5 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: DAGOSTINO ANNETTE G LE
+Owner Address:
+7 MEADOW LN
+WALPOLE, MA 02081
+
+Building Value:  	$210,300
+Land Value:	$533,200
+Other Value:	$0
+Total Value:	$743,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200909
+Use Code:	101
+Year Built:	1920
+Residential Area:  	1,402 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C130727, D80342
+Property ID:	044-006-211-000
+Location ID:  	F_910331_2802980
+
+PRISCILLA BEACH RD
+PLYMOUTH
+Owner: DAGOSTINO ANNETTE G LE
+Owner Address:
+7 MEADOW LN
+WALPOLE, MA 02081
+
+Building Value:  	$0
+Land Value:	$53,300
+Other Value:	$0
+Total Value:	$53,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200909
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C130727, D80342
+Property ID:	044-006-210-000
+Location ID:  	F_910371_2802950
+
+15 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: 15 PRISCILLA BEACH ROAD RLTY T
+Owner Address:
+15 PRISCILLA BCH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$471,600
+Land Value:	$433,500
+Other Value:	$6,400
+Total Value:	$911,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$0
+Last Sale Date:	20131202
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,472 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C119875,
+Property ID:	044-006-162-000
+Location ID:  	F_910503_2802778
+
+19 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: PRISCILLA ROAD REALTY TRUST
+Owner Address:
+2 KATHLEEN DR
+WOBURN, MA 01801
+
+Building Value:  	$294,800
+Land Value:	$400,900
+Other Value:	$300
+Total Value:	$696,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20030129
+Use Code:	101
+Year Built:	1930
+Residential Area:  	1,416 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C102758,
+Property ID:	044-006-161-000
+Location ID:  	F_910555_2802722
+
+21 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: LINDA M CAMPISI 2002 TRUST
+Owner Address:
+21 PRISCILLA BCH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$671,800
+Land Value:	$467,700
+Other Value:	$6,100
+Total Value:	$1,145,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$729,900
+Last Sale Date:	20151103
+Use Code:	101
+Year Built:	1928
+Residential Area:  	2,366 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C/122649,
+Property ID:	044-006-160-000
+Location ID:  	F_910592_2802682
+
+27 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: CODY SHAWN
+Owner Address:
+27 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$743,800
+Land Value:	$429,400
+Other Value:	$5,300
+Total Value:	$1,178,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.27 Acres
+Last Sale Price:	$0
+Last Sale Date:	20160122
+Use Code:	101
+Year Built:	1930
+Residential Area:  	3,951 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C122972,
+Property ID:	044-006-113-000
+Location ID:  	F_910658_2802575
+
+29 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: KEVIN G AHERN REVOCABLE TRUST
+Owner Address:
+PO BOX 451
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$173,700
+Land Value:	$411,100
+Other Value:	$4,000
+Total Value:	$588,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.18 Acres
+Last Sale Price:	$0
+Last Sale Date:	20180426
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,152 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C126701,
+Property ID:	044-006-112-000Z
+Location ID:  	F_910694_2802500
+
+31 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: ARSENAULT ROBERT J
+Owner Address:
+54 ARAPAHOE RD
+NEWTON, MA 02465
+
+Building Value:  	$505,800
+Land Value:	$407,000
+Other Value:	$0
+Total Value:	$912,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.16 Acres
+Last Sale Price:	$525,000
+Last Sale Date:	20100527
+Use Code:	101
+Year Built:	1920
+Residential Area:  	2,636 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C114708,
+Property ID:	044-006-111-000Z
+Location ID:  	F_910728_2802463
+
+35 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: DEGNAN SCOTT W
+Owner Address:
+PO BOX 340
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$197,500
+Land Value:	$429,400
+Other Value:	$13,700
+Total Value:	$640,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.27 Acres
+Last Sale Price:	$181,000
+Last Sale Date:	19940502
+Use Code:	101
+Year Built:	1930
+Residential Area:  	1,830 Sq. Ft.
+Building Style:	Other
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-083-000Z
+Location ID:  	F_910806_2802379
+
+39 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: DEBORA G KING REVOCABLE TRUST
+Owner Address:
+33 PINE BROOK RD
+NASHUA, NH 03062
+
+Building Value:  	$429,300
+Land Value:	$400,900
+Other Value:	$800
+Total Value:	$831,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20181002
+Use Code:	101
+Year Built:	2018
+Residential Area:  	1,988 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C127559,
+Property ID:	044-006-081-000
+Location ID:  	F_910862_2802327
+
+41 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: CURRAN CHRISTINE LENNON
+Owner Address:
+41 PRISCILLA BCH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$228,000
+Land Value:	$400,900
+Other Value:	$1,400
+Total Value:	$630,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$0
+Last Sale Date:	20161004
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,933 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C124178,
+Property ID:	044-006-080-000
+Location ID:  	F_910901_2802295
+
+47 PRISCILLA BEACH RD
+PLYMOUTH 02360
+Owner: HERRICK WILLIAM D
+Owner Address:
+327 SOUTH RD
+OAKHAM, MA 01068
+
+Building Value:  	$344,000
+Land Value:	$306,000
+Other Value:	$0
+Total Value:	$650,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.21 Acres
+Last Sale Price:	$340,000
+Last Sale Date:	20150722
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,570 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C122167,
+Property ID:	044-006-047-000
+Location ID:  	F_911071_2802180
+

@@ -1,0 +1,559 @@
+9 QUAKER RD
+PLYMOUTH 02360
+Owner: CHRISTOPHER MARY ELLEN S
+Owner Address:
+9 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$283,200
+Land Value:	$291,000
+Other Value:	$4,000
+Total Value:	$578,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$575,000
+Last Sale Date:	20211130
+Use Code:	101
+Year Built:	1959
+Residential Area:  	1,008 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C133097,
+Property ID:	044-006-109-000
+Location ID:  	F_910647_2802406
+
+13 QUAKER RD
+PLYMOUTH 02360
+Owner: FICHTER JANET L TR
+Owner Address:
+13 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$369,500
+Land Value:	$323,900
+Other Value:	$3,400
+Total Value:	$696,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.33 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230627
+Use Code:	101
+Year Built:	1937
+Residential Area:  	2,525 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C135558,
+Property ID:	044-006-107-000Z
+Location ID:  	F_910582_2802330
+
+17 QUAKER RD
+PLYMOUTH 02360
+Owner: SUSAN P DALE IRREVOCABLE TRUST
+Owner Address:
+17 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$198,400
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$489,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170403
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,470 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C124945,
+Property ID:	044-006-105-000
+Location ID:  	F_910517_2802254
+
+19 QUAKER RD
+PLYMOUTH 02360
+Owner: ALIBERTE FAMILY REVOCABLE LIVING TRUST
+Owner Address:
+9 GOODWIN AVE
+MALDEN, MA 02148
+
+Building Value:  	$201,000
+Land Value:	$291,000
+Other Value:	$300
+Total Value:	$492,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200212
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,544 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C129816,
+Property ID:	044-006-104-000
+Location ID:  	F_910484_2802216
+
+23 QUAKER RD
+PLYMOUTH 02360
+Owner: FEDERICO RENE MICHELLE TR
+Owner Address:
+51 HAMMERSMITH DR
+SAUGUS, MA 01906
+
+Building Value:  	$375,000
+Land Value:	$307,400
+Other Value:	$1,300
+Total Value:	$683,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20241226
+Use Code:	101
+Year Built:	1937
+Residential Area:  	1,848 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C137659,
+Property ID:	044-006-102-000
+Location ID:  	F_910435_2802160
+
+25 QUAKER RD
+PLYMOUTH 02360
+Owner: FANTASIA DONNA C TR
+Owner Address:
+30 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$226,600
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$517,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20091124
+Use Code:	101
+Year Built:	1988
+Residential Area:  	1,464 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C114058,
+Property ID:	044-006-101-000
+Location ID:  	F_910386_2802103
+
+27 QUAKER RD
+PLYMOUTH 02360
+Owner: NANCY L RYAN LIVING TRUST
+Owner Address:
+108 PATRICIA DR
+MILTON, MA 02186
+
+Building Value:  	$231,000
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$522,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170201
+Use Code:	101
+Year Built:	1968
+Residential Area:  	1,920 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C124722,
+Property ID:	044-006-100-000
+Location ID:  	F_910354_2802065
+
+29 QUAKER RD
+PLYMOUTH 02360
+Owner: ZICKO CHARLENE S
+Owner Address:
+631 EAST ST UNIT D204
+MANSFIELD, MA 02048
+
+Building Value:  	$0
+Land Value:	$145,900
+Other Value:	$0
+Total Value:	$145,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20030311
+Use Code:	131
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	D529479,
+Property ID:	044-006-099-000
+Location ID:  	F_910321_2802027
+
+31 QUAKER RD
+PLYMOUTH 02360
+Owner: ZICKO CHARLENE S
+Owner Address:
+631 EAST ST UNIT D204
+MANSFIELD, MA 02048
+
+Building Value:  	$0
+Land Value:	$145,900
+Other Value:	$0
+Total Value:	$145,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20040930
+Use Code:	131
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	D573865,
+Property ID:	044-006-098-000
+Location ID:  	F_910289_2801989
+
+33 QUAKER RD
+PLYMOUTH 02360
+Owner: CORRIGAN JOANNE
+Owner Address:
+33 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$143,400
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$434,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	19790101
+Use Code:	101
+Year Built:	1947
+Residential Area:  	1,078 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	,
+Property ID:	044-006-097-000
+Location ID:  	F_910256_2801951
+
+34 QUAKER RD
+PLYMOUTH 02360
+Owner: ONORATO FAMILY LIVING TRUST
+Owner Address:
+120 QUARRY RD
+WHITINSVILLE, MA 01588
+
+Building Value:  	$220,500
+Land Value:	$291,000
+Other Value:	$600
+Total Value:	$512,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190308
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,427 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C128195,
+Property ID:	044-006-096-000
+Location ID:  	F_910363_2801860
+
+32 QUAKER RD
+PLYMOUTH 02360
+Owner: KEAN GLADYS C LIFE ESTATE
+Owner Address:
+C/O BARBARA MEARLS
+WOBURN, MA 01801
+
+Building Value:  	$187,100
+Land Value:	$291,000
+Other Value:	$300
+Total Value:	$478,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20110708
+Use Code:	101
+Year Built:	1956
+Residential Area:  	1,152 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C116249,
+Property ID:	044-006-095-000
+Location ID:  	F_910395_2801898
+
+30 QUAKER RD
+PLYMOUTH 02360
+Owner: DONNA C FANTASIA TRUST
+Owner Address:
+30 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$241,600
+Land Value:	$291,000
+Other Value:	$600
+Total Value:	$533,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20091124
+Use Code:	101
+Year Built:	1941
+Residential Area:  	1,818 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C114057,
+Property ID:	044-006-094-000
+Location ID:  	F_910427_2801936
+
+28 QUAKER RD
+PLYMOUTH 02360
+Owner: MORIN MICHAEL
+Owner Address:
+311 W PALM AVE
+POMPANO BEACH, FL 33062
+
+Building Value:  	$272,300
+Land Value:	$307,500
+Other Value:	$500
+Total Value:	$580,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$575,000
+Last Sale Date:	20220316
+Use Code:	101
+Year Built:	1940
+Residential Area:  	810 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C133583,
+Property ID:	044-006-093-000Z
+Location ID:  	F_910476_2801992
+
+22 QUAKER RD
+PLYMOUTH 02360
+Owner: 22 QUAKER ROAD NOM TRUST
+Owner Address:
+P O BOX 366
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$0
+Land Value:	$29,100
+Other Value:	$0
+Total Value:	$29,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20180307
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C126483,
+Property ID:	044-006-091-000
+Location ID:  	F_910525_2802049
+
+20 QUAKER RD
+PLYMOUTH 02360
+Owner: FEDERICO-MUSLIM GINA L
+Owner Address:
+23 RIGGS AVE
+WEST HARTFORD, CT 06107
+
+Building Value:  	$284,700
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$575,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20180801
+Use Code:	101
+Year Built:	2008
+Residential Area:  	1,568 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C127238,
+Property ID:	044-006-089-000
+Location ID:  	F_910590_2802125
+
+16 QUAKER RD
+PLYMOUTH 02360
+Owner: VALZANIA FAMILY REALTY TRUST
+Owner Address:
+16 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$221,800
+Land Value:	$307,500
+Other Value:	$5,300
+Total Value:	$534,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20130716
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,983 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C119290,
+Property ID:	044-006-087-000Z
+Location ID:  	F_910639_2802182
+
+14 QUAKER RD
+PLYMOUTH 02360
+Owner: HAYNES LINDSEY A
+Owner Address:
+14 QUAKER RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$150,700
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$441,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$120,000
+Last Sale Date:	20231106
+Use Code:	101
+Year Built:	1950
+Residential Area:  	957 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C136106,
+Property ID:	044-006-086-000
+Location ID:  	F_910688_2802239
+
+12 QUAKER RD
+PLYMOUTH 02360
+Owner: RANDLETT RAWSON
+Owner Address:
+36 MORTON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$213,100
+Land Value:	$291,000
+Other Value:	$900
+Total Value:	$505,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20171213
+Use Code:	101
+Year Built:	1945
+Residential Area:  	1,584 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C126191,
+Property ID:	044-006-085-000
+Location ID:  	F_910720_2802277
+
+10 QUAKER RD
+PLYMOUTH 02360
+Owner: DOYLE JULIANNE M
+Owner Address:
+PO BOX 303
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$211,500
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$502,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20040727
+Use Code:	101
+Year Built:	1966
+Residential Area:  	1,607 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C105761,
+Property ID:	044-006-084-000
+Location ID:  	F_910753_2802315

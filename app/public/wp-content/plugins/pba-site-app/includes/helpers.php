@@ -17,6 +17,7 @@ function pba_allowed_streets() {
         'Quaker Rd',
         'Robbins Hill Rd',
         'Rocky Hill Rd',
+        'Theatre Colony Way',
         'Warrendale Rd',
         'Wellington Rd',
     );

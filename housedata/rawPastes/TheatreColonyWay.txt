@@ -1,0 +1,561 @@
+1 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: LEET ADAM C
+Owner Address:
+1 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$197,700
+Land Value:	$211,300
+Other Value:	$0
+Total Value:	$409,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.16 Acres
+Last Sale Price:	$297,500
+Last Sale Date:	20070131
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,564 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-000-011-429
+Location ID:  	F_909877_2801466
+
+3 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: MALONE ROBERT
+Owner Address:
+83 RUSSELL MILLS RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$318,300
+Land Value:	$233,600
+Other Value:	$0
+Total Value:	$551,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$350,000
+Last Sale Date:	20231018
+Use Code:	101
+Year Built:	2024
+Residential Area:  	2,113 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C136020,
+Property ID:	044-000-011-428
+Location ID:  	F_909887_2801522
+
+5 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: ANDERSON FAMILY NOMINEE TRUST
+Owner Address:
+5 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$264,100
+Land Value:	$238,300
+Other Value:	$0
+Total Value:	$502,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.19 Acres
+Last Sale Price:	$0
+Last Sale Date:	20130426
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,088 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C118892,
+Property ID:	044-000-011-427
+Location ID:  	F_909893_2801574
+
+7 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: HUGHES GEORGE H LIFE ESTATE
+Owner Address:
+7 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$154,300
+Land Value:	$233,600
+Other Value:	$0
+Total Value:	$387,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20160712
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,008 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C123701,
+Property ID:	044-000-011-426
+Location ID:  	F_909921_2801629
+
+9 D THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: CAMPBELL SCOTT J
+Owner Address:
+9D THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$139,300
+Land Value:	$230,100
+Other Value:	$600
+Total Value:	$370,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$386,000
+Last Sale Date:	20230818
+Use Code:	101
+Year Built:	1950
+Residential Area:  	786 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C135772,
+Property ID:	044-000-011A-061
+Location ID:  	F_909786_2801735
+
+9 C THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: BELMORE MICHAEL
+Owner Address:
+PO BOX 255
+WHT HORSE BCH, MA 02381
+
+Building Value:  	$282,100
+Land Value:	$241,600
+Other Value:	$800
+Total Value:	$524,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$575,000
+Last Sale Date:	20210602
+Use Code:	104
+Year Built:	1900
+Residential Area:  	1,680 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	2
+Number of Rooms:  	5
+
+Book, Page:	C132085,
+Property ID:	044-000-011A-062
+Location ID:  	F_909856_2801716
+
+9 B THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: GUNAPATI SHERYL
+Owner Address:
+9B THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$145,100
+Land Value:	$226,600
+Other Value:	$3,200
+Total Value:	$374,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.09 Acres
+Last Sale Price:	$190,000
+Last Sale Date:	20161121
+Use Code:	101
+Year Built:	1950
+Residential Area:  	792 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C124413,
+Property ID:	044-000-011A-063
+Location ID:  	F_909915_2801700
+
+9 A THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: HUTCHISON ALICIA R
+Owner Address:
+9A THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$142,200
+Land Value:	$226,600
+Other Value:	$0
+Total Value:	$368,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.09 Acres
+Last Sale Price:	$270,000
+Last Sale Date:	20201216
+Use Code:	101
+Year Built:	1945
+Residential Area:  	684 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C131278,
+Property ID:	044-000-011A-064
+Location ID:  	F_909966_2801687
+
+6 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: LOOK A MOOSE REALTY TRUST
+Owner Address:
+34 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$281,200
+Land Value:	$209,200
+Other Value:	$0
+Total Value:	$490,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210312
+Use Code:	101
+Year Built:	1945
+Residential Area:  	1,574 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C131686,
+Property ID:	044-000-011-512
+Location ID:  	F_910048_2801526
+
+THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: LOOK A MOOSE REALTY TRUST
+Owner Address:
+34 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$0
+Land Value:	$22,900
+Other Value:	$0
+Total Value:	$22,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210312
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C131685,
+Property ID:	044-000-011-438
+Location ID:  	F_910090_2801634
+
+15 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: KATHLEEN FITZGERALD FAMILY REA
+Owner Address:
+15 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$442,200
+Land Value:	$232,500
+Other Value:	$0
+Total Value:	$674,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20150324
+Use Code:	101
+Year Built:	2020
+Residential Area:  	2,028 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C121640,
+Property ID:	044-000-012-501
+Location ID:  	F_910096_2801740
+
+17 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: BRUHN HEATHER
+Owner Address:
+PO BOX 1351
+MANOMET, MA 02345
+
+Building Value:  	$211,900
+Land Value:	$232,500
+Other Value:	$0
+Total Value:	$444,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$75,000
+Last Sale Date:	20030402
+Use Code:	101
+Year Built:	1945
+Residential Area:  	1,452 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C103072,
+Property ID:	044-000-012-502
+Location ID:  	F_910154_2801724
+
+19 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: MCKINNEY LAWRENCE R
+Owner Address:
+PO BOX 423
+WILDER, VT 05088
+
+Building Value:  	$130,500
+Land Value:	$232,500
+Other Value:	$0
+Total Value:	$363,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$230,000
+Last Sale Date:	20031030
+Use Code:	101
+Year Built:	1955
+Residential Area:  	608 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-000-012-503
+Location ID:  	F_910212_2801709
+
+21 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: DOHERTY KRISTIN L
+Owner Address:
+21 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$262,800
+Land Value:	$273,800
+Other Value:	$0
+Total Value:	$536,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.28 Acres
+Last Sale Price:	$222,500
+Last Sale Date:	20060825
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,529 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-066A-000
+Location ID:  	F_910290_2801729
+
+24 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: MORRILL CATHERINE M
+Owner Address:
+24 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$164,400
+Land Value:	$232,500
+Other Value:	$600
+Total Value:	$397,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20150921
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,316 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	PL15P183,
+Property ID:	044-000-011-475
+Location ID:  	F_910284_2801562
+
+THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: LOOK A MOOSE REALTY TRUST
+Owner Address:
+34 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$0
+Land Value:	$9,900
+Other Value:	$0
+Total Value:	$9,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.04 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210312
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C131685,
+Property ID:	044-000-011-474
+Location ID:  	F_910236_2801577
+
+30 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: LOOK A MOOSE REALTY TRUST
+Owner Address:
+34 PRISCILLA BEACH RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$364,700
+Land Value:	$256,400
+Other Value:	$0
+Total Value:	$621,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.24 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210312
+Use Code:	104
+Year Built:	1900
+Residential Area:  	3,142 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	14
+
+Book, Page:	C131688,
+Property ID:	044-000-011-434
+Location ID:  	F_910242_2801480
+
+35 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: JONES ANTONY
+Owner Address:
+35 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$162,900
+Land Value:	$230,100
+Other Value:	$0
+Total Value:	$393,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$191,000
+Last Sale Date:	20020524
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,188 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C101297,
+Property ID:	044-000-011-437
+Location ID:  	F_910318_2801381
+
+
+29 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: NICHOLAS GERARD CHARLES PETROCELLI REV LIV TRUST
+Owner Address:
+560 Harland St
+Milton, MA 02186
+
+Building Value:  	$150,600
+Land Value:	$229,400
+Other Value:	$0
+Total Value:	$380,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120806
+Use Code:	101
+Year Built:	1936
+Residential Area:  	872 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C117854,
+Property ID:	044-000-011A-021
+Location ID:  	F_910401_2801515
+
+27 THEATRE COLONY WAY
+PLYMOUTH 02360
+Owner: ANDERSON FAMILY NOMINEE TRUST
+Owner Address:
+5 THEATRE COLONY WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$158,900
+Land Value:	$236,000
+Other Value:	$0
+Total Value:	$394,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190308
+Use Code:	101
+Year Built:	1936
+Residential Area:  	770 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C128196,
+Property ID:	044-000-011A-022
+Location ID:  	F_910430_2801569
+
