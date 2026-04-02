@@ -1,0 +1,809 @@
+2 COCHITUATE RD
+PLYMOUTH 02360
+Owner: MALMGREN LESLIE T
+Owner Address:
+P O BOX 445
+W SWANZEY, NH 03469
+
+Building Value:  	$180,700
+Land Value:	$306,700
+Other Value:	$0
+Total Value:	$487,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.21 Acres
+Last Sale Price:	$0
+Last Sale Date:	19950101
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,176 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-235-000
+Location ID:  	F_909518_2802271
+
+4 COCHITUATE RD
+PLYMOUTH 02360
+Owner: ARCURI-5 REALTY TRUST
+Owner Address:
+C/O TERRI ROMANELLI
+PLYMOUTH, MA 02360
+
+Building Value:  	$196,200
+Land Value:	$291,700
+Other Value:	$0
+Total Value:	$487,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20061214
+Use Code:	101
+Year Built:	1950
+Residential Area:  	997 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-238-000
+Location ID:  	F_909564_2802352
+
+8 COCHITUATE RD
+PLYMOUTH 02360
+Owner: DEMPSTER GEORGE LIFE EST
+Owner Address:
+8 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$263,000
+Land Value:	$317,900
+Other Value:	$11,700
+Total Value:	$592,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$0
+Last Sale Date:	20160509
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,482 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C123369,
+Property ID:	044-006-239-000
+Location ID:  	F_909604_2802411
+
+10 COCHITUATE RD
+PLYMOUTH 02360
+Owner: JONES DOROTHY A
+Owner Address:
+10 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$177,200
+Land Value:	$295,500
+Other Value:	$0
+Total Value:	$472,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	19850101
+Use Code:	101
+Year Built:	1975
+Residential Area:  	1,248 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-241-000
+Location ID:  	F_909655_2802467
+
+12 COCHITUATE RD
+PLYMOUTH 02360
+Owner: COSTA DANIEL
+Owner Address:
+12 SANDRA RD
+PEABODY, MA 01960
+
+Building Value:  	$176,100
+Land Value:	$295,500
+Other Value:	$700
+Total Value:	$472,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$100,000
+Last Sale Date:	19930914
+Use Code:	101
+Year Built:	1947
+Residential Area:  	1,097 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-242-000
+Location ID:  	F_909687_2802505
+
+14 COCHITUATE RD
+PLYMOUTH 02360
+Owner: REARDON MATTHEW G
+Owner Address:
+13575 COBRA DR
+HERNDON, VA 20171
+
+Building Value:  	$276,100
+Land Value:	$316,400
+Other Value:	$0
+Total Value:	$592,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.28 Acres
+Last Sale Price:	$325,000
+Last Sale Date:	20090730
+Use Code:	101
+Year Built:	1973
+Residential Area:  	1,976 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C113582,
+Property ID:	044-006-244-000Z
+Location ID:  	F_909736_2802562
+
+18 COCHITUATE RD
+PLYMOUTH 02360
+Owner: VOCI KATIE
+Owner Address:
+5 HITTY TOM RD
+DUXBURY, MA 02332
+
+Building Value:  	$217,200
+Land Value:	$295,500
+Other Value:	$0
+Total Value:	$512,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$429,000
+Last Sale Date:	20241226
+Use Code:	101
+Year Built:	1930
+Residential Area:  	1,128 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C137658,
+Property ID:	044-006-245-000
+Location ID:  	F_909785_2802619
+
+20 COCHITUATE RD
+PLYMOUTH 02360
+Owner: CATINA B HAYDEN INVESTMENT TRU
+Owner Address:
+8 DEPOT RD
+HARVARD, MA 01451
+
+Building Value:  	$236,400
+Land Value:	$296,000
+Other Value:	$0
+Total Value:	$532,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20060831
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,624 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	,
+Property ID:	044-006-246-000
+Location ID:  	F_909818_2802657
+
+22 COCHITUATE RD
+PLYMOUTH 02360
+Owner: FELTON NICOLE A
+Owner Address:
+43 ROYAL ST
+PLYMOUTH, MA 02360
+
+Building Value:  	$167,500
+Land Value:	$295,500
+Other Value:	$0
+Total Value:	$463,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20161104
+Use Code:	101
+Year Built:	1955
+Residential Area:  	840 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C124339,
+Property ID:	044-006-247-000
+Location ID:  	F_909850_2802695
+
+24 COCHITUATE RD
+PLYMOUTH 02360
+Owner: CAFARELLA DAVID
+Owner Address:
+24 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$160,900
+Land Value:	$296,000
+Other Value:	$0
+Total Value:	$456,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$87,500
+Last Sale Date:	19950919
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,102 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C/88578,
+Property ID:	044-006-248-000
+Location ID:  	F_909883_2802733
+
+26 COCHITUATE RD
+PLYMOUTH 02360
+Owner: PETROCELLI MARIANNE
+Owner Address:
+70 KIRKLAND RD
+WEYMOUTH, MA 02190
+
+Building Value:  	$89,700
+Land Value:	$295,500
+Other Value:	$2,500
+Total Value:	$387,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190826
+Use Code:	101
+Year Built:	1950
+Residential Area:  	616 Sq. Ft.
+Building Style:	Cottage
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C129024,
+Property ID:	044-006-249-000
+Location ID:  	F_909915_2802771
+
+Owner: ARCURI TAMMY L
+Owner Address:
+132 CHARLES ST
+AUBURNDALE, MA 02466
+
+Building Value:  	$131,200
+Land Value:	$295,500
+Other Value:	$1,200
+Total Value:	$427,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$156,975
+Last Sale Date:	20140228
+Use Code:	101
+Year Built:	1948
+Residential Area:  	699 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C120142,
+Property ID:	044-006-250-000
+Location ID:  	F_909948_2802809
+
+30 COCHITUATE RD
+PLYMOUTH 02360
+Owner: DELUCA CATHERINE ANN TR
+Owner Address:
+30 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$213,500
+Land Value:	$431,500
+Other Value:	$1,700
+Total Value:	$646,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.28 Acres
+Last Sale Price:	$0
+Last Sale Date:	20240618
+Use Code:	101
+Year Built:	1945
+Residential Area:  	1,059 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C136881,
+Property ID:	044-006-251-000
+Location ID:  	F_909997_2802865
+
+34 COCHITUATE RD
+PLYMOUTH 02360
+Owner: KIRBY MARK F
+Owner Address:
+10 HERITAGE WAY
+NO READING, MA 01864
+
+Building Value:  	$150,100
+Land Value:	$402,900
+Other Value:	$0
+Total Value:	$553,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$200,000
+Last Sale Date:	20110304
+Use Code:	101
+Year Built:	1945
+Residential Area:  	960 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C115757,
+Property ID:	044-006-253-000
+Location ID:  	F_910046_2802922
+
+36 COCHITUATE RD
+PLYMOUTH 02360
+Owner: COUGHLIN COLLEEN A TR
+Owner Address:
+PO BOX 205
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$435,900
+Land Value:	$425,400
+Other Value:	$1,000
+Total Value:	$862,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.25 Acres
+Last Sale Price:	$0
+Last Sale Date:	20230316
+Use Code:	101
+Year Built:	1958
+Residential Area:  	2,866 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C135157,
+Property ID:	044-006-254-000
+Location ID:  	F_910097_2802974
+
+43 COCHITUATE RD
+PLYMOUTH 02360
+Owner: KATHRYN E MCMAKIN REVOC TRUST
+Owner Address:
+43 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$222,500
+Land Value:	$529,100
+Other Value:	$2,000
+Total Value:	$753,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20060717
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,591 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-213-000
+Location ID:  	F_910259_2802937
+
+39 COCHITUATE RD
+PLYMOUTH 02360
+Owner: MOSHIER WILLIAM M
+Owner Address:
+94 CHRISTIAN HILL RD
+UPTON, MA 01568
+
+Building Value:  	$267,600
+Land Value:	$397,800
+Other Value:	$0
+Total Value:	$665,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$350,000
+Last Sale Date:	20170428
+Use Code:	101
+Year Built:	1939
+Residential Area:  	1,106 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C125056,
+Property ID:	044-006-214-000
+Location ID:  	F_910226_2802899
+
+COCHITUATE RD
+PLYMOUTH 02360
+Owner: MOSHIER WILLIAM M
+Owner Address:
+94 CHRISTIAN HILL RD
+UPTON, MA 01568
+
+Building Value:  	$0
+Land Value:	$8,100
+Other Value:	$0
+Total Value:	$8,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$350,000
+Last Sale Date:	20170428
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C125056,
+Property ID:	044-006-215-000
+Location ID:  	F_910194_2802861
+
+33 COCHITUATE RD
+PLYMOUTH 02360
+Owner: KENNETH MULLANEY AND MARY T MULLANEY IRR TR
+Owner Address:
+PO BOX 122
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$184,900
+Land Value:	$431,500
+Other Value:	$1,000
+Total Value:	$617,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.28 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120919
+Use Code:	101
+Year Built:	1955
+Residential Area:  	922 Sq. Ft.
+Building Style:	Split Level
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C118022,
+Property ID:	044-006-217-000Z
+Location ID:  	F_910137_2802795
+
+27 COCHITUATE RD
+PLYMOUTH 02360
+Owner: MISS PRISCILLA REALTY TRUST
+Owner Address:
+672 UNION ST
+ROCKLAND, MA 02370
+
+Building Value:  	$899,600
+Land Value:	$431,500
+Other Value:	$0
+Total Value:	$1,331,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.28 Acres
+Last Sale Price:	$585,000
+Last Sale Date:	20210816
+Use Code:	101
+Year Built:	2022
+Residential Area:  	3,918 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C132518,
+Property ID:	044-006-219-000
+Location ID:  	F_910055_2802700
+
+23 COCHITUATE RD
+PLYMOUTH 02360
+Owner: KELLY ROBERT J
+Owner Address:
+23 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$297,100
+Land Value:	$307,400
+Other Value:	$600
+Total Value:	$605,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$537,000
+Last Sale Date:	20231121
+Use Code:	101
+Year Built:	1937
+Residential Area:  	1,745 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C136180,
+Property ID:	044-006-221-000
+Location ID:  	F_909982_2802614
+
+21 COCHITUATE RD
+PLYMOUTH 02360
+Owner: WUOTI LIVING TRUST
+Owner Address:
+21 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$166,600
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$457,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20110310
+Use Code:	101
+Year Built:	1958
+Residential Area:  	879 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C115780,
+Property ID:	044-006-223-000
+Location ID:  	F_909933_2802557
+
+19 COCHITUATE RD
+PLYMOUTH 02360
+Owner: MARGERY H ERAMO REVOCAB TRUST
+Owner Address:
+1464 HIGH ST
+WESTWOOD, MA 02090
+
+Building Value:  	$147,600
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$438,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170323
+Use Code:	101
+Year Built:	1950
+Residential Area:  	748 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C124903,
+Property ID:	044-006-224-000
+Location ID:  	F_909901_2802520
+
+17 COCHITUATE RD
+PLYMOUTH 02360
+Owner: GOMES DAVID G
+Owner Address:
+17 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$174,900
+Land Value:	$308,900
+Other Value:	$0
+Total Value:	$483,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	
+Use Code:	101
+Year Built:	1960
+Residential Area:  	1,122 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+Book, Page:	,
+Property ID:	044-006-225-000
+Location ID:  	F_909852_2802463
+
+15 COCHITUATE RD
+PLYMOUTH 02360
+Owner: FIFTEEN COCHITUATE ROAD RLT TR
+Owner Address:
+PO BOX 1775
+MANOMET, MA 02345
+
+Building Value:  	$140,100
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$431,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$160,000
+Last Sale Date:	20130907
+Use Code:	101
+Year Built:	1954
+Residential Area:  	848 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C119564,
+Property ID:	044-006-227-000
+Location ID:  	F_909803_2802406
+
+11 COCHITUATE RD
+PLYMOUTH 02360
+Owner: MORSE FAMILY LIVING TRUST
+Owner Address:
+PO BOX 182
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$200,600
+Land Value:	$291,700
+Other Value:	$700
+Total Value:	$493,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190104
+Use Code:	101
+Year Built:	1910
+Residential Area:  	1,594 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C127989,
+Property ID:	044-006-229-000
+Location ID:  	F_909738_2802330
+
+7 COCHITUATE RD
+PLYMOUTH 02360
+Owner: 7 COCHITUATE RD REAL ESTATE TR
+Owner Address:
+11 COCHITUATE ROAD
+PLYMOUTH, MA 02360
+
+Building Value:  	$171,900
+Land Value:	$307,500
+Other Value:	$0
+Total Value:	$479,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190104
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,156 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C127990,
+Property ID:	044-006-231-000Z
+Location ID:  	F_909689_2802273
+
+3 COCHITUATE RD
+PLYMOUTH 02360
+Owner: SULLIVAN FRANCIS P JR
+Owner Address:
+31 HUNT FARM DR
+DUXBURY, MA 02332
+
+Building Value:  	$134,700
+Land Value:	$308,900
+Other Value:	$0
+Total Value:	$443,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200820
+Use Code:	101
+Year Built:	1955
+Residential Area:  	720 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C130633,
+Property ID:	044-006-232-000
+Location ID:  	F_909624_2802197
+
+1 COCHITUATE RD
+PLYMOUTH 02360
+Owner: ROMANELLI TERRI MARIE TR
+Owner Address:
+1 COCHITUATE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$287,600
+Land Value:	$303,100
+Other Value:	$1,600
+Total Value:	$592,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.19 Acres
+Last Sale Price:	$0
+Last Sale Date:	20241203
+Use Code:	101
+Year Built:	2000
+Residential Area:  	1,896 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C137556,
+Property ID:	044-006-234-000
+Location ID:  	F_909567_2802123
+

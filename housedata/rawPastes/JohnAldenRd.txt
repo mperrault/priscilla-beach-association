@@ -1,0 +1,1577 @@
+2 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: JOSEPH JAMES A
+Owner Address:
+2 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$373,700
+Land Value:	$879,800
+Other Value:	$0
+Total Value:	$1,253,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.91 Acres
+Last Sale Price:	$175,000
+Last Sale Date:	19950821
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,808 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-409A-000
+Location ID:  	F_909049_2805029
+
+4 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: PAPADOPOULOS JASON
+Owner Address:
+4 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$235,200
+Land Value:	$724,100
+Other Value:	$0
+Total Value:	$959,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.53 Acres
+Last Sale Price:	$0
+Last Sale Date:	20240222
+Use Code:	101
+Year Built:	2024
+Residential Area:  	3,352 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C136473,
+Property ID:	044-006-409B-000
+Location ID:  	F_909140_2804947
+
+6 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: BALL RICHARD JAMES
+Owner Address:
+3 SADDLE ROW
+PLAINVILLE, MA 02762
+
+Building Value:  	$238,500
+Land Value:	$832,200
+Other Value:	$5,400
+Total Value:	$1,076,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.39 Acres
+Last Sale Price:	$0
+Last Sale Date:	20130325
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,367 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C118771,
+Property ID:	044-006-408-000
+Location ID:  	F_909153_2804869
+
+8 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: CROWLEY JAMES R LIFE ESTATE
+Owner Address:
+56 SPRUCE MEADOWS DR
+MONROE TOWNSHIP, NJ 08831
+
+Building Value:  	$264,500
+Land Value:	$832,200
+Other Value:	$0
+Total Value:	$1,096,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.39 Acres
+Last Sale Price:	$0
+Last Sale Date:	20070612
+Use Code:	101
+Year Built:	1991
+Residential Area:  	2,016 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-407-000
+Location ID:  	F_909185_2804830
+
+10 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: K + R REALTY TRUST
+Owner Address:
+10 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$304,700
+Land Value:	$832,200
+Other Value:	$6,600
+Total Value:	$1,143,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.39 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200506
+Use Code:	101
+Year Built:	1979
+Residential Area:  	1,600 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C130146,
+Property ID:	044-006-406-000
+Location ID:  	F_909212_2804788
+
+12 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: 12 JOHN ALDEN RD RLTY TRUST
+Owner Address:
+12 JOHN ALDEN
+PLYMOUTH, MA 02360
+
+Building Value:  	$239,800
+Land Value:	$828,400
+Other Value:	$4,400
+Total Value:	$1,072,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.38 Acres
+Last Sale Price:	$0
+Last Sale Date:	20100922
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,411 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C115187,
+Property ID:	044-006-405-000
+Location ID:  	F_909243_2804748
+
+14 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MOGUL JONATHAN
+Owner Address:
+14 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$484,200
+Land Value:	$828,400
+Other Value:	$5,200
+Total Value:	$1,317,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.38 Acres
+Last Sale Price:	$439,000
+Last Sale Date:	20130829
+Use Code:	101
+Year Built:	2014
+Residential Area:  	2,140 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C119531,
+Property ID:	044-006-404-000
+Location ID:  	F_909275_2804710
+
+16 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: ALDEN REALTY TRUST
+Owner Address:
+16 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$278,700
+Land Value:	$764,700
+Other Value:	$7,800
+Total Value:	$1,051,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.38 Acres
+Last Sale Price:	$701,950
+Last Sale Date:	20191206
+Use Code:	101
+Year Built:	1960
+Residential Area:  	1,968 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C129549,
+Property ID:	044-006-403-000
+Location ID:  	F_909307_2804672
+
+22 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: DONOVAN HAROLD T
+Owner Address:
+22 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$230,300
+Land Value:	$886,600
+Other Value:	$5,200
+Total Value:	$1,122,100
+
+Assessment data from FY 2026
+
+Lot Size:	1.05 Acres
+Last Sale Price:	$0
+Last Sale Date:	19830101
+Use Code:	101
+Year Built:	1948
+Residential Area:  	1,248 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-563-000
+Location ID:  	F_909373_2804596
+
+26 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: GAIL G MCCORMACK 2013 EIGHT YR QUALIFIED PERSONAL
+Owner Address:
+6 CYPRESS LN UNIT 1
+WALLINGFORD, CT 06492
+
+Building Value:  	$404,000
+Land Value:	$862,400
+Other Value:	$0
+Total Value:	$1,266,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.55 Acres
+Last Sale Price:	$0
+Last Sale Date:	20130819
+Use Code:	101
+Year Built:	1940
+Residential Area:  	2,321 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C119481,
+Property ID:	044-006-398B-000
+Location ID:  	F_909440_2804507
+
+32 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: BELL LISA P
+Owner Address:
+19 ROLLING LANE
+DOVER, MA 02030
+
+Building Value:  	$430,500
+Land Value:	$894,400
+Other Value:	$10,200
+Total Value:	$1,335,100
+
+Assessment data from FY 2026
+
+Lot Size:	1.21 Acres
+Last Sale Price:	$0
+Last Sale Date:	20211105
+Use Code:	101
+Year Built:	1984
+Residential Area:  	2,946 Sq. Ft.
+Building Style:	Contemporary
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C132970,
+Property ID:	044-006-396-000
+Location ID:  	F_909521_2804406
+
+34 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: REID TERESA J TR
+Owner Address:
+34 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$334,000
+Land Value:	$799,700
+Other Value:	$0
+Total Value:	$1,133,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$0
+Last Sale Date:	20241213
+Use Code:	101
+Year Built:	1957
+Residential Area:  	2,143 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C137599,
+Property ID:	044-006-395-000
+Location ID:  	F_909560_2804296
+
+38 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: KINGSVIEW38 LLC
+Owner Address:
+38 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$834,600
+Land Value:	$860,900
+Other Value:	$1,200
+Total Value:	$1,696,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.52 Acres
+Last Sale Price:	$2,500,000
+Last Sale Date:	20241011
+Use Code:	101
+Year Built:	2009
+Residential Area:  	3,299 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C137371,
+Property ID:	044-006-594-000
+Location ID:  	F_909582_2804238
+
+40 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: D CHESNEY WRIGHT REVOC TRUST
+Owner Address:
+734 EAST 8th ST
+BOSTON, MA 02127
+
+Building Value:  	$896,800
+Land Value:	$861,400
+Other Value:	$1,000
+Total Value:	$1,759,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.53 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210804
+Use Code:	101
+Year Built:	2009
+Residential Area:  	3,299 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C132461,
+Property ID:	044-006-595-000
+Location ID:  	F_909608_2804167
+
+42 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: BELL ROBERT D
+Owner Address:
+19 ROLLING LANE
+DOVER, MA 02030
+
+Building Value:  	$250,500
+Land Value:	$817,200
+Other Value:	$0
+Total Value:	$1,067,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.35 Acres
+Last Sale Price:	$1,900,000
+Last Sale Date:	20241021
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,028 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C137407,
+Property ID:	044-006-391-000
+Location ID:  	F_909629_2804109
+
+46 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: BONNEAU ROBERT C
+Owner Address:
+5501 FOXHUNT WAY
+NAPLES, FL 34104
+
+Building Value:  	$1,439,900
+Land Value:	$886,600
+Other Value:	$4,200
+Total Value:	$2,330,700
+
+Assessment data from FY 2026
+
+Lot Size:	1.05 Acres
+Last Sale Price:	$950,000
+Last Sale Date:	20141114
+Use Code:	101
+Year Built:	1957
+Residential Area:  	6,256 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	14
+
+Book, Page:	C121244,
+Property ID:	044-006-388-000
+Location ID:  	F_909662_2804014
+
+50 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: HENTSCHEL ROBERT
+Owner Address:
+11 PARKMAN WAY
+NEEDHAM, MA 02492
+
+Building Value:  	$245,700
+Land Value:	$869,600
+Other Value:	$16,400
+Total Value:	$1,131,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.70 Acres
+Last Sale Price:	$700,000
+Last Sale Date:	20140612
+Use Code:	101
+Year Built:	1957
+Residential Area:  	1,881 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C120513,
+Property ID:	044-006-387-000Z
+Location ID:  	F_909703_2803896
+
+56 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: LAWLESS DAVID R
+Owner Address:
+C/O MICHAEL LAWLESS
+BOULDER, CO 80303
+
+Building Value:  	$701,500
+Land Value:	$877,900
+Other Value:	$0
+Total Value:	$1,579,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.87 Acres
+Last Sale Price:	$0
+Last Sale Date:	20030814
+Use Code:	101
+Year Built:	1998
+Residential Area:  	3,472 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C103894,
+Property ID:	044-006-384-000
+Location ID:  	F_909739_2803790
+
+62 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: DDAL REALTY TRUST
+Owner Address:
+62 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$217,300
+Land Value:	$861,900
+Other Value:	$0
+Total Value:	$1,079,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.54 Acres
+Last Sale Price:	$0
+Last Sale Date:	20000920
+Use Code:	101
+Year Built:	1948
+Residential Area:  	960 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C98092,
+Property ID:	044-006-382-000Z
+Location ID:  	F_909777_2803697
+
+64 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: GOSSELIN RAYMOND J
+Owner Address:
+8 SOUTHPOINT LANE
+IPSWICH, MA 01938
+
+Building Value:  	$498,100
+Land Value:	$861,900
+Other Value:	$300
+Total Value:	$1,360,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.54 Acres
+Last Sale Price:	$0
+Last Sale Date:	19910101
+Use Code:	101
+Year Built:	2007
+Residential Area:  	2,000 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	,
+Property ID:	044-006-381A-000
+Location ID:  	F_909803_2803627
+
+68 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: JOHN ALDEN ROAD REALTY TRUST
+Owner Address:
+14 VILLAGE CIR
+MILFORD, MA 01757
+
+Building Value:  	$399,400
+Land Value:	$862,400
+Other Value:	$5,300
+Total Value:	$1,267,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.55 Acres
+Last Sale Price:	$0
+Last Sale Date:	20210212
+Use Code:	101
+Year Built:	1956
+Residential Area:  	1,603 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C131555,
+Property ID:	044-006-379A-000
+Location ID:  	F_909828_2803556
+
+72 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: LEVEBVRE XAVIER P TR
+Owner Address:
+95 KILBURN RD
+BELMONT, MA 02478
+
+Building Value:  	$515,300
+Land Value:	$1,025,800
+Other Value:	$0
+Total Value:	$1,541,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.32 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220414
+Use Code:	101
+Year Built:	1945
+Residential Area:  	2,451 Sq. Ft.
+Building Style:	Split Level
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C133720,
+Property ID:	044-006-410-000
+Location ID:  	F_909815_2803486
+
+74 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MAYFLOWER EMERSON REALTY TR II
+Owner Address:
+331 MAYFLOWER CIR
+HANOVER, MA 02339
+
+Building Value:  	$438,900
+Land Value:	$1,011,500
+Other Value:	$14,400
+Total Value:	$1,464,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$0
+Last Sale Date:	19860101
+Use Code:	101
+Year Built:	1949
+Residential Area:  	2,961 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-411-000
+Location ID:  	F_909834_2803442
+
+76 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: KAREN MARIE PRANTE TRUST
+Owner Address:
+5095 BRENTWOOD FARM DR
+FAIRFAX, VA 22030
+
+Building Value:  	$215,400
+Land Value:	$1,011,500
+Other Value:	$0
+Total Value:	$1,226,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$0
+Last Sale Date:	20161012
+Use Code:	101
+Year Built:	1949
+Residential Area:  	1,515 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C124218,
+Property ID:	044-006-412-000
+Location ID:  	F_909869_2803410
+
+78 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: THOMAS J BELCHER TRUST
+Owner Address:
+78 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$505,700
+Land Value:	$1,102,700
+Other Value:	$12,000
+Total Value:	$1,620,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.68 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200708
+Use Code:	101
+Year Built:	1951
+Residential Area:  	3,670 Sq. Ft.
+Building Style:	Contemporary
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C130390,
+Property ID:	044-006-413-000
+Location ID:  	F_909951_2803390
+
+82 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: ROBERT H CANTWELL LIVING TRUST
+Owner Address:
+82 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$375,400
+Land Value:	$1,110,400
+Other Value:	$9,500
+Total Value:	$1,495,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.84 Acres
+Last Sale Price:	$0
+Last Sale Date:	20060207
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,618 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	,
+Property ID:	044-006-558-000
+Location ID:  	F_910052_2803324
+
+88 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MOGUL JOHN D
+Owner Address:
+88 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$308,700
+Land Value:	$1,095,900
+Other Value:	$0
+Total Value:	$1,404,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.54 Acres
+Last Sale Price:	$0
+Last Sale Date:	20090313
+Use Code:	101
+Year Built:	1923
+Residential Area:  	2,625 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	11
+
+Book, Page:	C113082,
+Property ID:	044-006-418-000Z
+Location ID:  	F_910151_2803264
+
+90 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: VELEMA JAMES H
+Owner Address:
+90 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$454,500
+Land Value:	$1,049,600
+Other Value:	$500
+Total Value:	$1,504,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.37 Acres
+Last Sale Price:	$0
+Last Sale Date:	20120628
+Use Code:	101
+Year Built:	1955
+Residential Area:  	3,808 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C117647,
+Property ID:	044-006-419-000
+Location ID:  	F_910220_2803230
+
+92 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MARSHALL ALDEN REALTY TRUST
+Owner Address:
+15 JENKINS RD
+ANDOVER, MA 01810
+
+Building Value:  	$628,200
+Land Value:	$1,035,300
+Other Value:	$0
+Total Value:	$1,663,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.34 Acres
+Last Sale Price:	$0
+Last Sale Date:	20121221
+Use Code:	101
+Year Built:	2006
+Residential Area:  	3,110 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C118442,
+Property ID:	044-006-420-000
+Location ID:  	F_910281_2803209
+
+9 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: DONOVAN DONALD T
+Owner Address:
+9 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$196,400
+Land Value:	$335,500
+Other Value:	$0
+Total Value:	$531,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.41 Acres
+Last Sale Price:	$367,000
+Last Sale Date:	20080917
+Use Code:	101
+Year Built:	1962
+Residential Area:  	1,152 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-344-000
+Location ID:  	F_909012_2804595
+
+MassGIS | MassGIS, using data from internal ArcGIS Server platform.
+Powered by Esri
+
+
+50 m
+200 ft
+
+
+
+13 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: JOHN ALDEN INVESTMENT TRUST
+Owner Address:
+8 DEPOT RD
+HARVARD, MA 01451
+
+Building Value:  	$125,300
+Land Value:	$309,200
+Other Value:	$0
+Total Value:	$434,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20060831
+Use Code:	101
+Year Built:	1940
+Residential Area:  	660 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	3
+
+Book, Page:	,
+Property ID:	044-006-345-000
+Location ID:  	F_909039_2804506
+
+15 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MADRID CARLOS A JR
+Owner Address:
+275 VARNUM AVE, SUITE 208
+LOWELL, MA 01854
+
+Building Value:  	$0
+Land Value:	$31,300
+Other Value:	$0
+Total Value:	$31,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.26 Acres
+Last Sale Price:	$355,000
+Last Sale Date:	20040527
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C105415,
+Property ID:	044-006-346-000
+Location ID:  	F_909063_2804462
+
+17 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MADRID CARLOS A JR
+Owner Address:
+275 VARNUM AVE, SUITE 208
+LOWELL, MA 01854
+
+Building Value:  	$212,600
+Land Value:	$402,900
+Other Value:	$1,400
+Total Value:	$616,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$355,000
+Last Sale Date:	20040527
+Use Code:	101
+Year Built:	1945
+Residential Area:  	1,144 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C105415,
+Property ID:	044-006-571-000
+Location ID:  	F_909134_2804457
+
+29 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: KEANE PATRICK
+Owner Address:
+29 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$366,300
+Land Value:	$402,900
+Other Value:	$0
+Total Value:	$769,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$97,500
+Last Sale Date:	19930722
+Use Code:	101
+Year Built:	1957
+Residential Area:  	1,852 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-351-000
+Location ID:  	F_909297_2804264
+
+JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MAKI JOHN
+Owner Address:
+96 GRAND VIEW AVE
+QUINCY, MA 02169
+
+Building Value:  	$0
+Land Value:	$30,900
+Other Value:	$0
+Total Value:	$30,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$273,000
+Last Sale Date:	20170602
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C125243,
+Property ID:	044-006-572-000
+Location ID:  	F_909069_2804401
+
+35 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MCGILLICUDDY DANIEL P
+Owner Address:
+35 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$312,100
+Land Value:	$588,900
+Other Value:	$0
+Total Value:	$901,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.33 Acres
+Last Sale Price:	$202,500
+Last Sale Date:	19961115
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,053 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-352-000
+Location ID:  	F_909321_2804184
+
+37 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: STEINBERG MICHAEL
+Owner Address:
+38 FRANKLIN RD
+NORWELL, MA 02061
+
+Building Value:  	$163,500
+Land Value:	$545,400
+Other Value:	$0
+Total Value:	$708,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$800,000
+Last Sale Date:	20241018
+Use Code:	101
+Year Built:	1947
+Residential Area:  	948 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C137403,
+Property ID:	044-006-354-000
+Location ID:  	F_909343_2804114
+
+39 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MORIN ROBERT
+Owner Address:
+5404 BROAD BRANCH RD NW
+WASHINGTON, DC 20015
+
+Building Value:  	$522,800
+Land Value:	$409,100
+Other Value:	$0
+Total Value:	$931,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$290,000
+Last Sale Date:	20140925
+Use Code:	101
+Year Built:	2017
+Residential Area:  	2,552 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C121040,
+Property ID:	044-006-355-000
+Location ID:  	F_909360_2804067
+
+41 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: KERXHALLI THOMAS K
+Owner Address:
+16 TATTAN FARM RD
+WORCESTER, MA 01605
+
+Building Value:  	$78,400
+Land Value:	$409,100
+Other Value:	$1,400
+Total Value:	$488,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$250,000
+Last Sale Date:	20180112
+Use Code:	101
+Year Built:	1950
+Residential Area:  	560 Sq. Ft.
+Building Style:	Cottage
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C126304,
+Property ID:	044-006-356-000
+Location ID:  	F_909376_2804020
+
+43 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: POWERS PETER J TR
+Owner Address:
+15 GRANITE LN
+S EASTON, MA 02375
+
+Building Value:  	$413,300
+Land Value:	$340,900
+Other Value:	$0
+Total Value:	$754,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220505
+Use Code:	101
+Year Built:	2019
+Residential Area:  	2,430 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	10
+
+Book, Page:	C133818,
+Property ID:	044-006-357-000
+Location ID:  	F_909393_2803973
+
+45 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: GORDON A LEWIS III FAMILY IRRE TRUST
+Owner Address:
+80 GREENE ST
+HOPEDALE, MA 01747
+
+Building Value:  	$272,900
+Land Value:	$409,100
+Other Value:	$1,300
+Total Value:	$683,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20140311
+Use Code:	101
+Year Built:	1960
+Residential Area:  	1,796 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C120176,
+Property ID:	044-006-358-000
+Location ID:  	F_909410_2803926
+
+49 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: DALTON KATHLEEN A TR
+Owner Address:
+49 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$535,200
+Land Value:	$443,700
+Other Value:	$1,100
+Total Value:	$980,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.34 Acres
+Last Sale Price:	$0
+Last Sale Date:	20240830
+Use Code:	101
+Year Built:	2019
+Residential Area:  	2,412 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C137192,
+Property ID:	044-006-360-000
+Location ID:  	F_909434_2803855
+
+51 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: CORNELL DONALD P
+Owner Address:
+51 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$501,600
+Land Value:	$443,700
+Other Value:	$2,500
+Total Value:	$947,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.34 Acres
+Last Sale Price:	$375,000
+Last Sale Date:	20161031
+Use Code:	101
+Year Built:	2017
+Residential Area:  	2,751 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C124320,
+Property ID:	044-006-361-000
+Location ID:  	F_909467_280376
+
+55 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: BENISATTO ASHLEY
+Owner Address:
+55 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$352,200
+Land Value:	$409,100
+Other Value:	$1,000
+Total Value:	$762,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20231103
+Use Code:	101
+Year Built:	1954
+Residential Area:  	1,477 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C136097,
+Property ID:	044-006-363-000
+Location ID:  	F_909492_2803690
+
+57 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: CALLANAN RICHARD P TR
+Owner Address:
+1582 ASYLUM AVE
+WEST HARTFORD, CT 06117
+
+Building Value:  	$259,800
+Land Value:	$409,100
+Other Value:	$700
+Total Value:	$669,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20241230
+Use Code:	101
+Year Built:	1952
+Residential Area:  	1,656 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C137671,
+Property ID:	044-006-364-000
+Location ID:  	F_909509_2803643
+
+61 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: BROWN JESSE G TR
+Owner Address:
+61 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$253,600
+Land Value:	$409,100
+Other Value:	$0
+Total Value:	$662,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20110909
+Use Code:	101
+Year Built:	1957
+Residential Area:  	1,440 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C116485,
+Property ID:	044-006-365-000
+Location ID:  	F_909525_2803595
+
+63 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: PERRAULT MICHAEL T
+Owner Address:
+63 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$433,500
+Land Value:	$545,400
+Other Value:	$1,100
+Total Value:	$980,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$600,000
+Last Sale Date:	20180703
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,354 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C127080,
+Property ID:	044-006-366-000
+Location ID:  	F_909542_2803548
+
+65 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: HEINEMANN PETER C
+Owner Address:
+39 COULTON PARK
+NEEDHAM, MA 02492
+
+Building Value:  	$301,500
+Land Value:	$545,400
+Other Value:	$0
+Total Value:	$846,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20020717
+Use Code:	101
+Year Built:	1954
+Residential Area:  	1,944 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C101651,
+Property ID:	044-006-367-000
+Location ID:  	F_909559_2803501
+
+67 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: KING MARTIN J
+Owner Address:
+67 JOHN ALDEN RD
+PLYMOUTH, MA 02364
+
+Building Value:  	$303,900
+Land Value:	$545,400
+Other Value:	$800
+Total Value:	$850,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20030606
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,647 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C103439,
+Property ID:	044-006-368-000
+Location ID:  	F_909575_2803454
+
+71 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: LOCKWOOD DIANNE S
+Owner Address:
+71 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$310,200
+Land Value:	$482,000
+Other Value:	$500
+Total Value:	$792,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.19 Acres
+Last Sale Price:	$0
+Last Sale Date:	20151224
+Use Code:	101
+Year Built:	1977
+Residential Area:  	2,580 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C122885,
+Property ID:	044-006-369-000
+Location ID:  	F_909587_2803406
+
+73 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: HAUN CAROLYN
+Owner Address:
+73 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$201,500
+Land Value:	$598,500
+Other Value:	$0
+Total Value:	$800,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.37 Acres
+Last Sale Price:	$385,000
+Last Sale Date:	20020731
+Use Code:	101
+Year Built:	1932
+Residential Area:  	1,380 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C101734,
+Property ID:	044-006-370A-000
+Location ID:  	F_909614_2803335
+
+77 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: ROBINSON DAVID M
+Owner Address:
+116 HANLON RD
+HOLLISTON, MA 01746
+
+Building Value:  	$218,500
+Land Value:	$468,500
+Other Value:	$700
+Total Value:	$687,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.46 Acres
+Last Sale Price:	$0
+Last Sale Date:	20171127
+Use Code:	101
+Year Built:	1951
+Residential Area:  	1,680 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C126099,
+Property ID:	044-006-299-000
+Location ID:  	F_909763_2803218
+
+81 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: MCGUINNESS PHILIP F
+Owner Address:
+81 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$211,300
+Land Value:	$398,900
+Other Value:	$0
+Total Value:	$610,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$375,000
+Last Sale Date:	20030829
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,608 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C104000,
+Property ID:	044-006-298-000
+Location ID:  	F_909862_2803180
+
+89 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: LONGO MICHAEL A
+Owner Address:
+2211 E CAMELBACK RD #508
+PHOENIX, AZ 85016
+
+Building Value:  	$239,100
+Land Value:	$394,800
+Other Value:	$0
+Total Value:	$633,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.10 Acres
+Last Sale Price:	$96,000
+Last Sale Date:	19921130
+Use Code:	101
+Year Built:	1952
+Residential Area:  	1,704 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-259-000
+Location ID:  	F_910039_2803087
+
+91 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: DEPASQUALE LORRAINE M
+Owner Address:
+91 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$221,800
+Land Value:	$399,200
+Other Value:	$2,300
+Total Value:	$623,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200828
+Use Code:	101
+Year Built:	1952
+Residential Area:  	2,018 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C130667,
+Property ID:	044-006-258-000
+Location ID:  	F_910082_2803060
+
+95 JOHN ALDEN RD
+PLYMOUTH 02360
+Owner: COYNE KEVIN P
+Owner Address:
+95 JOHN ALDEN RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$391,900
+Land Value:	$559,500
+Other Value:	$1,800
+Total Value:	$953,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$93,500
+Last Sale Date:	19840601
+Use Code:	101
+Year Built:	1937
+Residential Area:  	1,684 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C/69462,
+Property ID:	044-006-256-000
+Location ID:  	F_910172_2803044
+

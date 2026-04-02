@@ -1,0 +1,897 @@
+6 EMERSON RD
+PLYMOUTH 02360
+Owner: SCHNEIDER MARK T
+Owner Address:
+6 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$262,500
+Land Value:	$308,200
+Other Value:	$9,700
+Total Value:	$580,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$110,000
+Last Sale Date:	20020412
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,512 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C101086,
+Property ID:	044-006-188-000Z
+Location ID:  	F_909667_2802094
+
+10 EMERSON RD
+PLYMOUTH 02360
+Owner: ODWYER JACQUELINE
+Owner Address:
+6 FRANCONIA ST
+DORCHESTER, MA 02122
+
+Building Value:  	$119,000
+Land Value:	$307,500
+Other Value:	$800
+Total Value:	$427,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$170,000
+Last Sale Date:	20170725
+Use Code:	101
+Year Built:	1950
+Residential Area:  	680 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C125499,
+Property ID:	044-006-189-000Z
+Location ID:  	F_909732_2802170
+
+14 EMERSON RD
+PLYMOUTH 02360
+Owner: CONLEY JOHN J JR
+Owner Address:
+14 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$208,000
+Land Value:	$308,900
+Other Value:	$0
+Total Value:	$516,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20240117
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,352 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C136352,
+Property ID:	044-006-191-000
+Location ID:  	F_909797_2802246
+
+16 EMERSON RD
+PLYMOUTH 02360
+Owner: LEONARD MAUREEN TR
+Owner Address:
+16 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$231,100
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$522,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220526
+Use Code:	101
+Year Built:	1970
+Residential Area:  	2,079 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C133929,
+Property ID:	044-006-193-000
+Location ID:  	F_909846_2802303
+
+18 EMERSON RD
+PLYMOUTH 02360
+Owner: TORTORICI MICHAEL
+Owner Address:
+52 GORDON ST
+MALDEN, MA 02148
+
+Building Value:  	$197,500
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$488,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$245,000
+Last Sale Date:	20150619
+Use Code:	101
+Year Built:	1954
+Residential Area:  	1,152 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C121992,
+Property ID:	044-006-194-000
+Location ID:  	F_909879_2802341
+
+20 EMERSON RD
+PLYMOUTH 02360
+Owner: HYDER CLARK B
+Owner Address:
+6210 BANNOCKBURN DR
+BETHESDA, MD 20817
+
+Building Value:  	$184,100
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$475,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$322,500
+Last Sale Date:	20181129
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,080 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C127813,
+Property ID:	044-006-195-000
+Location ID:  	F_909911_2802379
+
+22 EMERSON RD
+PLYMOUTH 02360
+Owner: DALEY MICHAEL R
+Owner Address:
+5921 BLACK AVE
+PLEASANTON, CA 94566
+
+Building Value:  	$127,500
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$418,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$199,000
+Last Sale Date:	20020624
+Use Code:	101
+Year Built:	1954
+Residential Area:  	680 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C101513,
+Property ID:	044-006-196-000
+Location ID:  	F_909944_2802416
+
+24 EMERSON RD
+PLYMOUTH 02360
+Owner: SABBAGH JENNIFER A
+Owner Address:
+29 HIGATE RD
+CHELMSFORD, MA 01824
+
+Building Value:  	$171,200
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$462,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$270,000
+Last Sale Date:	20120831
+Use Code:	101
+Year Built:	1966
+Residential Area:  	756 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C117955,
+Property ID:	044-006-197-000
+Location ID:  	F_909977_2802454
+
+26 EMERSON RD
+PLYMOUTH 02360
+Owner: TWENTY SIX EMERSON RD REALTY TRUST
+Owner Address:
+59 COURT ST
+PLYMOUTH, MA 02360
+
+Building Value:  	$589,200
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$880,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20171024
+Use Code:	101
+Year Built:	2012
+Residential Area:  	2,640 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C125964,
+Property ID:	044-006-198-000
+Location ID:  	F_910009_2802492
+
+28 EMERSON RD
+PLYMOUTH 02360
+Owner: REILLY LAURA
+Owner Address:
+28 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$220,900
+Land Value:	$291,000
+Other Value:	$800
+Total Value:	$512,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$180,250
+Last Sale Date:	20000609
+Use Code:	101
+Year Built:	1954
+Residential Area:  	1,672 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C97552,
+Property ID:	044-006-199-000
+Location ID:  	F_910042_2802530
+
+30 EMERSON RD
+PLYMOUTH 02360
+Owner: KAMP BERNARD M TR
+Owner Address:
+30 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$424,600
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$715,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	20250131
+Use Code:	101
+Year Built:	1977
+Residential Area:  	2,152 Sq. Ft.
+Building Style:	Contemporary
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C137782,
+Property ID:	044-006-200-000
+Location ID:  	F_910074_2802568
+
+32 EMERSON RD
+PLYMOUTH 02360
+Owner: HALL CHRISTINE M
+Owner Address:
+32 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$414,300
+Land Value:	$291,000
+Other Value:	$0
+Total Value:	$705,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$0
+Last Sale Date:	
+Use Code:	101
+Year Built:	2012
+Residential Area:  	2,103 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-201-000
+Location ID:  	F_910107_2802606
+
+36 EMERSON RD
+PLYMOUTH 02360
+Owner: MCLEAN FAMILY REVOCABLE TRUST
+Owner Address:
+36 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$266,300
+Land Value:	$307,500
+Other Value:	$0
+Total Value:	$573,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20191021
+Use Code:	101
+Year Built:	1978
+Residential Area:  	2,273 Sq. Ft.
+Building Style:	Contemporary
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C129320,
+Property ID:	044-006-202-000Z
+Location ID:  	F_910156_2802663
+
+38 EMERSON RD
+PLYMOUTH 02360
+Owner: SOLOMON DAVID G
+Owner Address:
+44 LIVOLI AVE
+BRAINTREE, MA 02184
+
+Building Value:  	$514,500
+Land Value:	$396,800
+Other Value:	$0
+Total Value:	$911,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$397,500
+Last Sale Date:	20161025
+Use Code:	101
+Year Built:	2023
+Residential Area:  	1,990 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C124281,
+Property ID:	044-006-204-000
+Location ID:  	F_910205_2802720
+
+42 EMERSON RD
+PLYMOUTH 02360
+Owner: PRESTON JOHN F III
+Owner Address:
+42 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$302,900
+Land Value:	$441,700
+Other Value:	$0
+Total Value:	$744,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.33 Acres
+Last Sale Price:	$475,000
+Last Sale Date:	20130429
+Use Code:	101
+Year Built:	1927
+Residential Area:  	1,582 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C118901,
+Property ID:	044-006-205-000Z
+Location ID:  	F_910270_2802796
+
+46 EMERSON RD
+PLYMOUTH 02360
+Owner: SALTZMAN DEREK S
+Owner Address:
+3 NACHAOMET RD
+LAKEVILLE, MA 02347
+
+Building Value:  	$196,800
+Land Value:	$396,800
+Other Value:	$3,600
+Total Value:	$597,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$420,000
+Last Sale Date:	20081017
+Use Code:	101
+Year Built:	1926
+Residential Area:  	1,200 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-208-000
+Location ID:  	F_910335_2802872
+
+50 EMERSON RD
+PLYMOUTH 02360
+Owner: MAGUIRE JANE C TR
+Owner Address:
+59 DUSTIN ST
+BRIGHTON, MA 02135
+
+Building Value:  	$242,800
+Land Value:	$398,900
+Other Value:	$11,300
+Total Value:	$653,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$0
+Last Sale Date:	20221025
+Use Code:	101
+Year Built:	1900
+Residential Area:  	1,630 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	9
+
+Book, Page:	C134664,
+Property ID:	044-006-209-000
+Location ID:  	F_910405_2802916
+
+49 EMERSON RD
+PLYMOUTH 02360
+Owner: DOHERTY PRISCILLA BEACH TRUST
+Owner Address:
+C/O NANCY R BRADLEY TR
+FRAMINGHAM, MA 01702
+
+Building Value:  	$193,600
+Land Value:	$407,000
+Other Value:	$3,600
+Total Value:	$604,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.16 Acres
+Last Sale Price:	$0
+Last Sale Date:	20061206
+Use Code:	101
+Year Built:	1941
+Residential Area:  	1,365 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	,
+Property ID:	044-006-164-000
+Location ID:  	F_910452_2802832
+
+43 EMERSON RD
+PLYMOUTH 02360
+Owner: CCB REALTY TRUST
+Owner Address:
+43 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$486,500
+Land Value:	$435,600
+Other Value:	$5,900
+Total Value:	$928,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$0
+Last Sale Date:	20090219
+Use Code:	101
+Year Built:	1912
+Residential Area:  	2,589 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C113005,
+Property ID:	044-006-165-000Z
+Location ID:  	F_910404_2802714
+
+39 EMERSON RD
+PLYMOUTH 02360
+Owner: KELLY JOAN M TR
+Owner Address:
+C/O CHRISTINE BAIRD
+NORWALK, CT 06851
+
+Building Value:  	$351,100
+Land Value:	$472,500
+Other Value:	$0
+Total Value:	$823,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$275,000
+Last Sale Date:	20210310
+Use Code:	101
+Year Built:	1938
+Residential Area:  	1,648 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C131675,
+Property ID:	044-006-167-000
+Location ID:  	F_910355_2802657
+
+37 EMERSON RD
+PLYMOUTH 02360
+Owner: BARRY MICHELLE A
+Owner Address:
+37 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$494,600
+Land Value:	$433,500
+Other Value:	$900
+Total Value:	$929,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$644,000
+Last Sale Date:	20180629
+Use Code:	101
+Year Built:	1920
+Residential Area:  	1,936 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C127042,
+Property ID:	044-006-168-000
+Location ID:  	F_910306_2802600
+
+33 EMERSON RD
+PLYMOUTH 02360
+Owner: GAY ELDON W
+Owner Address:
+224 FARM STREET
+MILLIS, MA 02054
+
+Building Value:  	$190,400
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$487,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$125,000
+Last Sale Date:	19950705
+Use Code:	101
+Year Built:	1907
+Residential Area:  	1,135 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	,
+Property ID:	044-006-170-000
+Location ID:  	F_910257_2802543
+
+31 EMERSON RD
+PLYMOUTH 02360
+Owner: KITE DAVID W
+Owner Address:
+926 MICHIGAN AVE
+EVANSTON, IL 60202
+
+Building Value:  	$561,700
+Land Value:	$319,400
+Other Value:	$1,800
+Total Value:	$882,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$840,000
+Last Sale Date:	20210611
+Use Code:	101
+Year Built:	1934
+Residential Area:  	4,274 Sq. Ft.
+Building Style:	Contemporary
+Number of Units:	1
+Number of Rooms:  	12
+
+Book, Page:	C132138,
+Property ID:	044-006-171-000
+Location ID:  	F_910208_2802486
+
+27 EMERSON RD
+PLYMOUTH 02360
+Owner: GAYNOR KATHERINE A
+Owner Address:
+27 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$150,900
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$447,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$252,320
+Last Sale Date:	20151001
+Use Code:	101
+Year Built:	1956
+Residential Area:  	780 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C/122522,
+Property ID:	044-006-173-000
+Location ID:  	F_910159_2802429
+
+25 EMERSON RD
+PLYMOUTH 02360
+Owner: RDJ REALTY TRUST
+Owner Address:
+50 RESNIK RD SUITE 300
+PLYMOUTH, MA 02360
+
+Building Value:  	$218,300
+Land Value:	$297,000
+Other Value:	$700
+Total Value:	$516,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20001023
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,674 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C98250,
+Property ID:	044-006-174-000
+Location ID:  	F_910127_2802391
+
+23 EMERSON RD
+PLYMOUTH 02360
+Owner: LEWIS JOSEPH P
+Owner Address:
+23 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$232,800
+Land Value:	$297,000
+Other Value:	$600
+Total Value:	$530,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$9,017
+Last Sale Date:	20140911
+Use Code:	101
+Year Built:	1955
+Residential Area:  	1,620 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C120976,
+Property ID:	044-006-175-000
+Location ID:  	F_910094_2802353
+
+21 EMERSON RD
+PLYMOUTH 02360
+Owner: ALDRIDGE TRUST
+Owner Address:
+21 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$228,400
+Land Value:	$319,400
+Other Value:	$6,800
+Total Value:	$554,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$0
+Last Sale Date:	20150609
+Use Code:	101
+Year Built:	1978
+Residential Area:  	994 Sq. Ft.
+Building Style:	Raised Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C121943,
+Property ID:	044-006-176-000
+Location ID:  	F_910045_2802297
+
+15 EMERSON RD
+PLYMOUTH 02360
+Owner: LEVESQUE RONALD E
+Owner Address:
+32 SHEA RD
+CAMBRIDGE, MA 02140
+
+Building Value:  	$172,100
+Land Value:	$319,400
+Other Value:	$800
+Total Value:	$492,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$262,000
+Last Sale Date:	20120413
+Use Code:	101
+Year Built:	1953
+Residential Area:  	1,116 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C117298,
+Property ID:	044-006-179-000Z
+Location ID:  	F_909980_2802221
+
+11 EMERSON RD
+PLYMOUTH 02360
+Owner: EMERSON ROAD REALTY TRUST
+Owner Address:
+94 KNOLLWOOD RD
+QUINCY, MA 02171
+
+Building Value:  	$155,000
+Land Value:	$319,400
+Other Value:	$0
+Total Value:	$474,400
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$0
+Last Sale Date:	20190917
+Use Code:	101
+Year Built:	1952
+Residential Area:  	784 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C129132,
+Property ID:	044-006-180-000
+Location ID:  	F_909915_2802145
+
+9 EMERSON RD
+PLYMOUTH 02360
+Owner: MCLAUGHLIN JANET E
+Owner Address:
+PO BOX 143
+WHITE HORSE BEACH, MA 02381
+
+Building Value:  	$269,600
+Land Value:	$297,000
+Other Value:	$0
+Total Value:	$566,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20020430
+Use Code:	101
+Year Built:	1940
+Residential Area:  	1,944 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C101168,
+Property ID:	044-006-182-000
+Location ID:  	F_909866_2802088
+
+5 EMERSON RD
+PLYMOUTH 02360
+Owner: REEN JOSEPH G SR
+Owner Address:
+5 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$126,800
+Land Value:	$317,900
+Other Value:	$800
+Total Value:	$445,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.29 Acres
+Last Sale Price:	$0
+Last Sale Date:	20221104
+Use Code:	101
+Year Built:	1951
+Residential Area:  	790 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C134714,
+Property ID:	044-006-184-000Z
+Location ID:  	F_909811_2802035
+
+3 EMERSON RD
+PLYMOUTH 02360
+Owner: POWERS ANN M
+Owner Address:
+3 EMERSON RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$292,800
+Land Value:	$301,500
+Other Value:	$0
+Total Value:	$594,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.18 Acres
+Last Sale Price:	$222,000
+Last Sale Date:	20240327
+Use Code:	101
+Year Built:	1963
+Residential Area:  	1,386 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C136578,
+Property ID:	044-006-185-000
+Location ID:  	F_909737_2801967
+
+

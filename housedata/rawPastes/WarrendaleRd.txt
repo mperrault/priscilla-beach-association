@@ -1,0 +1,168 @@
+4 WARRENDALE RD
+PLYMOUTH 02360
+Owner: CREEDON KAREN M
+Owner Address:
+81 SUMMER ST
+MEDFORD, MA 02155
+
+Building Value:  	$228,900
+Land Value:	$335,900
+Other Value:	$0
+Total Value:	$564,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.41 Acres
+Last Sale Price:	$196,500
+Last Sale Date:	20010619
+Use Code:	101
+Year Built:	1965
+Residential Area:  	1,365 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C99448,
+Property ID:	044-006-341-000Z
+Location ID:  	F_909005_2804273
+
+8 WARRENDALE RD
+PLYMOUTH 02360
+Owner: MAKI JOHN
+Owner Address:
+93 GRAND VIEW AVE
+QUINCY, MA 02170
+
+Building Value:  	$263,800
+Land Value:	$291,700
+Other Value:	$600
+Total Value:	$556,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.11 Acres
+Last Sale Price:	$137,000
+Last Sale Date:	20170602
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,746 Sq. Ft.
+Building Style:	Raised Ranch
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C125244,
+Property ID:	044-006-339-000
+Location ID:  	F_909086_2804336
+
+12 WARRENDALE RD
+PLYMOUTH 02360
+Owner: KILEY-MENDELSOHN TRUST
+Owner Address:
+12 WARRENDALE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$245,600
+Land Value:	$316,200
+Other Value:	$0
+Total Value:	$561,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.28 Acres
+Last Sale Price:	$0
+Last Sale Date:	20090213
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,580 Sq. Ft.
+Building Style:	Gambrel
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C112994,
+Property ID:	044-006-349-000
+Location ID:  	F_909183_2804400
+
+7 WARRENDALE RD
+PLYMOUTH 02360
+Owner: PLYMOUTH TOWN OF
+Owner Address:
+26 COURT ST
+PLYMOUTH, MA 02360
+
+Building Value:  	$0
+Land Value:	$295,600
+Other Value:	$0
+Total Value:	$295,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.14 Acres
+Last Sale Price:	$0
+Last Sale Date:	20121102
+Use Code:	930
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	C118225,
+Property ID:	044-006-337-000
+Location ID:  	F_909180_2804197
+
+9 WARRENDALE RD
+PLYMOUTH 02360
+Owner: POST MICHAEL J
+Owner Address:
+9 WARRENDALE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$369,000
+Land Value:	$294,500
+Other Value:	$600
+Total Value:	$664,100
+
+Assessment data from FY 2026
+
+Lot Size:	0.13 Acres
+Last Sale Price:	$475,500
+Last Sale Date:	20200731
+Use Code:	101
+Year Built:	1967
+Residential Area:  	1,248 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C130530,
+Property ID:	044-006-338-000
+Location ID:  	F_909214_2804231
+
+11 WARRENDALE RD
+PLYMOUTH 02360
+Owner: ALBANESE JOYCE M
+Owner Address:
+11 WARRENDALE RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$261,700
+Land Value:	$341,300
+Other Value:	$200
+Total Value:	$603,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.17 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200624
+Use Code:	101
+Year Built:	1956
+Residential Area:  	1,490 Sq. Ft.
+Building Style:	Split Level
+Number of Units:	1
+Number of Rooms:  	10
+
+Book, Page:	C130325,
+Property ID:	044-006-350-000
+Location ID:  	F_909263_2804310
+

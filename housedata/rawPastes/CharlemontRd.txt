@@ -1,0 +1,445 @@
+8 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: SILLARI SALVATORE J + CHRISTINE LIFE ESTATE
+Owner Address:
+8 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$266,200
+Land Value:	$421,300
+Other Value:	$0
+Total Value:	$687,500
+
+Assessment data from FY 2026
+
+Lot Size:	0.23 Acres
+Last Sale Price:	$0
+Last Sale Date:	20191122
+Use Code:	101
+Year Built:	1984
+Residential Area:  	1,938 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C129497,
+Property ID:	044-006-313-000
+Location ID:  	F_909359_2802991
+
+10 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: CHARLEMONT RD REALTY TRUST
+Owner Address:
+10 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$438,100
+Land Value:	$413,100
+Other Value:	$28,500
+Total Value:	$879,700
+
+Assessment data from FY 2026
+
+Lot Size:	0.19 Acres
+Last Sale Price:	$0
+Last Sale Date:	20151019
+Use Code:	101
+Year Built:	2023
+Residential Area:  	1,628 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C/122591,
+Property ID:	044-006-314-000
+Location ID:  	F_909390_2803071
+
+12 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: GOULART RONALD D TR
+Owner Address:
+15 BRACKENWOOD DR
+NASHUA, NH 03062
+
+Building Value:  	$319,800
+Land Value:	$394,800
+Other Value:	$0
+Total Value:	$714,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.10 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220310
+Use Code:	101
+Year Built:	1925
+Residential Area:  	2,064 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	C133549,
+Property ID:	044-006-376-000
+Location ID:  	F_909449_2803106
+
+14 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: BROYER-WHEATON BETHANY P
+Owner Address:
+14 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$172,100
+Land Value:	$398,900
+Other Value:	$0
+Total Value:	$571,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.12 Acres
+Last Sale Price:	$219,900
+Last Sale Date:	20011011
+Use Code:	101
+Year Built:	1951
+Residential Area:  	982 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C100072,
+Property ID:	044-006-375-000
+Location ID:  	F_909475_2803150
+
+16 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: KITE LINNA KENDALL
+Owner Address:
+134 CONGDON ST
+PROVIDENCE, RI 02906
+
+Building Value:  	$174,400
+Land Value:	$435,600
+Other Value:	$0
+Total Value:	$610,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$0
+Last Sale Date:	20040213
+Use Code:	101
+Year Built:	1933
+Residential Area:  	896 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	,
+Property ID:	044-006-374-000
+Location ID:  	F_909501_2803193
+
+CHARLEMONT RD
+PLYMOUTH 02360
+Owner: KITE LINNA KENDALL
+Owner Address:
+134 CONGDON ST
+PROVIDENCE, RI 02906
+
+Building Value:  	$0
+Land Value:	$29,800
+Other Value:	$0
+Total Value:	$29,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.16 Acres
+Last Sale Price:	$0
+Last Sale Date:	20040213
+Use Code:	132
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	,
+Property ID:	044-006-373-000
+Location ID:  	F_909527_2803237
+
+20 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: COLLINS JAMES H
+Owner Address:
+19 GEORGE ST
+NORWOOD, MA 02062
+
+Building Value:  	$156,200
+Land Value:	$411,100
+Other Value:	$0
+Total Value:	$567,300
+
+Assessment data from FY 2026
+
+Lot Size:	0.18 Acres
+Last Sale Price:	$0
+Last Sale Date:	20100405
+Use Code:	101
+Year Built:	1955
+Residential Area:  	820 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	4
+
+21 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: 21 CHARLEMONT ROAD REAL ESTATE TRUST
+Owner Address:
+7 INGE`S WAY
+PLYMOUTH, MA 02360
+
+Building Value:  	$313,100
+Land Value:	$405,000
+Other Value:	$700
+Total Value:	$718,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$649,900
+Last Sale Date:	20210810
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,795 Sq. Ft.
+Building Style:	Cape
+Number of Units:	1
+Number of Rooms:  	6
+
+Book, Page:	C132491,
+Property ID:	044-006-302-000
+Location ID:  	F_909692_2803160
+
+19 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: KANE PATRICIA A TR
+Owner Address:
+19 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$341,700
+Land Value:	$323,900
+Other Value:	$0
+Total Value:	$665,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20220825
+Use Code:	101
+Year Built:	1998
+Residential Area:  	1,878 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	5
+
+Book, Page:	C134389,
+Property ID:	044-006-303-000
+Location ID:  	F_909660_2803122
+
+17 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: GRANT STEPHEN E + NORMA E LE
+Owner Address:
+17 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$198,000
+Land Value:	$405,000
+Other Value:	$0
+Total Value:	$603,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20200928
+Use Code:	101
+Year Built:	1950
+Residential Area:  	1,702 Sq. Ft.
+Building Style:	Ranch
+Number of Units:	1
+Number of Rooms:  	8
+
+Book, Page:	C130834,
+Property ID:	044-006-304-000
+Location ID:  	F_909627_2803084
+
+15 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: CUNHA DEREK
+Owner Address:
+196 MAIN ST #2
+EASTHAMPTON, MA 01027
+
+Building Value:  	$256,300
+Land Value:	$435,600
+Other Value:	$0
+Total Value:	$691,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.30 Acres
+Last Sale Price:	$420,000
+Last Sale Date:	20080515
+Use Code:	101
+Year Built:	1950
+Residential Area:  	2,058 Sq. Ft.
+Building Style:	Garrison
+Number of Units:	1
+Number of Rooms:  	7
+
+Book, Page:	,
+Property ID:	044-006-305-000
+Location ID:  	F_909578_2803027
+
+11 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: DIFRANCO CHARLEMONT ROAD TRUST
+Owner Address:
+24 MADELINE DR
+GROTON, MA 01450
+
+Building Value:  	$535,200
+Land Value:	$405,000
+Other Value:	$1,800
+Total Value:	$942,000
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20170206
+Use Code:	101
+Year Built:	2005
+Residential Area:  	2,785 Sq. Ft.
+Building Style:	Victorian
+Number of Units:	1
+Number of Rooms:  	10
+
+Book, Page:	C124740,
+Property ID:	044-006-307-000
+Location ID:  	F_909530_2802970
+
+9 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: DEBRA-ANNE REALTY TRUST
+Owner Address:
+117 DUDLEY ST C/O DIFRANCO
+MEDFORD, MA 02155
+
+Building Value:  	$0
+Land Value:	$267,200
+Other Value:	$0
+Total Value:	$267,200
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	19810101
+Use Code:	130
+Year Built:	
+Residential Area:  	0 Sq. Ft.
+Building Style:	
+Number of Units:	0
+Number of Rooms:  	
+
+Book, Page:	,
+Property ID:	044-006-308-000
+Location ID:  	F_909497_2802932
+
+7 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: RAMSELL THERESA A TR
+Owner Address:
+7 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$126,900
+Land Value:	$296,900
+Other Value:	$0
+Total Value:	$423,800
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20231031
+Use Code:	101
+Year Built:	1950
+Residential Area:  	630 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C136072,
+Property ID:	044-006-309-000
+Location ID:  	F_909464_2802894
+
+5 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: KILEY CAROL A TR
+Owner Address:
+270A NORTH HIGH POINT BLVD
+BOYNTON BEACH, FL 33435
+
+Building Value:  	$133,700
+Land Value:	$296,900
+Other Value:	$0
+Total Value:	$430,600
+
+Assessment data from FY 2026
+
+Lot Size:	0.15 Acres
+Last Sale Price:	$0
+Last Sale Date:	20240119
+Use Code:	101
+Year Built:	1960
+Residential Area:  	660 Sq. Ft.
+Building Style:	CONV COTTAGE
+Number of Units:	1
+Number of Rooms:  	4
+
+Book, Page:	C136366,
+Property ID:	044-006-310-000
+Location ID:  	F_909432_2802856
+
+3 CHARLEMONT RD
+PLYMOUTH 02360
+Owner: LACROIX MAUREEN
+Owner Address:
+3 CHARLEMONT RD
+PLYMOUTH, MA 02360
+
+Building Value:  	$550,700
+Land Value:	$308,200
+Other Value:	$0
+Total Value:	$858,900
+
+Assessment data from FY 2026
+
+Lot Size:	0.22 Acres
+Last Sale Price:	$0
+Last Sale Date:	20150429
+Use Code:	101
+Year Built:	2004
+Residential Area:  	3,374 Sq. Ft.
+Building Style:	Colonial
+Number of Units:	1
+Number of Rooms:  	12
+
+Book, Page:	C121755,
+Property ID:	044-006-311-000
+Location ID:  	F_909373_2802809
+
+
