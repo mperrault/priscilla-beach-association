@@ -222,7 +222,7 @@ function pba_render_household_dashboard() {
     </style>
 
     <div class="pba-household-wrap">
-        <h2>Household</h2>
+        <!-- h2>My Household</h2 -->
         <p class="pba-household-note">Invite household members to become site members.</p>
 
         <?php if ($status === 'account_created') : ?>

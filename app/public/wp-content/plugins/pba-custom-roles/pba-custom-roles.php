@@ -2,7 +2,7 @@
 /*
 Plugin Name: PBA Custom Roles
 Description: Creates custom WordPress roles for the Priscilla Beach Association site and maps Supabase roles to WordPress roles.
-Version: 1.0.0
+Version: 1.2.0
 Author: PBA
 */
 
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class PBA_Custom_Roles {
-    const VERSION = '1.0.0';
+    const VERSION = '1.2.0';
     const OPTION_VERSION = 'pba_custom_roles_version';
 
     public static function init() {
@@ -19,13 +19,6 @@ final class PBA_Custom_Roles {
         add_action('init', [__CLASS__, 'maybe_upgrade_roles']);
     }
 
-    /**
-     * WordPress role definitions.
-     *
-     * Key = WP role slug
-     * label = human-readable label in WP Admin
-     * capabilities = capabilities granted to that role
-     */
     public static function get_role_definitions() {
         return [
             'pba_anonymous' => [
@@ -38,99 +31,118 @@ final class PBA_Custom_Roles {
             'pba_member' => [
                 'label' => 'PBA Member',
                 'capabilities' => [
-                    'read'         => true,
-                    'upload_files' => false,
-                    'edit_posts'   => false,
-                    'edit_pages'   => false,
-                    'publish_posts'=> false,
-                    'publish_pages'=> false,
+                    'read'                    => true,
+                    'upload_files'            => false,
+                    'edit_posts'              => false,
+                    'edit_pages'              => false,
+                    'publish_posts'           => false,
+                    'publish_pages'           => false,
+                    'pba_view_member_pages'   => true,
                 ],
             ],
 
             'pba_house_admin' => [
                 'label' => 'House Admin',
                 'capabilities' => [
-                    'read'                   => true,
-                    'pba_view_household_page' => true,
+                    'read'                                    => true,
+                    'upload_files'                            => false,
+                    'edit_posts'                              => false,
+                    'edit_pages'                              => false,
+                    'publish_posts'                           => false,
+                    'publish_pages'                           => false,
+                    'pba_view_member_pages'                   => true,
+                    'pba_view_household_page'                 => true,
                     'pba_send_invites_through_household_page' => true,
-                    //'upload_files'           => true,
-
-                    // Posts
-                    //'edit_posts'             => true,
-                    //'edit_published_posts'   => true,
-                    //'publish_posts'          => true,
-                    //'delete_posts'           => true,
-                    //'delete_published_posts' => true,
-
-                    // Pages
-                    //'edit_pages'             => true,
-                    //'edit_published_pages'   => true,
-                    //'publish_pages'          => true,
-                    //'delete_pages'           => true,
-                    //'delete_published_pages' => true,
-
-                    // Administrative restrictions
-                    /*
-                    'list_users'             => false,
-                    'create_users'           => false,
-                    'delete_users'           => false,
-                    'promote_users'          => false,
-                    'edit_users'             => false,
-                    'manage_options'         => false,
-                    'install_plugins'        => false,
-                    'activate_plugins'       => false,
-                    'delete_plugins'         => false,
-                    'install_themes'         => false,
-                    'switch_themes'          => false,
-                    'edit_theme_options'     => false,
-                    */
+                    'pba_manage_own_household'                => true,
                 ],
             ],
 
             'pba_board_member' => [
                 'label' => 'PBA Board Member',
                 'capabilities' => [
-                    'read'                   => true,
-                    'upload_files'           => true,
-                    'edit_posts'             => true,
-                    'edit_published_posts'   => true,
-                    'publish_posts'          => true,
-                    'delete_posts'           => false,
-                    'delete_published_posts' => false,
-                    'edit_pages'             => false,
-                    'publish_pages'          => false,
+                    'read'                        => true,
+                    'upload_files'                => false,
+                    'edit_posts'                  => false,
+                    'edit_published_posts'        => false,
+                    'publish_posts'               => false,
+                    'delete_posts'                => false,
+                    'delete_published_posts'      => false,
+                    'edit_pages'                  => false,
+                    'publish_pages'               => false,
+                    'pba_view_member_pages'       => true,
+                    'pba_view_board_materials'    => true,
+                    'pba_manage_board_folders'    => true,
+                    'pba_upload_board_documents'  => true,
                 ],
             ],
 
             'pba_committee_member' => [
                 'label' => 'PBA Committee Member',
                 'capabilities' => [
-                    'read'                   => true,
-                    'upload_files'           => true,
-                    'edit_posts'             => true,
-                    'edit_published_posts'   => true,
-                    'publish_posts'          => false,
-                    'delete_posts'           => false,
-                    'delete_published_posts' => false,
-                    'edit_pages'             => false,
-                    'publish_pages'          => false,
+                    'read'                             => true,
+                    'upload_files'                     => false,
+                    'edit_posts'                       => false,
+                    'edit_published_posts'             => false,
+                    'publish_posts'                    => false,
+                    'delete_posts'                     => false,
+                    'delete_published_posts'           => false,
+                    'edit_pages'                       => false,
+                    'publish_pages'                    => false,
+                    'pba_view_member_pages'            => true,
+                    'pba_view_committee_materials'     => true,
+                    'pba_manage_committee_folders'     => true,
+                    'pba_upload_committee_documents'   => true,
+                ],
+            ],
+
+            'pba_admin' => [
+                'label' => 'PBA Admin',
+                'capabilities' => [
+                    'read'                                     => true,
+                    'upload_files'                             => false,
+                    'edit_posts'                               => false,
+                    'edit_pages'                               => false,
+                    'publish_posts'                            => false,
+                    'publish_pages'                            => false,
+                    'pba_view_member_pages'                    => true,
+                    'pba_view_household_page'                  => true,
+                    'pba_send_invites_through_household_page'  => true,
+                    'pba_manage_own_household'                 => true,
+                    'pba_view_board_materials'                 => true,
+                    'pba_view_committee_materials'             => true,
+                    'pba_manage_board_folders'                 => true,
+                    'pba_upload_board_documents'               => true,
+                    'pba_manage_committee_folders'             => true,
+                    'pba_upload_committee_documents'           => true,
+                    'pba_manage_members'                       => true,
+                    'pba_manage_committees'                    => true,
+                    'pba_manage_households'                    => true,
+                    'pba_view_admin_navigation'                => true,
                 ],
             ],
         ];
     }
 
-    /**
-     * Exact mapping from Supabase role_name to WP role slug.
-     *
-     * Left side must exactly match Supabase role_name.
-     */
     public static function get_supabase_to_wp_role_map() {
         return [
-            'Anonymous'         => 'pba_anonymous',
-            'PBAMember'         => 'pba_member',
-            'PBAHouseholdAdmin' => 'pba_house_admin',
-            'PBABoardMember'    => 'pba_board_member',
-            'PBACommiteeMember' => 'pba_committee_member', // matches Supabase spelling exactly
+            'Anonymous'          => 'pba_anonymous',
+            'PBAMember'          => 'pba_member',
+            'PBAHouseholdAdmin'  => 'pba_house_admin',
+            'PBABoardMember'     => 'pba_board_member',
+            'PBACommitteeMember' => 'pba_committee_member',
+            'PBACommiteeMember'  => 'pba_committee_member',
+            'PBAAdmin'           => 'pba_admin',
+        ];
+    }
+
+    public static function get_wp_role_priority_map() {
+        return [
+            'pba_anonymous'        => 10,
+            'pba_member'           => 20,
+            'pba_house_admin'      => 30,
+            'pba_committee_member' => 40,
+            'pba_board_member'     => 50,
+            'pba_admin'            => 60,
         ];
     }
 
@@ -189,43 +201,76 @@ final class PBA_Custom_Roles {
         return array_unique($all_caps);
     }
 
-    /**
-     * Translate a Supabase role_name into the corresponding WP role slug.
-     */
     public static function map_supabase_role_to_wp_role($supabase_role_name) {
         $map = self::get_supabase_to_wp_role_map();
         return isset($map[$supabase_role_name]) ? $map[$supabase_role_name] : null;
     }
 
-    /**
-     * Assign a WP role to a user from a Supabase role_name.
-     *
-     * WARNING:
-     * set_role() replaces the user's existing role.
-     * If you need multiple simultaneous roles, this should be changed.
-     */
+    public static function map_supabase_roles_to_wp_roles($supabase_role_names) {
+        $supabase_role_names = is_array($supabase_role_names) ? $supabase_role_names : array($supabase_role_names);
+        $mapped = [];
+
+        foreach ($supabase_role_names as $supabase_role_name) {
+            $wp_role = self::map_supabase_role_to_wp_role($supabase_role_name);
+            if ($wp_role) {
+                $mapped[] = $wp_role;
+            }
+        }
+
+        return array_values(array_unique($mapped));
+    }
+
+    public static function choose_highest_priority_wp_role($wp_roles) {
+        $wp_roles = is_array($wp_roles) ? $wp_roles : array($wp_roles);
+        $priority_map = self::get_wp_role_priority_map();
+
+        $best_role = null;
+        $best_priority = -1;
+
+        foreach ($wp_roles as $wp_role) {
+            if (!isset($priority_map[$wp_role])) {
+                continue;
+            }
+
+            $priority = (int) $priority_map[$wp_role];
+
+            if ($priority > $best_priority) {
+                $best_priority = $priority;
+                $best_role = $wp_role;
+            }
+        }
+
+        return $best_role;
+    }
+
     public static function sync_user_role_from_supabase($user_id, $supabase_role_name) {
+        return self::sync_user_roles_from_supabase($user_id, array($supabase_role_name));
+    }
+
+    public static function sync_user_roles_from_supabase($user_id, $supabase_role_names) {
         $user = get_user_by('id', $user_id);
         if (!$user) {
             return false;
         }
 
-        $wp_role = self::map_supabase_role_to_wp_role($supabase_role_name);
-        if (!$wp_role) {
+        $wp_roles = self::map_supabase_roles_to_wp_roles($supabase_role_names);
+        $chosen_wp_role = self::choose_highest_priority_wp_role($wp_roles);
+
+        if (!$chosen_wp_role) {
             return false;
         }
 
-        $user->set_role($wp_role);
-        return true;
+        $user->set_role($chosen_wp_role);
+        return $chosen_wp_role;
     }
 }
 
 PBA_Custom_Roles::init();
 
-/**
- * Helper wrapper function:
- * pba_sync_user_role_from_supabase($user_id, $supabase_role_name);
- */
 function pba_sync_user_role_from_supabase($user_id, $supabase_role_name) {
     return PBA_Custom_Roles::sync_user_role_from_supabase($user_id, $supabase_role_name);
+}
+
+function pba_sync_user_roles_from_supabase($user_id, $supabase_role_names) {
+    return PBA_Custom_Roles::sync_user_roles_from_supabase($user_id, $supabase_role_names);
 }

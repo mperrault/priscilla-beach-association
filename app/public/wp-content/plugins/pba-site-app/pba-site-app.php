@@ -11,10 +11,25 @@ if (!defined('ABSPATH')) {
 }
 
 require_once __DIR__ . '/includes/theme-hooks.php';
-require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/supabase-api.php';
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/document-permissions.php';
 require_once __DIR__ . '/includes/auth-handlers.php';
 require_once __DIR__ . '/includes/invite-handlers.php';
 require_once __DIR__ . '/includes/shortcodes-member-invite.php';
 require_once __DIR__ . '/includes/menuing.php';
 require_once __DIR__ . '/includes/shortcodes-household.php';
+require_once __DIR__ . '/includes/admin-menu.php';
+require_once __DIR__ . '/includes/admin-members.php';
+require_once __DIR__ . '/includes/admin-committees.php';
+require_once __DIR__ . '/includes/document-permissions.php';
+require_once __DIR__ . '/includes/document-folder-handlers.php';
+require_once __DIR__ . '/includes/document-item-handlers.php';
+require_once __DIR__ . '/includes/shortcodes-documents.php';
+require_once __DIR__ . '/includes/shortcodes-member-home.php';
+require_once __DIR__ . '/includes/shortcodes-members.php';
+require_once __DIR__ . '/includes/shortcodes-committees.php';
+require_once __DIR__ . '/includes/member-admin-handlers.php';
+require_once __DIR__ . '/includes/committee-admin-handlers.php';
+require_once __DIR__ . '/includes/member-admin-actions.php';
+require_once __DIR__ . '/includes/shortcodes-member-directory.php';

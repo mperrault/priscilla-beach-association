@@ -7,17 +7,37 @@ if (!defined('ABSPATH')) {
 add_filter('wp_nav_menu_objects', 'pba_filter_nav_menu_items_by_role', 10, 2);
 
 function pba_filter_nav_menu_items_by_role($items, $args) {
-    $household_url = trailingslashit(home_url('/household/'));
-    $can_see = pba_current_user_has_house_admin_access();
+    $household_url = trailingslashit(home_url('/my-household/'));
+    $board_docs_url = trailingslashit(home_url('/board-documents/'));
+    $committee_docs_url = trailingslashit(home_url('/committee-documents/'));
+
+    $can_see_household = pba_current_user_has_house_admin_access();
+    $can_see_board = pba_current_person_has_role('PBABoardMember') || pba_current_person_has_role('PBAAdmin');
+    $can_see_committee = pba_current_person_has_role('PBACommitteeMember') || pba_current_person_has_role('PBAAdmin');
 
     foreach ($items as $index => $item) {
         $item_url = isset($item->url) ? trailingslashit($item->url) : '';
         $title    = isset($item->title) ? trim((string) $item->title) : '';
 
-        if ($item_url === $household_url || strcasecmp($title, 'Household') === 0) {
-            if (!$can_see) {
+        if ($item_url === $household_url || strcasecmp($title, 'Household') === 0 || strcasecmp($title, 'My Household') === 0) {
+            if (!$can_see_household) {
                 unset($items[$index]);
             }
+            continue;
+        }
+
+        if ($item_url === $board_docs_url || strcasecmp($title, 'Board') === 0 || strcasecmp($title, 'Board Documents') === 0) {
+            if (!$can_see_board) {
+                unset($items[$index]);
+            }
+            continue;
+        }
+
+        if ($item_url === $committee_docs_url || strcasecmp($title, 'Committee') === 0 || strcasecmp($title, 'Committee Documents') === 0) {
+            if (!$can_see_committee) {
+                unset($items[$index]);
+            }
+            continue;
         }
     }
 
@@ -32,7 +52,7 @@ function pba_get_logged_in_menu_items() {
         ),
         array(
             'label' => 'Calendar',
-            'url'   => home_url('/calendar/'),
+            'url'   => home_url('/eventscalendar/'),
         ),
     );
 
@@ -43,24 +63,35 @@ function pba_get_logged_in_menu_items() {
         );
     }
 
-    if (pba_user_has_role('pba_house_admin')) {
+    if (pba_current_user_has_house_admin_access()) {
         $items[] = array(
-            'label' => 'Household',
-            'url'   => home_url('/household/'),
+            'label' => 'My Household',
+            'url'   => home_url('/my-household/'),
         );
     }
 
-    if (pba_user_has_role('pba_board_member')) {
+    if (pba_current_person_has_role('PBABoardMember') || pba_current_person_has_role('PBAAdmin')) {
         $items[] = array(
-            'label' => 'Board',
-            'url'   => home_url('/board/'),
+            'label' => 'Board Documents',
+            'url'   => home_url('/board-documents/'),
         );
     }
 
-    if (pba_user_has_role('pba_committee_member')) {
+    if (pba_current_person_has_role('PBACommitteeMember') || pba_current_person_has_role('PBAAdmin')) {
         $items[] = array(
-            'label' => 'Committee',
-            'url'   => home_url('/committee/'),
+            'label' => 'Committee Documents',
+            'url'   => home_url('/committee-documents/'),
+        );
+    }
+
+    if (pba_current_person_has_role('PBAAdmin')) {
+        $items[] = array(
+            'label' => 'Members',
+            'url'   => home_url('/members/'),
+        );
+        $items[] = array(
+            'label' => 'Committees',
+            'url'   => home_url('/committees/'),
         );
     }
 

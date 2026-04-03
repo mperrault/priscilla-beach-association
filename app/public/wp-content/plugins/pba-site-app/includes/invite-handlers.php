@@ -357,7 +357,6 @@ function pba_handle_member_invite_accept() {
         'first_name'   => $first_name,
         'last_name'    => $last_name,
         'display_name' => trim($first_name . ' ' . $last_name),
-        'role'         => 'pba_member',
     ));
 
     update_user_meta($user_id, 'pba_household_id', $household_id);
@@ -381,6 +380,8 @@ function pba_handle_member_invite_accept() {
         wp_delete_user($user_id);
         pba_member_invite_redirect('person_update_failed', $invite_token);
     }
+
+    pba_sync_wp_role_for_person($user_id, $person_id);
 
     pba_delete_member_invite_transients($person_id, $invite_token);
 

@@ -35,7 +35,7 @@ function pba_registration_redirect($status) {
 }
 
 function pba_household_redirect($status = '') {
-    $url = home_url('/household/');
+    $url = home_url('/my-household/');
 
     if ($status !== '') {
         $url = add_query_arg('pba_household_status', rawurlencode($status), $url);
@@ -69,9 +69,8 @@ function pba_current_user_has_house_admin_access() {
         return false;
     }
 
-    $user = wp_get_current_user();
-
-    return in_array('pba_house_admin', (array) $user->roles, true);
+    return pba_current_person_has_role('PBAHouseholdAdmin')
+        || pba_current_person_has_role('PBAAdmin');
 }
 
 function pba_get_current_house_admin_person_id() {
@@ -266,4 +265,82 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
             }
         }
     }
+}
+
+function pba_get_current_person_record() {
+    static $current_person_cache = null;
+    static $has_loaded_current_person = false;
+
+    if (!is_user_logged_in()) {
+        return false;
+    }
+
+    if ($has_loaded_current_person) {
+        return $current_person_cache;
+    }
+
+    $wp_user_id = (string) get_current_user_id();
+
+    $rows = pba_supabase_get('Person', array(
+        'select'     => 'person_id,household_id,first_name,last_name,email_address,status,wp_user_id',
+        'wp_user_id' => 'eq.' . $wp_user_id,
+        'limit'      => 1,
+    ));
+
+    $has_loaded_current_person = true;
+
+    if (is_wp_error($rows) || empty($rows[0])) {
+        $current_person_cache = false;
+        return $current_person_cache;
+    }
+
+    $current_person_cache = $rows[0];
+    return $current_person_cache;
+}
+
+function pba_get_active_role_names_for_person($person_id) {
+    return pba_get_active_supabase_role_names_for_person((int) $person_id);
+}
+
+function pba_get_current_person_role_names() {
+    static $current_role_names_cache = null;
+    static $has_loaded_current_role_names = false;
+
+    if ($has_loaded_current_role_names) {
+        return $current_role_names_cache;
+    }
+
+    $person = pba_get_current_person_record();
+
+    if (!$person || empty($person['person_id'])) {
+        $current_role_names_cache = array();
+        $has_loaded_current_role_names = true;
+        return $current_role_names_cache;
+    }
+
+    $current_role_names_cache = pba_get_active_role_names_for_person((int) $person['person_id']);
+    $has_loaded_current_role_names = true;
+    return $current_role_names_cache;
+}
+
+function pba_current_person_has_role($role_name) {
+    $roles = pba_get_current_person_role_names();
+    return in_array($role_name, $roles, true);
+}
+
+function pba_sync_wp_role_for_person($user_id, $person_id) {
+    $user_id = (int) $user_id;
+    $person_id = (int) $person_id;
+
+    if ($user_id < 1 || $person_id < 1 || !function_exists('pba_sync_user_roles_from_supabase')) {
+        return false;
+    }
+
+    $role_names = pba_get_active_supabase_role_names_for_person($person_id);
+
+    if (empty($role_names)) {
+        return false;
+    }
+
+    return pba_sync_user_roles_from_supabase($user_id, $role_names);
 }

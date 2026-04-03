@@ -62,11 +62,14 @@ function pba_handle_member_login() {
         exit;
     }
 
-    if (in_array('pba_house_admin', (array) $user->roles, true)) {
+    $roles = (array) $user->roles;
+    if (
+        in_array('pba_house_admin', $roles, true) ||
+        in_array('pba_admin', $roles, true)
+    ) {
         wp_safe_redirect(home_url('/household/'));
         exit;
     }
-
     wp_safe_redirect(home_url('/member-home/'));
     exit;
 }
@@ -287,7 +290,6 @@ function pba_handle_house_admin_create_user() {
             (isset($setup_data['first_name']) ? $setup_data['first_name'] : '') . ' ' .
             (isset($setup_data['last_name']) ? $setup_data['last_name'] : '')
         ),
-        'role'         => 'pba_house_admin',
     ));
 
     if (!empty($setup_data['household_id'])) {
@@ -329,6 +331,8 @@ function pba_handle_house_admin_create_user() {
         wp_delete_user($user_id);
         pba_registration_redirect('person_role_create_failed');
     }
+
+    pba_sync_wp_role_for_person($user_id, $person_id);
 
     delete_transient('pba_house_admin_email_verify_' . $email_token);
 

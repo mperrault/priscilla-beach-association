@@ -20,6 +20,13 @@ function pba_supabase_headers($prefer_return_representation = false) {
 }
 
 function pba_supabase_get($table, $query_args = array()) {
+    static $request_cache = array();
+
+    $cache_key = md5($table . '|' . wp_json_encode($query_args));
+    if (array_key_exists($cache_key, $request_cache)) {
+        return $request_cache[$cache_key];
+    }
+
     $url = rtrim(SUPABASE_URL, '/') . '/rest/v1/' . rawurlencode($table);
 
     if (!empty($query_args)) {
@@ -32,7 +39,8 @@ function pba_supabase_get($table, $query_args = array()) {
     ));
 
     if (is_wp_error($response)) {
-        return $response;
+        $request_cache[$cache_key] = $response;
+        return $request_cache[$cache_key];
     }
 
     $status = wp_remote_retrieve_response_code($response);
@@ -40,23 +48,26 @@ function pba_supabase_get($table, $query_args = array()) {
     $data   = json_decode($body, true);
 
     if ($status < 200 || $status >= 300) {
-        return new WP_Error('supabase_get_failed', 'Supabase GET failed', array(
+        $request_cache[$cache_key] = new WP_Error('supabase_get_failed', 'Supabase GET failed', array(
             'status' => $status,
             'body'   => $body,
             'table'  => $table,
             'query'  => $query_args,
         ));
+        return $request_cache[$cache_key];
     }
 
     if (!is_array($data)) {
-        return new WP_Error('supabase_get_invalid_json', 'Invalid Supabase GET JSON', array(
+        $request_cache[$cache_key] = new WP_Error('supabase_get_invalid_json', 'Invalid Supabase GET JSON', array(
             'status' => $status,
             'body'   => $body,
             'table'  => $table,
         ));
+        return $request_cache[$cache_key];
     }
 
-    return $data;
+    $request_cache[$cache_key] = $data;
+    return $request_cache[$cache_key];
 }
 
 function pba_supabase_insert($table, $payload) {
@@ -188,6 +199,67 @@ function pba_supabase_find_role_id_by_name($role_name) {
     }
 
     return (int) $rows[0]['role_id'];
+}
+
+function pba_get_active_supabase_role_names_for_person($person_id) {
+    static $role_cache = array();
+
+    $person_id = (int) $person_id;
+
+    if ($person_id < 1) {
+        return array();
+    }
+
+    if (isset($role_cache[$person_id])) {
+        return $role_cache[$person_id];
+    }
+
+    $rows = pba_supabase_get('Person_to_Role', array(
+        'select'    => 'role_id,is_active',
+        'person_id' => 'eq.' . $person_id,
+        'is_active' => 'eq.true',
+    ));
+
+    if (is_wp_error($rows) || empty($rows)) {
+        $role_cache[$person_id] = array();
+        return $role_cache[$person_id];
+    }
+
+    $role_ids = array();
+    foreach ($rows as $row) {
+        $role_id = isset($row['role_id']) ? (int) $row['role_id'] : 0;
+        if ($role_id > 0) {
+            $role_ids[] = $role_id;
+        }
+    }
+
+    $role_ids = array_values(array_unique($role_ids));
+    if (empty($role_ids)) {
+        $role_cache[$person_id] = array();
+        return $role_cache[$person_id];
+    }
+
+    $role_rows = pba_supabase_get('Role', array(
+        'select'  => 'role_id,role_name',
+        'role_id' => 'in.(' . implode(',', $role_ids) . ')',
+        'limit'   => count($role_ids),
+    ));
+
+    if (is_wp_error($role_rows) || empty($role_rows)) {
+        $role_cache[$person_id] = array();
+        return $role_cache[$person_id];
+    }
+
+    $role_names = array();
+    foreach ($role_rows as $role_row) {
+        if (!empty($role_row['role_name'])) {
+            $role_names[] = (string) $role_row['role_name'];
+        }
+    }
+
+    sort($role_names);
+    $role_cache[$person_id] = array_values(array_unique($role_names));
+    return $role_cache[$person_id];
 }
 
 function pba_create_person_record($args) {
