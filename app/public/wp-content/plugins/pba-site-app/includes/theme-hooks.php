@@ -8,7 +8,6 @@ add_action('send_headers', 'pba_send_nocache_headers');
 add_filter('show_admin_bar', 'pba_maybe_hide_admin_bar');
 add_filter('login_redirect', 'pba_role_based_login_redirect', 10, 3);
 add_filter('wp_authenticate_user', 'pba_block_disabled_person_login', 10, 2);
-add_action('wp_login', 'pba_sync_wp_role_on_login', 10, 2);
 
 function pba_send_nocache_headers() {
     if (!is_admin()) {
@@ -29,32 +28,20 @@ function pba_role_based_login_redirect($redirect_to, $requested_redirect_to, $us
         return $redirect_to;
     }
 
-    $person_rows = pba_supabase_get('Person', array(
-        'select'     => 'person_id,wp_user_id',
-        'wp_user_id' => 'eq.' . (string) $user->ID,
-        'limit'      => 1,
-    ));
-
-    if (is_wp_error($person_rows) || empty($person_rows[0]['person_id'])) {
-        return home_url('/member-home/');
-    }
-
-    $person_id = (int) $person_rows[0]['person_id'];
-    $role_names = pba_get_active_supabase_role_names_for_person($person_id);
-
-    if (in_array('PBAAdmin', $role_names, true) || in_array('PBAHouseholdAdmin', $role_names, true)) {
+    /*
+     * Preserve current behavior, but allow PBA Admin to land
+     * on the same member home for now until a dedicated admin
+     * dashboard page is introduced.
+     */
+    if (current_user_can('pba_view_household_page')) {
         return home_url('/household/');
     }
 
-    if (in_array('PBABoardMember', $role_names, true)) {
-        return home_url('/board-documents/');
+    if (current_user_can('pba_view_member_home')) {
+        return home_url('/member-home/');
     }
 
-    if (in_array('PBACommitteeMember', $role_names, true)) {
-        return home_url('/committee-documents/');
-    }
-
-    return home_url('/member-home/');
+    return home_url('/');
 }
 
 function pba_block_disabled_person_login($user, $password) {
@@ -83,28 +70,4 @@ function pba_block_disabled_person_login($user, $password) {
     }
 
     return $user;
-}
-
-function pba_sync_wp_role_on_login($user_login, $user) {
-    if (!($user instanceof WP_User)) {
-        return;
-    }
-
-    if (!function_exists('pba_sync_wp_role_for_person')) {
-        return;
-    }
-
-    $person_rows = pba_supabase_get('Person', array(
-        'select'     => 'person_id,wp_user_id,email_address',
-        'wp_user_id' => 'eq.' . (string) $user->ID,
-        'limit'      => 1,
-    ));
-
-    if (is_wp_error($person_rows) || empty($person_rows[0]['person_id'])) {
-        return;
-    }
-
-    $person_id = (int) $person_rows[0]['person_id'];
-
-    pba_sync_wp_role_for_person((int) $user->ID, $person_id);
 }

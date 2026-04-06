@@ -63,7 +63,7 @@ function pba_render_member_home_shortcode() {
         );
     }
 
-    if (in_array('PBAAdmin', $role_names, true)) {
+    if (pba_current_user_has_pba_admin_access() || in_array('PBAAdmin', $role_names, true)) {
         $cards[] = array(
             'title' => 'Members',
             'description' => 'Manage member records, roles, and committee assignments.',
@@ -91,13 +91,14 @@ function pba_render_member_home_shortcode() {
             gap: 18px;
             margin-top: 24px;
         }
-
         .pba-member-home-card {
             border: 1px solid #d7d7d7;
             border-radius: 8px;
             padding: 18px;
             background: #ffffff;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
         }
 
         .pba-member-home-card h3 {
@@ -126,7 +127,7 @@ function pba_render_member_home_shortcode() {
         }
 
         .pba-member-home-roles {
-            margin-top: 10px;
+            margin-top: 5px;
             color: #666;
             font-size: 14px;
         }
@@ -135,13 +136,6 @@ function pba_render_member_home_shortcode() {
     <div class="pba-member-home-wrap">
         <h2>Welcome<?php echo $first_name !== '' ? ', ' . esc_html($first_name) : ''; ?></h2>
         <p>Select a section below to get started.</p>
-
-        <?php if (!empty($role_names)) : ?>
-            <div class="pba-member-home-roles">
-                Your PBA roles: <?php echo esc_html(implode(', ', $role_names)); ?>
-            </div>
-        <?php endif; ?>
-
         <div class="pba-member-home-grid">
             <?php foreach ($cards as $card) : ?>
                 <div class="pba-member-home-card">

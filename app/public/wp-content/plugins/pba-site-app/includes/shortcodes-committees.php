@@ -52,10 +52,20 @@ function pba_render_committees_list_view() {
         return '<p>Unable to load committees.</p>';
     }
 
+    $committee_ids = array();
+    foreach ($rows as $row) {
+        $committee_id = isset($row['committee_id']) ? (int) $row['committee_id'] : 0;
+        if ($committee_id > 0) {
+            $committee_ids[] = $committee_id;
+        }
+    }
+
+    $committee_rosters = pba_get_committee_roster_for_display($committee_ids);
+
     ob_start();
     ?>
     <style>
-        .pba-committees-wrap { max-width: 1200px; margin: 0 auto; }
+        .pba-committees-wrap { max-width: 1400px; margin: 0 auto; }
         .pba-committees-table {
             width: 100%;
             border-collapse: collapse;
@@ -94,11 +104,27 @@ function pba_render_committees_list_view() {
         .pba-committees-message.error {
             background: #f8e9e9;
         }
+        .pba-committees-muted {
+            color: #666;
+        }
+       .pba-committee-roster-entry {
+            margin: 0;
+            padding: 6px 8px;
+            border-radius: 4px;
+       }
+
+       .pba-committee-roster-entry + .pba-committee-roster-entry {
+            margin-top: 4px;
+       }
+
+      .pba-committee-roster-entry:nth-child(even) {
+            background: #eef3f8;
+      }
+
     </style>
 
     <div class="pba-committees-wrap">
-        <!-- h2>Committees</h2 -->
-        <p>View and manage committees and active membership counts.</p>
+        <p>View and manage committees and their current board and member rosters.</p>
 
         <?php echo pba_render_committees_status_message(); ?>
 
@@ -109,6 +135,7 @@ function pba_render_committees_list_view() {
                     <th>Description</th>
                     <th>Status</th>
                     <th>Display Order</th>
+                    <th>Board</th>
                     <th>Members</th>
                     <th>Last Modified</th>
                     <th>Action</th>
@@ -117,20 +144,68 @@ function pba_render_committees_list_view() {
             <tbody>
                 <?php if (empty($rows)) : ?>
                     <tr>
-                        <td colspan="7">No committees found.</td>
+                        <td colspan="8">No committees found.</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($rows as $row) : ?>
                         <?php
                         $committee_id = isset($row['committee_id']) ? (int) $row['committee_id'] : 0;
-                        $member_count = pba_get_committee_member_count_in_app($committee_id);
+                        $roster = isset($committee_rosters[$committee_id]) ? $committee_rosters[$committee_id] : array(
+                            'board' => array(),
+                            'members' => array(),
+                        );
                         ?>
                         <tr>
                             <td><?php echo esc_html($row['committee_name'] ?? ''); ?></td>
                             <td><?php echo esc_html($row['committee_description'] ?? ''); ?></td>
                             <td><?php echo esc_html($row['status'] ?? ''); ?></td>
                             <td><?php echo esc_html($row['display_order'] ?? ''); ?></td>
-                            <td><?php echo esc_html($member_count); ?></td>
+                            <td>
+                                <?php if (!empty($roster['board'])) : ?>
+                                    <?php foreach ($roster['board'] as $person) : ?>
+                                        <div class="pba-committee-roster-entry">
+                                            <?php
+                                            $label = $person['name'];
+
+                                            if (!empty($person['role'])) {
+                                                $label .= ', ' . $person['role'];
+                                            }
+
+                                            if (!empty($person['status']) && strcasecmp($person['status'], 'Active') !== 0) {
+                                                $label .= ' (' . $person['status'] . ')';
+                                            }
+
+                                            echo esc_html($label);
+                                            ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <span class="pba-committees-muted">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($roster['members'])) : ?>
+                                    <?php foreach ($roster['members'] as $person) : ?>
+                                        <div class="pba-committee-roster-entry">
+                                            <?php
+                                            $label = $person['name'];
+
+                                            if (!empty($person['role'])) {
+                                                $label .= ', ' . $person['role'];
+                                            }
+
+                                            if (!empty($person['status']) && strcasecmp($person['status'], 'Active') !== 0) {
+                                                $label .= ' (' . $person['status'] . ')';
+                                            }
+
+                                            echo esc_html($label);
+                                            ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <span class="pba-committees-muted">—</span>
+                                <?php endif; ?>
+                            </td>
                             <td><?php echo esc_html(pba_format_datetime_display($row['last_modified_at'] ?? '')); ?></td>
                             <td>
                                 <a class="pba-committees-btn secondary" href="<?php echo esc_url(add_query_arg(array(
@@ -288,4 +363,115 @@ function pba_get_committee_member_count_in_app($committee_id) {
     }
 
     return count($rows);
+}
+
+function pba_get_committee_roster_for_display($committee_ids) {
+    $committee_ids = array_values(array_unique(array_map('intval', (array) $committee_ids)));
+    $committee_ids = array_filter($committee_ids, function ($id) {
+        return $id > 0;
+    });
+
+    if (empty($committee_ids)) {
+        return array();
+    }
+
+    $membership_rows = pba_supabase_get('Person_to_Committee', array(
+        'select'       => 'committee_id,person_id,committee_role,is_active',
+        'committee_id' => 'in.(' . implode(',', $committee_ids) . ')',
+        'is_active'    => 'eq.true',
+        'limit'        => max(count($committee_ids) * 10, count($committee_ids)),
+    ));
+
+    if (is_wp_error($membership_rows) || !is_array($membership_rows) || empty($membership_rows)) {
+        return array();
+    }
+
+    $person_ids = array();
+    foreach ($membership_rows as $row) {
+        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+        if ($person_id > 0) {
+            $person_ids[] = $person_id;
+        }
+    }
+
+    $person_ids = array_values(array_unique($person_ids));
+
+    if (empty($person_ids)) {
+        return array();
+    }
+
+    $people_rows = pba_supabase_get('Person', array(
+        'select'    => 'person_id,first_name,last_name,email_address,status',
+        'person_id' => 'in.(' . implode(',', $person_ids) . ')',
+        'limit'     => count($person_ids),
+    ));
+
+    if (is_wp_error($people_rows) || !is_array($people_rows)) {
+        return array();
+    }
+
+    $people_by_id = array();
+    foreach ($people_rows as $person) {
+        $person_id = isset($person['person_id']) ? (int) $person['person_id'] : 0;
+        if ($person_id < 1) {
+            continue;
+        }
+
+        $people_by_id[$person_id] = array(
+            'name'   => trim(((string) ($person['first_name'] ?? '')) . ' ' . ((string) ($person['last_name'] ?? ''))),
+            'email'  => trim((string) ($person['email_address'] ?? '')),
+            'status' => trim((string) ($person['status'] ?? '')),
+        );
+    }
+
+    $roster_by_committee = array();
+
+    foreach ($membership_rows as $row) {
+        $committee_id = isset($row['committee_id']) ? (int) $row['committee_id'] : 0;
+        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+
+        if ($committee_id < 1 || $person_id < 1 || !isset($people_by_id[$person_id])) {
+            continue;
+        }
+
+        $person = $people_by_id[$person_id];
+        $role = trim((string) ($row['committee_role'] ?? ''));
+        $status = trim((string) ($person['status'] ?? ''));
+
+        if (!isset($roster_by_committee[$committee_id])) {
+            $roster_by_committee[$committee_id] = array(
+                'board'   => array(),
+                'members' => array(),
+            );
+        }
+
+        $display_name = $person['name'] !== '' ? $person['name'] : 'Unnamed member';
+
+        $entry = array(
+            'name'   => $display_name,
+            'email'  => $person['email'],
+            'role'   => $role,
+            'status' => $status,
+        );
+
+        $role_lc = strtolower($role);
+
+        if ($role_lc === 'chair' || $role_lc === 'co-chair' || $role_lc === 'treasurer' || $role_lc === 'secretary' || $role_lc === 'vice chair' || $role_lc === 'vice-chair' || $role_lc === 'president' || $role_lc === 'vice president' || $role_lc === 'vice-president') {
+            $roster_by_committee[$committee_id]['board'][] = $entry;
+        } else {
+            $roster_by_committee[$committee_id]['members'][] = $entry;
+        }
+    }
+
+    foreach ($roster_by_committee as $committee_id => $groups) {
+        usort($roster_by_committee[$committee_id]['board'], function ($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+
+        usort($roster_by_committee[$committee_id]['members'], function ($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+    }
+
+    return $roster_by_committee;
 }

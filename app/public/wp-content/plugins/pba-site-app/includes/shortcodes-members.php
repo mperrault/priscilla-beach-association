@@ -9,6 +9,72 @@ add_action('init', 'pba_register_members_shortcode');
 function pba_register_members_shortcode() {
     add_shortcode('pba_members', 'pba_render_members_shortcode');
 }
+if (!function_exists('pba_get_active_role_names_for_person')) {
+    function pba_get_active_role_names_for_person($person_id) {
+        static $role_cache = array();
+
+        $person_id = (int) $person_id;
+
+        if ($person_id < 1) {
+            return array();
+        }
+
+        if (array_key_exists($person_id, $role_cache)) {
+            return $role_cache[$person_id];
+        }
+
+        $rows = pba_supabase_get('Person_to_Role', array(
+            'select'    => 'role_id',
+            'person_id' => 'eq.' . $person_id,
+            'is_active' => 'eq.true',
+        ));
+
+        if (is_wp_error($rows) || empty($rows)) {
+            $role_cache[$person_id] = array();
+            return $role_cache[$person_id];
+        }
+
+        $role_ids = array();
+
+        foreach ($rows as $row) {
+            $role_id = isset($row['role_id']) ? (int) $row['role_id'] : 0;
+            if ($role_id > 0) {
+                $role_ids[] = $role_id;
+            }
+        }
+
+        $role_ids = array_values(array_unique($role_ids));
+
+        if (empty($role_ids)) {
+            $role_cache[$person_id] = array();
+            return $role_cache[$person_id];
+        }
+
+        $role_rows = pba_supabase_get('Role', array(
+            'select'  => 'role_id,role_name',
+            'role_id' => 'in.(' . implode(',', $role_ids) . ')',
+            'limit'   => count($role_ids),
+        ));
+
+        if (is_wp_error($role_rows) || empty($role_rows)) {
+            $role_cache[$person_id] = array();
+            return $role_cache[$person_id];
+        }
+
+        $role_names = array();
+
+        foreach ($role_rows as $role_row) {
+            if (!empty($role_row['role_name'])) {
+                $role_names[] = (string) $role_row['role_name'];
+            }
+        }
+
+        sort($role_names);
+        $role_cache[$person_id] = array_values(array_unique($role_names));
+
+        return $role_cache[$person_id];
+    }
+}
 
 function pba_render_members_shortcode() {
     if (!is_user_logged_in()) {

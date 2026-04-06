@@ -4,30 +4,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-function pba_current_person_is_admin() {
-    return pba_current_person_has_role('PBAAdmin');
-}
-
-function pba_current_person_is_board_member() {
-    return pba_current_person_has_role('PBABoardMember');
-}
-
-function pba_current_person_is_committee_member() {
-    return pba_current_person_has_role('PBACommitteeMember');
-}
-
-function pba_current_person_id() {
-    $person = pba_get_current_person_record();
-
-    if (!$person || empty($person['person_id'])) {
-        return 0;
-    }
-
-    return (int) $person['person_id'];
-}
-
 function pba_current_person_has_active_committee_assignment($committee_id) {
-    $person_id = pba_current_person_id();
+    $person_id = function_exists('pba_current_person_id') ? pba_current_person_id() : 0;
     $committee_id = (int) $committee_id;
 
     if ($person_id < 1 || $committee_id < 1) {
@@ -53,7 +31,7 @@ function pba_get_current_person_committee_ids() {
         return $committee_ids_cache;
     }
 
-    $person_id = pba_current_person_id();
+    $person_id = function_exists('pba_current_person_id') ? pba_current_person_id() : 0;
 
     if ($person_id < 1) {
         $committee_ids_cache = array();
@@ -75,6 +53,7 @@ function pba_get_current_person_committee_ids() {
     }
 
     $ids = array();
+
     foreach ($rows as $row) {
         if (!empty($row['committee_id'])) {
             $ids[] = (int) $row['committee_id'];
@@ -83,6 +62,7 @@ function pba_get_current_person_committee_ids() {
 
     $committee_ids_cache = array_values(array_unique($ids));
     $has_loaded_committee_ids = true;
+
     return $committee_ids_cache;
 }
 
@@ -127,6 +107,7 @@ function pba_get_current_person_committee_rows() {
 
     $committee_rows_cache = $rows;
     $has_loaded_committee_rows = true;
+
     return $committee_rows_cache;
 }
 
@@ -151,11 +132,13 @@ function pba_get_document_folder($folder_id) {
 }
 
 function pba_current_person_can_manage_board_folders() {
-    return pba_current_person_is_admin() || pba_current_person_is_board_member();
+    return
+        (function_exists('pba_current_person_is_admin') && pba_current_person_is_admin()) ||
+        (function_exists('pba_current_person_is_board_member') && pba_current_person_is_board_member());
 }
 
 function pba_current_person_can_manage_committee_folder($committee_id) {
-    if (pba_current_person_is_admin()) {
+    if (function_exists('pba_current_person_is_admin') && pba_current_person_is_admin()) {
         return true;
     }
 
@@ -172,7 +155,7 @@ function pba_current_person_can_manage_folder($folder_id) {
     $scope = isset($folder['folder_scope']) ? (string) $folder['folder_scope'] : '';
 
     if ($scope === 'Admin') {
-        return pba_current_person_is_admin();
+        return function_exists('pba_current_person_is_admin') && pba_current_person_is_admin();
     }
 
     if ($scope === 'Board') {
@@ -191,7 +174,7 @@ function pba_current_person_can_create_folder($folder_scope, $committee_id = 0) 
     $committee_id = (int) $committee_id;
 
     if ($folder_scope === 'Admin') {
-        return pba_current_person_is_admin();
+        return function_exists('pba_current_person_is_admin') && pba_current_person_is_admin();
     }
 
     if ($folder_scope === 'Board') {
@@ -211,10 +194,10 @@ function pba_current_person_can_view_folder($folder_id) {
 
 function pba_get_active_document_folders($folder_scope, $committee_id = null) {
     $args = array(
-        'select'    => 'document_folder_id,folder_name,folder_scope,committee_id,parent_folder_id,display_order,is_active,created_by_person_id,notes,last_modified_at',
+        'select'       => 'document_folder_id,folder_name,folder_scope,committee_id,parent_folder_id,display_order,is_active,created_by_person_id,notes,last_modified_at',
         'folder_scope' => 'eq.' . $folder_scope,
-        'is_active' => 'eq.true',
-        'order'     => 'display_order.asc,folder_name.asc',
+        'is_active'    => 'eq.true',
+        'order'        => 'display_order.asc,folder_name.asc',
     );
 
     if ($committee_id === null) {

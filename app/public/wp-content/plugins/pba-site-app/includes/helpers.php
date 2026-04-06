@@ -17,7 +17,6 @@ function pba_allowed_streets() {
         'Quaker Rd',
         'Robbins Hill Rd',
         'Rocky Hill Rd',
-        'Theatre Colony Way',
         'Warrendale Rd',
         'Wellington Rd',
     );
@@ -35,7 +34,7 @@ function pba_registration_redirect($status) {
 }
 
 function pba_household_redirect($status = '') {
-    $url = home_url('/my-household/');
+    $url = home_url('/household/');
 
     if ($status !== '') {
         $url = add_query_arg('pba_household_status', rawurlencode($status), $url);
@@ -64,15 +63,6 @@ function pba_member_invite_redirect($status = '', $invite_token = '') {
     exit;
 }
 
-function pba_current_user_has_house_admin_access() {
-    if (!is_user_logged_in()) {
-        return false;
-    }
-
-    return pba_current_person_has_role('PBAHouseholdAdmin')
-        || pba_current_person_has_role('PBAAdmin');
-}
-
 function pba_get_current_house_admin_person_id() {
     return get_user_meta(get_current_user_id(), 'pba_person_id', true);
 }
@@ -90,7 +80,7 @@ function pba_format_datetime_display($value) {
         $dt = new DateTime($value);
         $tz = new DateTimeZone('America/New_York');
         $dt->setTimezone($tz);
-        return $dt->format('m/d/y h:i A');
+        return $dt->format('m/d/Y h:i A T');
     } catch (Exception $e) {
         return (string) $value;
     }
@@ -110,7 +100,7 @@ function pba_get_household_label($household_id) {
     ));
 
     if (is_wp_error($rows) || empty($rows[0])) {
-        return 'household #' . $household_id;
+        return 'Household #' . $household_id;
     }
 
     $row = $rows[0];
@@ -120,10 +110,10 @@ function pba_get_household_label($household_id) {
     $label = trim($street_number . ' ' . $street_name);
 
     if ($label === '') {
-        return 'household #' . $household_id;
+        return 'Household #' . $household_id;
     }
 
-    return 'household ' . $label;
+    return $label;
 }
 
 function pba_get_person_display_name($person_id) {
@@ -224,7 +214,7 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
         'household_id'         => 'eq.' . $household_id,
         'invited_by_person_id' => 'eq.' . $invited_by_person_id,
         'status'               => 'eq.Pending',
-        'order'                => 'person_id.desc',
+        'order'                => 'created_at.desc',
     ));
 
     if (is_wp_error($pending_rows) || empty($pending_rows)) {
@@ -251,7 +241,6 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
                 'Person',
                 array(
                     'status' => 'Expired',
-                    'last_modified_at' => gmdate('c'),
                 ),
                 array(
                     'person_id' => 'eq.' . $person_id,
@@ -265,82 +254,4 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
             }
         }
     }
-}
-
-function pba_get_current_person_record() {
-    static $current_person_cache = null;
-    static $has_loaded_current_person = false;
-
-    if (!is_user_logged_in()) {
-        return false;
-    }
-
-    if ($has_loaded_current_person) {
-        return $current_person_cache;
-    }
-
-    $wp_user_id = (string) get_current_user_id();
-
-    $rows = pba_supabase_get('Person', array(
-        'select'     => 'person_id,household_id,first_name,last_name,email_address,status,wp_user_id',
-        'wp_user_id' => 'eq.' . $wp_user_id,
-        'limit'      => 1,
-    ));
-
-    $has_loaded_current_person = true;
-
-    if (is_wp_error($rows) || empty($rows[0])) {
-        $current_person_cache = false;
-        return $current_person_cache;
-    }
-
-    $current_person_cache = $rows[0];
-    return $current_person_cache;
-}
-
-function pba_get_active_role_names_for_person($person_id) {
-    return pba_get_active_supabase_role_names_for_person((int) $person_id);
-}
-
-function pba_get_current_person_role_names() {
-    static $current_role_names_cache = null;
-    static $has_loaded_current_role_names = false;
-
-    if ($has_loaded_current_role_names) {
-        return $current_role_names_cache;
-    }
-
-    $person = pba_get_current_person_record();
-
-    if (!$person || empty($person['person_id'])) {
-        $current_role_names_cache = array();
-        $has_loaded_current_role_names = true;
-        return $current_role_names_cache;
-    }
-
-    $current_role_names_cache = pba_get_active_role_names_for_person((int) $person['person_id']);
-    $has_loaded_current_role_names = true;
-    return $current_role_names_cache;
-}
-
-function pba_current_person_has_role($role_name) {
-    $roles = pba_get_current_person_role_names();
-    return in_array($role_name, $roles, true);
-}
-
-function pba_sync_wp_role_for_person($user_id, $person_id) {
-    $user_id = (int) $user_id;
-    $person_id = (int) $person_id;
-
-    if ($user_id < 1 || $person_id < 1 || !function_exists('pba_sync_user_roles_from_supabase')) {
-        return false;
-    }
-
-    $role_names = pba_get_active_supabase_role_names_for_person($person_id);
-
-    if (empty($role_names)) {
-        return false;
-    }
-
-    return pba_sync_user_roles_from_supabase($user_id, $role_names);
 }

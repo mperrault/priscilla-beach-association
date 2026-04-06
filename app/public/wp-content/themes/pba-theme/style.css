@@ -1072,3 +1072,15 @@ img {
   color: #0d3b66;
   border-color: #0d3b66;
 }
+
+.pba-member-home-btn {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 4px;
+    background: #0d3b66;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: auto;
+    align-self: flex-start;
+}

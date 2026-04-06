@@ -1,0 +1,123 @@
+Logged out visitor
+
+    HOME
+    CONTACT US
+    ABOUT
+    MEMBERSHIP
+    PHOTOS
+        - Remove Photo Upload
+        - expanded carasol features
+    EVENTS
+        - remove RENTAL AGREEMENT
+        - remove LIABILITY AGREEMENT FORM
+    CALENDAR??
+
+PBAMember
+    Typical Features:
+        Key Information & Features on HOA Websites:
+        Governing Documents: Access to Covenants, Conditions, and Restrictions (CC&Rs), bylaws, and articles of incorporation.
+        Community Management: News, announcements, event calendars, and updates on maintenance schedules.
+        Resident Portal: Secure, personal accounts for paying dues online, viewing account balances, and submitting requests.
+        Forms and Submissions: Digital forms for architectural review requests (ARC), maintenance complaints, and violation reporting.
+        Financial & Meeting Info: Approved annual budgets, financial reports, and minutes from board meetings.
+        Amenities & Directory: Rules for common areas, reservation systems for clubhouses or pools, and a community directory.
+PBAMember:
+    My Home 
+        Member profile
+        Access rights/Role
+        News, announcements
+    Calendar
+    Directory
+    Meeting Info 
+        - Agenda
+        - Minutes
+    Governing Documents
+        Bylaws
+        Rental Agreement
+        Liability Agreement
+    Dues
+        Balance history
+        Online Payments
+
+PBAHouseholdAdmin:
+    My Home
+        Member profile
+        Access rights/Role
+        News, announcements
+    My Household
+        Invitations
+    Calendar
+    Directory
+    Meeting Info 
+        - Agenda
+        - Minutes
+    Governing Documents
+        Bylaws
+    Dues
+        Balance history
+        Online Payments
+
+PBACommitteeMember:
+    My Home
+        Member profile
+        Access rights/Role
+        News, announcements
+    Calendar
+    Directory
+    Meeting Info 
+        - Agenda
+        - Minutes
+    Committee
+        View/Manage Committee Docs
+            Upload
+    Governing Documents
+        Bylaws
+    Dues
+        Balance history
+        Online Payments
+
+PBABoardMember:
+    Home 
+        Member profile
+        Access rights/Role
+        News, announcements
+    Calendar
+    Directory
+    Meeting Info 
+        - Agenda
+        - Minutes
+    Board
+        View/Manage Board Docs
+            Upload
+    Governing Documents
+        Bylaws
+    Dues
+        Balance history
+        Online Payments
+
+PBAAdmin:
+    Home 
+        Member profile
+        Access rights/Role
+        News, announcements
+    Households
+        Invitations
+            - All households
+            - Send invitations in context of Association
+        Map/Search/View/Edit
+    Calendar
+        R/W Access
+    Directory 
+        R/W access
+    Meeting Info 
+        - Agenda
+        - Minutes
+        - R/W access
+    Board
+        View/Manage Board Docs
+            Upload
+    Committee
+        View/Manage Committee Docs
+            Upload
+    Governing Documents
+        Bylaws R/W
