@@ -47,152 +47,1061 @@ function pba_render_households_admin_status_message() {
     return '<div class="' . esc_attr($class) . '">' . esc_html(ucfirst($message)) . '</div>';
 }
 
-function pba_render_households_admin_list_view() {
-    $search = isset($_GET['household_search']) ? sanitize_text_field(wp_unslash($_GET['household_search'])) : '';
+function pba_get_households_admin_list_request_args() {
+    $allowed_sort_columns = array(
+        'address',
+        'owner',
+        'house_admin',
+        'status',
+        'active_members',
+        'total_members',
+        'owner_occupied',
+        'last_modified',
+    );
 
+    $allowed_sort_directions = array('asc', 'desc');
+    $allowed_per_page = array(25, 50, 100);
+
+    $search = isset($_GET['household_search']) ? sanitize_text_field(wp_unslash($_GET['household_search'])) : '';
+    $status_filter = isset($_GET['household_status_filter']) ? sanitize_text_field(wp_unslash($_GET['household_status_filter'])) : '';
+    $owner_occupied_filter = isset($_GET['household_owner_occupied']) ? sanitize_text_field(wp_unslash($_GET['household_owner_occupied'])) : '';
+    $sort = isset($_GET['household_sort']) ? sanitize_key(wp_unslash($_GET['household_sort'])) : 'address';
+    $direction = isset($_GET['household_direction']) ? strtolower(sanitize_text_field(wp_unslash($_GET['household_direction']))) : 'asc';
+    $page = isset($_GET['household_page']) ? max(1, absint($_GET['household_page'])) : 1;
+    $per_page = isset($_GET['household_per_page']) ? absint($_GET['household_per_page']) : 25;
+
+    if (!in_array($sort, $allowed_sort_columns, true)) {
+        $sort = 'address';
+    }
+
+    if (!in_array($direction, $allowed_sort_directions, true)) {
+        $direction = 'asc';
+    }
+
+    if (!in_array($per_page, $allowed_per_page, true)) {
+        $per_page = 25;
+    }
+
+    if (!in_array($owner_occupied_filter, array('', 'yes', 'no'), true)) {
+        $owner_occupied_filter = '';
+    }
+
+    return array(
+        'search' => $search,
+        'status_filter' => $status_filter,
+        'owner_occupied_filter' => $owner_occupied_filter,
+        'sort' => $sort,
+        'direction' => $direction,
+        'page' => $page,
+        'per_page' => $per_page,
+    );
+}
+
+function pba_get_households_admin_base_url() {
+    return home_url('/households/');
+}
+
+function pba_get_households_admin_list_url($overrides = array()) {
+    $args = pba_get_households_admin_list_request_args();
+
+    $query_args = array(
+        'household_search' => $args['search'],
+        'household_status_filter' => $args['status_filter'],
+        'household_owner_occupied' => $args['owner_occupied_filter'],
+        'household_sort' => $args['sort'],
+        'household_direction' => $args['direction'],
+        'household_page' => $args['page'],
+        'household_per_page' => $args['per_page'],
+    );
+
+    foreach ($overrides as $key => $value) {
+        $query_args[$key] = $value;
+    }
+
+    foreach ($query_args as $key => $value) {
+        if ($value === '' || $value === null) {
+            unset($query_args[$key]);
+        }
+    }
+
+    return add_query_arg($query_args, pba_get_households_admin_base_url());
+}
+
+function pba_render_households_admin_list_view() {
+    $request_args = pba_get_households_admin_list_request_args();
+    $data = pba_get_households_admin_list_data($request_args);
+
+    if (is_wp_error($data)) {
+        return '<p>Unable to load households.</p>';
+    }
+
+    ob_start();
+    ?>
+    <style>
+        .pba-households-wrap {
+            max-width: 1480px;
+            margin: 0 auto;
+            color: #17324a;
+        }
+        .pba-households-message {
+            margin: 0 0 16px;
+            padding: 12px 16px;
+            background: #eef6ee;
+            border-radius: 10px;
+        }
+        .pba-households-message.error {
+            background: #f8e9e9;
+        }
+        .pba-households-hero {
+            margin: 0 0 20px;
+            padding: 24px;
+            border: 1px solid #dde7f0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f9fc 100%);
+            box-shadow: 0 8px 24px rgba(14, 46, 76, 0.06);
+        }
+        .pba-households-hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .pba-households-hero p {
+            margin: 0;
+            color: #4e6477;
+            max-width: 760px;
+        }
+        .pba-households-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-top: 20px;
+        }
+        .pba-households-kpi {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e3ebf3;
+            box-shadow: 0 6px 18px rgba(14, 46, 76, 0.05);
+        }
+        .pba-households-kpi-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #5f7386;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .pba-households-kpi-value {
+            font-size: 28px;
+            line-height: 1.1;
+            font-weight: 700;
+            color: #102a43;
+        }
+        .pba-households-card {
+            border: 1px solid #dde7f0;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 10px 24px rgba(14, 46, 76, 0.05);
+            overflow: hidden;
+        }
+        .pba-households-toolbar {
+            padding: 18px;
+            border-bottom: 1px solid #e5edf5;
+            background: #fbfdff;
+        }
+        .pba-households-search {
+            display: grid;
+            grid-template-columns: minmax(220px, 2.2fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(120px, 140px) auto auto;
+            gap: 12px;
+            align-items: end;
+        }
+        .pba-households-field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #607487;
+        }
+        .pba-households-field input[type="text"],
+        .pba-households-field select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cdd9e5;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #17324a;
+            box-sizing: border-box;
+        }
+        .pba-households-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 16px;
+            border: 1px solid #0d3b66;
+            background: #0d3b66;
+            color: #fff;
+            border-radius: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+            line-height: 1.2;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
+        }
+        .pba-households-btn:hover {
+            background: #0b3154;
+            border-color: #0b3154;
+            transform: translateY(-1px);
+            color: #fff;
+        }
+        .pba-households-btn.secondary {
+            background: #ffffff;
+            color: #0d3b66;
+            border: 1px solid #c9d8e6;
+            border-radius: 999px;
+            min-height: 38px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(13, 59, 102, 0.04);
+        }
+        .pba-households-btn.secondary:hover {
+            background: #f3f8fc;
+            color: #0b3154;
+            border-color: #9fb8cd;
+            box-shadow: 0 4px 12px rgba(13, 59, 102, 0.10);
+            transform: translateY(-1px);
+        }
+        .pba-households-btn.secondary:focus {
+            outline: 2px solid #9fc2df;
+            outline-offset: 2px;
+        }
+        .pba-households-resultsbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e5edf5;
+            color: #597084;
+            font-size: 14px;
+        }
+        .pba-households-filter-summary {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .pba-households-chip,
+        .pba-households-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .pba-households-chip {
+            background: #eef4fa;
+            color: #31536f;
+        }
+        .pba-households-badge {
+            background: #eef3f8;
+            color: #21425c;
+        }
+        .pba-households-badge.status-active,
+        .pba-households-badge.owner-yes {
+            background: #eaf7ef;
+            color: #21633f;
+        }
+        .pba-households-badge.status-inactive,
+        .pba-households-badge.owner-no {
+            background: #f7eee7;
+            color: #8f4a1f;
+        }
+        .pba-households-badge.status-unknown {
+            background: #eef3f8;
+            color: #46617a;
+        }
+        .pba-households-grid-wrap {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+        .pba-households-grid-wrap.is-loading::after {
+            content: "Refreshing…";
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 3;
+            padding: 7px 12px;
+            background: rgba(13, 59, 102, 0.92);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .pba-households-table {
+            width: 100%;
+            min-width: 1120px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .pba-households-table th,
+        .pba-households-table td {
+            padding: 14px 16px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid #edf2f7;
+            background: #fff;
+        }
+        .pba-households-table tbody tr:hover td {
+            background: #fbfdff;
+        }
+        .pba-households-table th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f8fbfe;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #607487;
+            font-weight: 800;
+        }
+        .pba-households-table th:first-child { border-top-left-radius: 12px; }
+        .pba-households-table th:last-child { border-top-right-radius: 12px; }
+        .pba-households-table td strong {
+            color: #17324a;
+            font-size: 15px;
+        }
+        .pba-households-muted {
+            color: #647b8d;
+            font-size: 13px;
+        }
+        .pba-households-sort-link {
+            color: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pba-households-sort-link:hover {
+            color: #0d3b66;
+        }
+        .pba-households-sort-indicator {
+            display: inline-block;
+            min-width: 14px;
+            color: #0d3b66;
+        }
+        .pba-households-empty {
+            padding: 34px 20px;
+            text-align: center;
+            color: #5f7386;
+        }
+        .pba-households-pagination {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            padding: 16px 18px 18px;
+            flex-wrap: wrap;
+        }
+        .pba-households-page-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .pba-households-page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            min-height: 42px;
+            padding: 0 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            border: 1px solid #d4e0eb;
+            background: #fff;
+            color: #17324a;
+            font-weight: 700;
+        }
+        .pba-households-page-link:hover {
+            background: #f5f9fd;
+            color: #17324a;
+        }
+        .pba-households-page-link.current {
+            background: #0d3b66;
+            border-color: #0d3b66;
+            color: #fff;
+        }
+        .pba-households-skeleton {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            padding: 18px;
+        }
+        .pba-households-grid-wrap.is-loading .pba-households-skeleton {
+            display: grid;
+        }
+        .pba-households-skeleton-line {
+            height: 14px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #edf3f8 0%, #f7fafc 50%, #edf3f8 100%);
+            background-size: 200% 100%;
+            animation: pba-households-shimmer 1.4s linear infinite;
+        }
+        @keyframes pba-households-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        @media (max-width: 1080px) {
+            .pba-households-search {
+                grid-template-columns: repeat(2, minmax(220px, 1fr));
+            }
+        }
+        @media (max-width: 680px) {
+            .pba-households-hero { padding: 20px; }
+            .pba-households-search {
+                grid-template-columns: 1fr;
+            }
+            .pba-households-pagination {
+                align-items: flex-start;
+            }
+        }
+    </style>
+
+    <div class="pba-households-wrap">
+        <?php echo pba_render_households_admin_status_message(); ?>
+
+        <div id="pba-households-admin-root">
+            <?php echo pba_render_households_admin_dynamic_content($data, $request_args); ?>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var root = document.getElementById('pba-households-admin-root');
+
+            if (!root || !window.fetch || !window.URL) {
+                return;
+            }
+
+            function getForm() {
+                return root.querySelector('#pba-households-search-form');
+            }
+
+            function getShell() {
+                return root.querySelector('.pba-households-admin-list-shell');
+            }
+
+            function bindInteractiveElements() {
+                var form = getForm();
+                if (form && form.dataset.bound !== '1') {
+                    form.dataset.bound = '1';
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        var url = buildFormUrl(form);
+                        window.history.pushState({}, '', url);
+                        fetchIntoRoot(url);
+                    });
+                }
+
+                var pageLinks = root.querySelectorAll('[data-households-ajax-link="1"]');
+                pageLinks.forEach(function (link) {
+                    if (link.dataset.bound === '1') {
+                        return;
+                    }
+
+                    link.dataset.bound = '1';
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        window.history.pushState({}, '', link.href);
+                        fetchIntoRoot(link.href);
+                    });
+                });
+            }
+
+            function setLoading(isLoading) {
+                var shell = getShell();
+                if (!shell) {
+                    return;
+                }
+
+                var wrap = shell.querySelector('.pba-households-grid-wrap');
+                if (!wrap) {
+                    return;
+                }
+
+                if (isLoading) {
+                    wrap.classList.add('is-loading');
+                } else {
+                    wrap.classList.remove('is-loading');
+                }
+            }
+
+            function buildFormUrl(form) {
+                var actionUrl = form.action || window.location.pathname;
+                var parsed = new URL(actionUrl, window.location.origin);
+                var params = new URLSearchParams(new FormData(form));
+                parsed.search = params.toString();
+                return parsed.toString();
+            }
+
+            function fetchIntoRoot(url) {
+                setLoading(true);
+
+                var parsed = new URL(url, window.location.origin);
+                parsed.searchParams.set('pba_households_partial', '1');
+
+                window.fetch(parsed.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+                    return response.text();
+                })
+                .then(function (html) {
+                    root.innerHTML = html;
+                    bindInteractiveElements();
+                })
+                .catch(function () {
+                    window.location.href = url;
+                })
+                .finally(function () {
+                    setLoading(false);
+                });
+            }
+
+            window.addEventListener('popstate', function () {
+                fetchIntoRoot(window.location.href);
+            });
+
+            bindInteractiveElements();
+        })();
+    </script>
+    <?php
+
+    return ob_get_clean();
+}
+
+function pba_render_households_admin_dynamic_content($data, $request_args) {
+    ob_start();
+    ?>
+    <div class="pba-households-hero">
+        <div class="pba-households-hero-top">
+            <div>
+                <p>Browse and manage household records with a faster, richer table experience. Search, filter, sort, and page through the list without a full page refresh.</p>
+            </div>
+        </div>
+        <div class="pba-households-kpis">
+            <div class="pba-households-kpi">
+                <span class="pba-households-kpi-label">Filtered Households</span>
+                <span class="pba-households-kpi-value"><?php echo esc_html(number_format_i18n($data['total_filtered'])); ?></span>
+            </div>
+            <div class="pba-households-kpi">
+                <span class="pba-households-kpi-label">On This Page</span>
+                <span class="pba-households-kpi-value"><?php echo esc_html(number_format_i18n(count($data['page_rows']))); ?></span>
+            </div>
+            <div class="pba-households-kpi">
+                <span class="pba-households-kpi-label">Page</span>
+                <span class="pba-households-kpi-value"><?php echo esc_html(number_format_i18n($data['pagination']['current_page'])); ?> / <?php echo esc_html(number_format_i18n($data['pagination']['total_pages'])); ?></span>
+            </div>
+            <div class="pba-households-kpi">
+                <span class="pba-households-kpi-label">Page Size</span>
+                <span class="pba-households-kpi-value"><?php echo esc_html(number_format_i18n($request_args['per_page'])); ?></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="pba-households-card">
+        <div class="pba-households-toolbar">
+            <form method="get" class="pba-households-search" id="pba-households-search-form">
+                <input type="hidden" name="household_page" value="1">
+                <input type="hidden" name="household_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
+                <input type="hidden" name="household_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
+
+                <div class="pba-households-field">
+                    <label for="household_search">Search</label>
+                    <input type="text" id="household_search" name="household_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Address, owner, or house admin">
+                </div>
+
+                <div class="pba-households-field">
+                    <label for="household_status_filter">Status</label>
+                    <select id="household_status_filter" name="household_status_filter">
+                        <option value="">All statuses</option>
+                        <?php foreach ($data['filter_options']['statuses'] as $status_option) : ?>
+                            <option value="<?php echo esc_attr($status_option); ?>" <?php selected($request_args['status_filter'], $status_option); ?>><?php echo esc_html($status_option); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="pba-households-field">
+                    <label for="household_owner_occupied">Owner occupied</label>
+                    <select id="household_owner_occupied" name="household_owner_occupied">
+                        <option value="">All</option>
+                        <option value="yes" <?php selected($request_args['owner_occupied_filter'], 'yes'); ?>>Yes</option>
+                        <option value="no" <?php selected($request_args['owner_occupied_filter'], 'no'); ?>>No</option>
+                    </select>
+                </div>
+
+                <div class="pba-households-field">
+                    <label for="household_per_page">Rows</label>
+                    <select id="household_per_page" name="household_per_page">
+                        <option value="25" <?php selected($request_args['per_page'], 25); ?>>25</option>
+                        <option value="50" <?php selected($request_args['per_page'], 50); ?>>50</option>
+                        <option value="100" <?php selected($request_args['per_page'], 100); ?>>100</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="pba-households-btn">Apply</button>
+                <a href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>" class="pba-households-btn secondary">Reset</a>
+            </form>
+        </div>
+
+        <div class="pba-households-admin-list-shell">
+            <?php echo pba_render_households_admin_list_shell($data, $request_args); ?>
+        </div>
+    </div>
+    <?php
+
+    return ob_get_clean();
+}
+
+function pba_get_households_admin_list_data($request_args) {
     $rows = pba_supabase_get('Household', array(
         'select' => 'household_id,pb_street_number,pb_street_name,household_admin_first_name,household_admin_last_name,household_status,owner_occupied,last_modified_at,owner_name_raw',
         'order'  => 'pb_street_name.asc,pb_street_number.asc',
     ));
 
-    if (is_wp_error($rows)) {
-        return '<p>Unable to load households.</p>';
+    if (is_wp_error($rows) || !is_array($rows)) {
+        return is_wp_error($rows) ? $rows : new WP_Error('pba_households_load_failed', 'Unable to load households.');
     }
 
-    if ($search !== '') {
-        $rows = array_values(array_filter($rows, function ($row) use ($search) {
-            $haystack = implode(' ', array(
-                isset($row['pb_street_number']) ? $row['pb_street_number'] : '',
-                isset($row['pb_street_name']) ? $row['pb_street_name'] : '',
-                isset($row['owner_name_raw']) ? $row['owner_name_raw'] : '',
-                isset($row['household_admin_first_name']) ? $row['household_admin_first_name'] : '',
-                isset($row['household_admin_last_name']) ? $row['household_admin_last_name'] : '',
-            ));
+    $prepared_rows = array_map('pba_prepare_households_admin_list_row', $rows);
+    $filter_options = pba_get_households_admin_filter_options($prepared_rows);
+    $filtered_rows = pba_filter_households_admin_rows($prepared_rows, $request_args);
 
-            return stripos($haystack, $search) !== false;
-        }));
-    }
-
-    $household_ids = array();
-    foreach ($rows as $row) {
+    $all_filtered_household_ids = array();
+    foreach ($filtered_rows as $row) {
         $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
         if ($household_id > 0) {
-            $household_ids[] = $household_id;
+            $all_filtered_household_ids[] = $household_id;
         }
     }
 
-    $household_stats = pba_get_household_stats_for_admin_list($household_ids);
+    $stats_for_filtered = pba_get_household_stats_for_admin_list($all_filtered_household_ids);
 
+    foreach ($filtered_rows as $index => $row) {
+        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
+        $stats = isset($stats_for_filtered[$household_id]) ? $stats_for_filtered[$household_id] : array(
+            'active_count' => 0,
+            'total_count'  => 0,
+            'house_admin'  => '',
+        );
+
+        $filtered_rows[$index]['active_count'] = (int) $stats['active_count'];
+        $filtered_rows[$index]['total_count'] = (int) $stats['total_count'];
+
+        if ($filtered_rows[$index]['display_house_admin'] === '' && !empty($stats['house_admin'])) {
+            $filtered_rows[$index]['display_house_admin'] = (string) $stats['house_admin'];
+        }
+    }
+
+    $sorted_rows = pba_sort_households_admin_rows($filtered_rows, $request_args['sort'], $request_args['direction']);
+    $pagination = pba_paginate_households_admin_rows($sorted_rows, $request_args['page'], $request_args['per_page']);
+
+    return array(
+        'all_rows' => $prepared_rows,
+        'filtered_rows' => $sorted_rows,
+        'page_rows' => $pagination['rows'],
+        'filter_options' => $filter_options,
+        'pagination' => $pagination,
+        'total_filtered' => count($sorted_rows),
+    );
+}
+
+function pba_prepare_households_admin_list_row($row) {
+    $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
+    $street_number = trim((string) ($row['pb_street_number'] ?? ''));
+    $street_name = trim((string) ($row['pb_street_name'] ?? ''));
+    $address = trim($street_number . ' ' . $street_name);
+    $owner_name_raw = trim((string) ($row['owner_name_raw'] ?? ''));
+    $stored_house_admin = trim(((string) ($row['household_admin_first_name'] ?? '')) . ' ' . ((string) ($row['household_admin_last_name'] ?? '')));
+    $household_status = trim((string) ($row['household_status'] ?? ''));
+    $owner_occupied = array_key_exists('owner_occupied', $row) ? $row['owner_occupied'] : null;
+    $last_modified_raw = (string) ($row['last_modified_at'] ?? '');
+    $last_modified_timestamp = $last_modified_raw !== '' ? strtotime($last_modified_raw) : false;
+
+    $street_number_sort = null;
+    if ($street_number !== '' && preg_match('/^\d+/', $street_number, $matches)) {
+        $street_number_sort = (int) $matches[0];
+    }
+
+    return array(
+        'household_id' => $household_id,
+        'address' => $address,
+        'street_number' => $street_number,
+        'street_number_sort' => $street_number_sort,
+        'street_name_sort' => strtolower($street_name),
+        'owner_name_raw' => $owner_name_raw,
+        'display_house_admin' => $stored_house_admin,
+        'household_status' => $household_status,
+        'owner_occupied' => $owner_occupied,
+        'last_modified_raw' => $last_modified_raw,
+        'last_modified_timestamp' => $last_modified_timestamp ? (int) $last_modified_timestamp : 0,
+        'active_count' => 0,
+        'total_count' => 0,
+    );
+}
+
+function pba_get_households_admin_filter_options($rows) {
+    $statuses = array();
+
+    foreach ($rows as $row) {
+        $status = trim((string) ($row['household_status'] ?? ''));
+        if ($status !== '') {
+            $statuses[$status] = $status;
+        }
+    }
+
+    natcasesort($statuses);
+
+    return array(
+        'statuses' => array_values($statuses),
+    );
+}
+
+function pba_filter_households_admin_rows($rows, $request_args) {
+    $search = strtolower(trim((string) $request_args['search']));
+    $status_filter = trim((string) $request_args['status_filter']);
+    $owner_occupied_filter = trim((string) $request_args['owner_occupied_filter']);
+
+    return array_values(array_filter($rows, function ($row) use ($search, $status_filter, $owner_occupied_filter) {
+        if ($search !== '') {
+            $haystack = strtolower(implode(' ', array(
+                (string) ($row['address'] ?? ''),
+                (string) ($row['owner_name_raw'] ?? ''),
+                (string) ($row['display_house_admin'] ?? ''),
+                'household ' . (string) ($row['household_id'] ?? 0),
+            )));
+
+            if (strpos($haystack, $search) === false) {
+                return false;
+            }
+        }
+
+        if ($status_filter !== '' && (string) ($row['household_status'] ?? '') !== $status_filter) {
+            return false;
+        }
+
+        if ($owner_occupied_filter === 'yes' && !($row['owner_occupied'] ?? false)) {
+            return false;
+        }
+
+        if ($owner_occupied_filter === 'no' && ($row['owner_occupied'] ?? null) !== false) {
+            return false;
+        }
+
+        return true;
+    }));
+}
+
+function pba_sort_households_admin_rows($rows, $sort, $direction) {
+    usort($rows, function ($a, $b) use ($sort, $direction) {
+        switch ($sort) {
+            case 'owner':
+                $value_a = strtolower((string) ($a['owner_name_raw'] ?? ''));
+                $value_b = strtolower((string) ($b['owner_name_raw'] ?? ''));
+                break;
+
+            case 'house_admin':
+                $value_a = strtolower((string) ($a['display_house_admin'] ?? ''));
+                $value_b = strtolower((string) ($b['display_house_admin'] ?? ''));
+                break;
+
+            case 'status':
+                $value_a = strtolower((string) ($a['household_status'] ?? ''));
+                $value_b = strtolower((string) ($b['household_status'] ?? ''));
+                break;
+
+            case 'active_members':
+                $value_a = (int) ($a['active_count'] ?? 0);
+                $value_b = (int) ($b['active_count'] ?? 0);
+                break;
+
+            case 'total_members':
+                $value_a = (int) ($a['total_count'] ?? 0);
+                $value_b = (int) ($b['total_count'] ?? 0);
+                break;
+
+            case 'owner_occupied':
+                $value_a = ($a['owner_occupied'] === null) ? -1 : ((bool) $a['owner_occupied'] ? 1 : 0);
+                $value_b = ($b['owner_occupied'] === null) ? -1 : ((bool) $b['owner_occupied'] ? 1 : 0);
+                break;
+
+            case 'last_modified':
+                $value_a = (int) ($a['last_modified_timestamp'] ?? 0);
+                $value_b = (int) ($b['last_modified_timestamp'] ?? 0);
+                break;
+
+            case 'address':
+            default:
+                $name_a = (string) ($a['street_name_sort'] ?? '');
+                $name_b = (string) ($b['street_name_sort'] ?? '');
+
+                if ($name_a !== $name_b) {
+                    $comparison = strnatcasecmp($name_a, $name_b);
+                    return $direction === 'desc' ? -$comparison : $comparison;
+                }
+
+                $num_a = array_key_exists('street_number_sort', $a) ? $a['street_number_sort'] : null;
+                $num_b = array_key_exists('street_number_sort', $b) ? $b['street_number_sort'] : null;
+
+                if ($num_a !== null && $num_b !== null && $num_a !== $num_b) {
+                    $comparison = ($num_a < $num_b) ? -1 : 1;
+                    return $direction === 'desc' ? -$comparison : $comparison;
+                }
+
+                $value_a = strtolower((string) ($a['address'] ?? ''));
+                $value_b = strtolower((string) ($b['address'] ?? ''));
+                break;
+        }
+
+        if ($value_a === $value_b) {
+            $fallback_a = (int) ($a['household_id'] ?? 0);
+            $fallback_b = (int) ($b['household_id'] ?? 0);
+            return $fallback_a <=> $fallback_b;
+        }
+
+        $comparison = ($value_a < $value_b) ? -1 : 1;
+        return $direction === 'desc' ? -$comparison : $comparison;
+    });
+
+    return $rows;
+}
+
+function pba_paginate_households_admin_rows($rows, $page, $per_page) {
+    $total_rows = count($rows);
+    $total_pages = max(1, (int) ceil($total_rows / $per_page));
+    $current_page = min(max(1, (int) $page), $total_pages);
+    $offset = ($current_page - 1) * $per_page;
+    $page_rows = array_slice($rows, $offset, $per_page);
+
+    return array(
+        'rows' => $page_rows,
+        'total_rows' => $total_rows,
+        'total_pages' => $total_pages,
+        'current_page' => $current_page,
+        'per_page' => $per_page,
+        'offset' => $offset,
+        'start_number' => $total_rows > 0 ? ($offset + 1) : 0,
+        'end_number' => $total_rows > 0 ? min($offset + $per_page, $total_rows) : 0,
+    );
+}
+
+function pba_render_households_admin_list_shell($data, $request_args) {
     ob_start();
+
+    $pagination = $data['pagination'];
+    $page_rows = $data['page_rows'];
     ?>
-    <style>
-        .pba-households-wrap { max-width: 1400px; margin: 0 auto; }
-        .pba-households-search { margin: 18px 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .pba-households-search input[type="text"] { width: 340px; max-width: 100%; padding: 10px 12px; }
-        .pba-households-btn {
-            display: inline-block;
-            padding: 9px 14px;
-            border: 1px solid #0d3b66;
-            background: #0d3b66;
-            color: #fff;
-            border-radius: 4px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .pba-households-btn.secondary { background: #fff; color: #0d3b66; }
-        .pba-households-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        .pba-households-table th,
-        .pba-households-table td {
-            border: 1px solid #d7d7d7;
-            padding: 10px;
-            text-align: left;
-            vertical-align: top;
-        }
-        .pba-households-table th { background: #f3f3f3; }
-        .pba-households-message {
-            margin: 0 0 16px;
-            padding: 12px 16px;
-            background: #eef6ee;
-            border-radius: 6px;
-        }
-        .pba-households-message.error { background: #f8e9e9; }
-        .pba-households-muted { color: #666; font-size: 13px; }
-        .pba-households-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-            background: #eef3f8;
-            color: #21425c;
-            white-space: nowrap;
-        }
-    </style>
+    <div class="pba-households-resultsbar">
+        <div>
+            Showing <?php echo esc_html(number_format_i18n($pagination['start_number'])); ?>–<?php echo esc_html(number_format_i18n($pagination['end_number'])); ?> of <?php echo esc_html(number_format_i18n($pagination['total_rows'])); ?> households
+        </div>
+        <div class="pba-households-filter-summary">
+            <?php if ($request_args['search'] !== '') : ?>
+                <span class="pba-households-chip">Search: <?php echo esc_html($request_args['search']); ?></span>
+            <?php endif; ?>
+            <?php if ($request_args['status_filter'] !== '') : ?>
+                <span class="pba-households-chip">Status: <?php echo esc_html($request_args['status_filter']); ?></span>
+            <?php endif; ?>
+            <?php if ($request_args['owner_occupied_filter'] !== '') : ?>
+                <span class="pba-households-chip">Owner Occupied: <?php echo esc_html(ucfirst($request_args['owner_occupied_filter'])); ?></span>
+            <?php endif; ?>
+        </div>
+    </div>
 
-    <div class="pba-households-wrap">
-        <p>View and manage household records across the association.</p>
-
-        <?php echo pba_render_households_admin_status_message(); ?>
-
-        <form method="get" class="pba-households-search">
-            <input type="text" name="household_search" value="<?php echo esc_attr($search); ?>" placeholder="Search by address, owner, or admin">
-            <button type="submit" class="pba-households-btn secondary">Search</button>
-        </form>
+    <div class="pba-households-grid-wrap" aria-live="polite">
+        <div class="pba-households-skeleton" aria-hidden="true">
+            <div class="pba-households-skeleton-line"></div>
+            <div class="pba-households-skeleton-line"></div>
+            <div class="pba-households-skeleton-line"></div>
+            <div class="pba-households-skeleton-line"></div>
+        </div>
 
         <table class="pba-households-table">
             <thead>
                 <tr>
-                    <th>Address</th>
-                    <th>Owner</th>
-                    <th>House Admin</th>
-                    <th>Status</th>
-                    <th>Active Members</th>
-                    <th>Total Members</th>
-                    <th>Owner Occupied</th>
-                    <th>Last Modified</th>
+                    <?php echo pba_render_households_admin_sortable_th('Address', 'address', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('Owner', 'owner', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('House Admin', 'house_admin', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('Status', 'status', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('Active Members', 'active_members', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('Total Members', 'total_members', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('Owner Occupied', 'owner_occupied', $request_args); ?>
+                    <?php echo pba_render_households_admin_sortable_th('Last Modified', 'last_modified', $request_args); ?>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($rows)) : ?>
-                    <tr><td colspan="9">No households found.</td></tr>
+                <?php if (empty($page_rows)) : ?>
+                    <tr>
+                        <td colspan="9" class="pba-households-empty">No households found for the current filters.</td>
+                    </tr>
                 <?php else : ?>
-                    <?php foreach ($rows as $row) : ?>
+                    <?php foreach ($page_rows as $row) : ?>
                         <?php
                         $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
-                        $address = trim(((string) ($row['pb_street_number'] ?? '')) . ' ' . ((string) ($row['pb_street_name'] ?? '')));
-                        $stats = isset($household_stats[$household_id]) ? $household_stats[$household_id] : array(
-                            'active_count' => 0,
-                            'total_count'  => 0,
-                            'house_admin'  => '',
-                        );
-
-                        $stored_house_admin = trim(((string) ($row['household_admin_first_name'] ?? '')) . ' ' . ((string) ($row['household_admin_last_name'] ?? '')));
-                        $display_house_admin = $stored_house_admin !== '' ? $stored_house_admin : $stats['house_admin'];
+                        $address = (string) ($row['address'] ?? '');
                         $owner_name_raw = trim((string) ($row['owner_name_raw'] ?? ''));
+                        $display_house_admin = trim((string) ($row['display_house_admin'] ?? ''));
                         $household_status = trim((string) ($row['household_status'] ?? ''));
                         $owner_occupied = array_key_exists('owner_occupied', $row) ? $row['owner_occupied'] : null;
                         ?>
                         <tr>
-                            <td><?php echo esc_html($address !== '' ? $address : ('Household #' . $household_id)); ?></td>
+                            <td>
+                                <strong><?php echo esc_html($address !== '' ? $address : ('Household #' . $household_id)); ?></strong>
+                                <div class="pba-households-muted">Household ID <?php echo esc_html((string) $household_id); ?></div>
+                            </td>
                             <td><?php echo esc_html($owner_name_raw !== '' ? $owner_name_raw : '—'); ?></td>
                             <td><?php echo esc_html($display_house_admin !== '' ? $display_house_admin : '—'); ?></td>
-                            <td><?php echo esc_html($household_status !== '' ? $household_status : '—'); ?></td>
-                            <td><?php echo esc_html((string) $stats['active_count']); ?></td>
-                            <td><?php echo esc_html((string) $stats['total_count']); ?></td>
-                            <td><?php echo esc_html($owner_occupied === null ? '—' : ($owner_occupied ? 'Yes' : 'No')); ?></td>
-                            <td><?php echo esc_html(function_exists('pba_format_datetime_display') ? pba_format_datetime_display($row['last_modified_at'] ?? '') : ($row['last_modified_at'] ?? '')); ?></td>
+                            <td><?php echo pba_render_households_admin_status_badge($household_status); ?></td>
+                            <td><?php echo esc_html(number_format_i18n((int) ($row['active_count'] ?? 0))); ?></td>
+                            <td><?php echo esc_html(number_format_i18n((int) ($row['total_count'] ?? 0))); ?></td>
+                            <td><?php echo pba_render_households_admin_owner_occupied_badge($owner_occupied); ?></td>
+                            <td><?php echo esc_html(function_exists('pba_format_datetime_display') ? pba_format_datetime_display($row['last_modified_raw'] ?? '') : ($row['last_modified_raw'] ?? '')); ?></td>
                             <td>
                                 <a class="pba-households-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                     'household_view' => 'edit',
                                     'household_id'   => $household_id,
-                                ), home_url('/households/'))); ?>">View / Edit</a>
+                                ), pba_get_households_admin_base_url())); ?>">Manage &rarr;</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
+
+    <?php echo pba_render_households_admin_pagination($pagination); ?>
+    <?php
+
+    return ob_get_clean();
+}
+
+function pba_render_households_admin_sortable_th($label, $column, $request_args) {
+    $is_current = $request_args['sort'] === $column;
+    $next_direction = ($is_current && $request_args['direction'] === 'asc') ? 'desc' : 'asc';
+    $indicator = '↕';
+
+    if ($is_current) {
+        $indicator = $request_args['direction'] === 'asc' ? '↑' : '↓';
+    }
+
+    $url = pba_get_households_admin_list_url(array(
+        'household_sort' => $column,
+        'household_direction' => $next_direction,
+        'household_page' => 1,
+    ));
+
+    return '<th><a class="pba-households-sort-link" data-households-ajax-link="1" href="' . esc_url($url) . '">' . esc_html($label) . '<span class="pba-households-sort-indicator">' . esc_html($indicator) . '</span></a></th>';
+}
+
+function pba_render_households_admin_status_badge($status) {
+    $status = trim((string) $status);
+    $normalized = strtolower($status);
+    $class = 'status-unknown';
+
+    if ($normalized === 'active') {
+        $class = 'status-active';
+    } elseif ($normalized === 'inactive' || $normalized === 'disabled') {
+        $class = 'status-inactive';
+    }
+
+    return '<span class="pba-households-badge ' . esc_attr($class) . '">' . esc_html($status !== '' ? $status : '—') . '</span>';
+}
+
+function pba_render_households_admin_owner_occupied_badge($owner_occupied) {
+    if ($owner_occupied === null) {
+        return '<span class="pba-households-badge">—</span>';
+    }
+
+    if ($owner_occupied) {
+        return '<span class="pba-households-badge owner-yes">Yes</span>';
+    }
+
+    return '<span class="pba-households-badge owner-no">No</span>';
+}
+
+function pba_render_households_admin_pagination($pagination) {
+    if ((int) $pagination['total_pages'] <= 1) {
+        return '';
+    }
+
+    $current_page = (int) $pagination['current_page'];
+    $total_pages = (int) $pagination['total_pages'];
+    $pages_to_show = array();
+
+    for ($page = 1; $page <= $total_pages; $page++) {
+        if ($page === 1 || $page === $total_pages || abs($page - $current_page) <= 2) {
+            $pages_to_show[] = $page;
+        }
+    }
+
+    $pages_to_show = array_values(array_unique($pages_to_show));
+    sort($pages_to_show);
+
+    ob_start();
+    ?>
+    <div class="pba-households-pagination">
+        <div class="pba-households-muted">
+            Page <?php echo esc_html(number_format_i18n($current_page)); ?> of <?php echo esc_html(number_format_i18n($total_pages)); ?>
+        </div>
+        <div class="pba-households-page-links">
+            <?php if ($current_page > 1) : ?>
+                <a class="pba-households-page-link" data-households-ajax-link="1" href="<?php echo esc_url(pba_get_households_admin_list_url(array('household_page' => $current_page - 1))); ?>">Prev</a>
+            <?php endif; ?>
+
+            <?php
+            $last_rendered = 0;
+            foreach ($pages_to_show as $page_number) :
+                if ($last_rendered > 0 && $page_number > ($last_rendered + 1)) {
+                    echo '<span class="pba-households-muted">…</span>';
+                }
+
+                $classes = 'pba-households-page-link';
+                if ($page_number === $current_page) {
+                    $classes .= ' current';
+                }
+                ?>
+                <a class="<?php echo esc_attr($classes); ?>" data-households-ajax-link="1" href="<?php echo esc_url(pba_get_households_admin_list_url(array('household_page' => $page_number))); ?>"><?php echo esc_html(number_format_i18n($page_number)); ?></a>
+                <?php
+                $last_rendered = $page_number;
+            endforeach;
+            ?>
+
+            <?php if ($current_page < $total_pages) : ?>
+                <a class="pba-households-page-link" data-households-ajax-link="1" href="<?php echo esc_url(pba_get_households_admin_list_url(array('household_page' => $current_page + 1))); ?>">Next</a>
+            <?php endif; ?>
+        </div>
     </div>
     <?php
 
@@ -344,9 +1253,8 @@ function pba_render_household_admin_edit_view($household_id) {
     </style>
 
     <div class="pba-household-edit-wrap">
-        <h2>Household</h2>
         <p>
-            <a class="pba-households-btn secondary" href="<?php echo esc_url(home_url('/households/')); ?>">Back to Households</a>
+            <a class="pba-households-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">Back to Households</a>
         </p>
 
         <?php echo pba_render_households_admin_status_message(); ?>
@@ -434,7 +1342,7 @@ function pba_render_household_admin_edit_view($household_id) {
 
                     <p style="margin-top:18px;">
                         <button type="submit" class="pba-households-btn">Save Household</button>
-                        <a class="pba-households-btn secondary" href="<?php echo esc_url(home_url('/households/')); ?>">Cancel</a>
+                        <a class="pba-households-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">Cancel</a>
                     </p>
                 </form>
             </div>
@@ -574,7 +1482,7 @@ function pba_handle_save_household_admin() {
         !isset($_POST['pba_household_admin_nonce']) ||
         !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['pba_household_admin_nonce'])), 'pba_household_admin_action')
     ) {
-        wp_safe_redirect(add_query_arg('pba_households_status', 'invalid_request', home_url('/households/')));
+        wp_safe_redirect(add_query_arg('pba_households_status', 'invalid_request', pba_get_households_admin_base_url()));
         exit;
     }
 
@@ -591,7 +1499,7 @@ function pba_handle_save_household_admin() {
             'household_view'        => 'edit',
             'household_id'          => $household_id,
             'pba_households_status' => 'invalid_request',
-        ), home_url('/households/')));
+        ), pba_get_households_admin_base_url()));
         exit;
     }
 
@@ -616,7 +1524,7 @@ function pba_handle_save_household_admin() {
             'household_view'        => 'edit',
             'household_id'          => $household_id,
             'pba_households_status' => 'save_failed',
-        ), home_url('/households/')));
+        ), pba_get_households_admin_base_url()));
         exit;
     }
 
@@ -624,7 +1532,7 @@ function pba_handle_save_household_admin() {
         'household_view'        => 'edit',
         'household_id'          => $household_id,
         'pba_households_status' => 'household_saved',
-    ), home_url('/households/')));
+    ), pba_get_households_admin_base_url()));
     exit;
 }
 
@@ -768,4 +1676,33 @@ function pba_format_usd($value) {
     }
 
     return '$' . number_format((float) $value, 2);
+}
+
+if (isset($_GET['pba_households_partial']) && sanitize_text_field(wp_unslash($_GET['pba_households_partial'])) === '1') {
+    add_action('template_redirect', 'pba_maybe_render_households_admin_partial');
+}
+
+function pba_maybe_render_households_admin_partial() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+    if (!current_user_can('pba_manage_all_households') && !current_user_can('pba_manage_roles')) {
+        return;
+    }
+
+    $view = isset($_GET['household_view']) ? sanitize_text_field(wp_unslash($_GET['household_view'])) : 'list';
+    if ($view !== 'list') {
+        return;
+    }
+
+    $request_args = pba_get_households_admin_list_request_args();
+    $data = pba_get_households_admin_list_data($request_args);
+
+    if (is_wp_error($data)) {
+        wp_die('Unable to load households.', 500);
+    }
+
+    echo pba_render_households_admin_dynamic_content($data, $request_args);
+    exit;
 }

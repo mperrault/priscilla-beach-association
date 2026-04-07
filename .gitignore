@@ -77,6 +77,8 @@ coverage/
 /app/public/wp-content/object-cache.php
 /app/public/wp-content/mu-plugins/
 /app/public/wp-content/mu-plugins/**
+/app/public/wp-content/plugins/pba-site-app/.DS_Store
+
 
 # Ignore accidental core/runtime files
 /app/public/wp-admin/
