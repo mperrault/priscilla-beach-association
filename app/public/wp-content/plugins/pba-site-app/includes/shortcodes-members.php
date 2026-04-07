@@ -226,6 +226,43 @@ function pba_render_members_list_view() {
     ob_start();
     echo pba_members_render_shared_styles_if_available();
     ?>
+    <style>
+        .pba-members-table a.pba-admin-list-sort-link,
+        .pba-members-table a.pba-admin-list-sort-link:visited,
+        .pba-members-table a.pba-admin-list-sort-link:hover,
+        .pba-members-table a.pba-admin-list-sort-link:focus,
+        .pba-members-table th a.pba-admin-list-sort-link,
+        .pba-members-table th a.pba-admin-list-sort-link:visited,
+        .pba-members-table th a.pba-admin-list-sort-link:hover,
+        .pba-members-table th a.pba-admin-list-sort-link:focus {
+            color: #607487 !important;
+        }
+        .pba-members-table {
+            min-width: 1400px;
+        }
+
+        .pba-members-table th,
+        .pba-members-table td {
+            vertical-align: top;
+        }
+
+        .pba-members-table td:nth-child(2),
+        .pba-members-table td:nth-child(5),
+        .pba-members-table td:nth-child(6) {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .pba-members-table td:nth-child(2) {
+            min-width: 220px;
+        }
+
+        .pba-members-table td:nth-child(5),
+        .pba-members-table td:nth-child(6) {
+            min-width: 220px;
+        }
+    </style>
     <div class="pba-members-wrap pba-page-wrap">
         <?php echo pba_render_members_status_message(); ?>
 
@@ -878,7 +915,7 @@ function pba_render_members_list_shell($data, $request_args) {
             <div class="pba-admin-list-skeleton-line"></div>
         </div>
 
-        <table class="pba-table">
+        <table class="pba-table pba-members-table">
             <thead>
                 <tr>
                     <?php echo pba_render_members_sortable_th('Name', 'name', $request_args); ?>

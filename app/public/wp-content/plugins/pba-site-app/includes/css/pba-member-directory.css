@@ -54,6 +54,14 @@
     text-transform: uppercase;
     color: #607487;
 }
+.pba-member-directory-table th,
+.pba-member-directory-table th a,
+.pba-member-directory-table .pba-admin-list-sort-link,
+.pba-member-directory-table .pba-admin-list-sort-link:visited,
+.pba-member-directory-table .pba-admin-list-sort-link:hover,
+.pba-member-directory-table .pba-admin-list-sort-link:focus {
+    color: #607487;
+}
 
 @media (max-width: 1080px) {
     .pba-member-directory-search {
