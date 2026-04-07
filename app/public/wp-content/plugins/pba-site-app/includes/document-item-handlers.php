@@ -8,6 +8,7 @@ add_action('admin_post_pba_upload_document_item', 'pba_handle_upload_document_it
 add_action('admin_post_pba_deactivate_document_item', 'pba_handle_deactivate_document_item');
 add_action('admin_post_pba_restore_document_item', 'pba_handle_restore_document_item');
 add_action('admin_post_pba_save_document_item_metadata', 'pba_handle_save_document_item_metadata');
+add_action('admin_post_pba_delete_document_item_permanently', 'pba_handle_delete_document_item_permanently');
 
 function pba_get_allowed_document_upload_mime_types() {
     return array(
@@ -113,6 +114,77 @@ function pba_document_upload_dir_filter($dirs) {
     return $dirs;
 }
 
+function pba_get_document_item_row($document_item_id) {
+    $document_item_id = (int) $document_item_id;
+
+    if ($document_item_id < 1) {
+        return false;
+    }
+
+    $rows = pba_supabase_get('Document_Item', array(
+        'select'           => 'document_item_id,document_folder_id,file_name,file_url,mime_type,document_title,document_date,document_category,document_version,uploaded_by_person_id,last_modified_by_person_id,is_active,notes,last_modified_at',
+        'document_item_id' => 'eq.' . $document_item_id,
+        'limit'            => 1,
+    ));
+
+    if (is_wp_error($rows) || empty($rows[0]) || !is_array($rows[0])) {
+        return false;
+    }
+
+    return $rows[0];
+}
+
+function pba_get_uploads_relative_path_from_url($file_url) {
+    $file_url = (string) $file_url;
+
+    if ($file_url === '') {
+        return '';
+    }
+
+    $uploads = wp_upload_dir();
+    $baseurl = isset($uploads['baseurl']) ? (string) $uploads['baseurl'] : '';
+
+    if ($baseurl === '') {
+        return '';
+    }
+
+    if (strpos($file_url, $baseurl . '/') === 0) {
+        return ltrim(substr($file_url, strlen($baseurl)), '/');
+    }
+
+    return '';
+}
+
+function pba_delete_document_file_from_uploads($file_url) {
+    $file_url = (string) $file_url;
+
+    if ($file_url === '') {
+        return true;
+    }
+
+    $uploads = wp_upload_dir();
+    $basedir = isset($uploads['basedir']) ? (string) $uploads['basedir'] : '';
+
+    if ($basedir === '') {
+        return false;
+    }
+
+    $relative_path = pba_get_uploads_relative_path_from_url($file_url);
+    if ($relative_path === '') {
+        return false;
+    }
+
+    $full_path = wp_normalize_path(trailingslashit($basedir) . $relative_path);
+
+    if (!file_exists($full_path)) {
+        return true;
+    }
+
+    wp_delete_file($full_path);
+
+    return !file_exists($full_path);
+}
+
 function pba_handle_upload_document_item() {
     if (!is_user_logged_in()) {
         wp_die('Unauthorized', 403);
@@ -185,6 +257,7 @@ function pba_handle_upload_document_item() {
     $original_name = sanitize_file_name($_FILES['document_file']['name']);
     $file_url      = isset($uploaded['url']) ? $uploaded['url'] : '';
     $mime_type     = isset($uploaded['type']) ? $uploaded['type'] : '';
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
     if ($file_url === '') {
         pba_documents_redirect($page_slug, 'document_upload_failed', $committee_id);
@@ -195,18 +268,19 @@ function pba_handle_upload_document_item() {
     }
 
     $inserted = pba_supabase_insert('Document_Item', array(
-        'document_folder_id'    => $folder_id,
-        'file_name'             => $original_name,
-        'file_url'              => $file_url,
-        'mime_type'             => $mime_type !== '' ? $mime_type : null,
-        'document_title'        => $document_title !== '' ? $document_title : null,
-        'document_date'         => $document_date,
-        'document_category'     => $document_category !== '' ? $document_category : null,
-        'document_version'      => $document_version !== '' ? $document_version : null,
-        'uploaded_by_person_id' => pba_current_person_id(),
-        'is_active'             => true,
-        'notes'                 => $notes !== '' ? $notes : null,
-        'last_modified_at'      => gmdate('c'),
+        'document_folder_id'         => $folder_id,
+        'file_name'                  => $original_name,
+        'file_url'                   => $file_url,
+        'mime_type'                  => $mime_type !== '' ? $mime_type : null,
+        'document_title'             => $document_title !== '' ? $document_title : null,
+        'document_date'              => $document_date,
+        'document_category'          => $document_category !== '' ? $document_category : null,
+        'document_version'           => $document_version !== '' ? $document_version : null,
+        'uploaded_by_person_id'      => $current_person_id > 0 ? $current_person_id : null,
+        'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
+        'is_active'                  => true,
+        'notes'                      => $notes !== '' ? $notes : null,
+        'last_modified_at'           => gmdate('c'),
     ));
 
     if (is_wp_error($inserted)) {
@@ -228,36 +302,33 @@ function pba_handle_deactivate_document_item() {
         wp_die('Invalid nonce', 403);
     }
 
-    $page_slug         = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
-    $document_item_id  = absint($_POST['document_item_id'] ?? 0);
-    $committee_id      = absint($_POST['committee_id'] ?? 0);
+    $page_slug        = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $document_item_id = absint($_POST['document_item_id'] ?? 0);
+    $committee_id     = absint($_POST['committee_id'] ?? 0);
 
     if ($document_item_id < 1) {
         pba_documents_redirect($page_slug, 'invalid_document_delete', $committee_id);
     }
 
-    $rows = pba_supabase_get('Document_Item', array(
-        'select'           => 'document_item_id,document_folder_id,is_active',
-        'document_item_id' => 'eq.' . $document_item_id,
-        'limit'            => 1,
-    ));
-
-    if (is_wp_error($rows) || empty($rows[0])) {
+    $item = pba_get_document_item_row($document_item_id);
+    if (!$item) {
         pba_documents_redirect($page_slug, 'document_not_found', $committee_id);
     }
 
-    $item = $rows[0];
     $folder_id = isset($item['document_folder_id']) ? (int) $item['document_folder_id'] : 0;
 
     if ($folder_id < 1 || !pba_current_person_can_manage_folder($folder_id)) {
         wp_die('Unauthorized', 403);
     }
 
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
+
     $updated = pba_supabase_update(
         'Document_Item',
         array(
-            'is_active'        => false,
-            'last_modified_at' => gmdate('c'),
+            'is_active'                  => false,
+            'last_modified_at'           => gmdate('c'),
+            'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_item_id' => 'eq.' . $document_item_id,
@@ -283,36 +354,33 @@ function pba_handle_restore_document_item() {
         wp_die('Invalid nonce', 403);
     }
 
-    $page_slug         = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
-    $document_item_id  = absint($_POST['document_item_id'] ?? 0);
-    $committee_id      = absint($_POST['committee_id'] ?? 0);
+    $page_slug        = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $document_item_id = absint($_POST['document_item_id'] ?? 0);
+    $committee_id     = absint($_POST['committee_id'] ?? 0);
 
     if ($document_item_id < 1) {
         pba_documents_redirect($page_slug, 'invalid_document_restore', $committee_id);
     }
 
-    $rows = pba_supabase_get('Document_Item', array(
-        'select'           => 'document_item_id,document_folder_id,is_active',
-        'document_item_id' => 'eq.' . $document_item_id,
-        'limit'            => 1,
-    ));
-
-    if (is_wp_error($rows) || empty($rows[0])) {
+    $item = pba_get_document_item_row($document_item_id);
+    if (!$item) {
         pba_documents_redirect($page_slug, 'document_not_found', $committee_id);
     }
 
-    $item = $rows[0];
     $folder_id = isset($item['document_folder_id']) ? (int) $item['document_folder_id'] : 0;
 
     if ($folder_id < 1 || !pba_current_person_can_manage_folder($folder_id)) {
         wp_die('Unauthorized', 403);
     }
 
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
+
     $updated = pba_supabase_update(
         'Document_Item',
         array(
-            'is_active'        => true,
-            'last_modified_at' => gmdate('c'),
+            'is_active'                  => true,
+            'last_modified_at'           => gmdate('c'),
+            'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_item_id' => 'eq.' . $document_item_id,
@@ -351,17 +419,11 @@ function pba_handle_save_document_item_metadata() {
         pba_documents_redirect($page_slug, 'invalid_document_edit', $committee_id);
     }
 
-    $rows = pba_supabase_get('Document_Item', array(
-        'select'           => 'document_item_id,document_folder_id',
-        'document_item_id' => 'eq.' . $document_item_id,
-        'limit'            => 1,
-    ));
-
-    if (is_wp_error($rows) || empty($rows[0])) {
+    $item = pba_get_document_item_row($document_item_id);
+    if (!$item) {
         pba_documents_redirect($page_slug, 'document_not_found', $committee_id);
     }
 
-    $item = $rows[0];
     $folder_id = isset($item['document_folder_id']) ? (int) $item['document_folder_id'] : 0;
 
     if ($folder_id < 1 || !pba_current_person_can_manage_folder($folder_id)) {
@@ -377,15 +439,18 @@ function pba_handle_save_document_item_metadata() {
         $document_date = $document_date_raw;
     }
 
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
+
     $updated = pba_supabase_update(
         'Document_Item',
         array(
-            'document_title'    => $document_title !== '' ? $document_title : null,
-            'document_date'     => $document_date,
-            'document_category' => $document_category !== '' ? $document_category : null,
-            'document_version'  => $document_version !== '' ? $document_version : null,
-            'notes'             => $notes !== '' ? $notes : null,
-            'last_modified_at'  => gmdate('c'),
+            'document_title'             => $document_title !== '' ? $document_title : null,
+            'document_date'              => $document_date,
+            'document_category'          => $document_category !== '' ? $document_category : null,
+            'document_version'           => $document_version !== '' ? $document_version : null,
+            'notes'                      => $notes !== '' ? $notes : null,
+            'last_modified_at'           => gmdate('c'),
+            'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_item_id' => 'eq.' . $document_item_id,
@@ -397,4 +462,59 @@ function pba_handle_save_document_item_metadata() {
     }
 
     pba_documents_redirect($page_slug, 'document_saved', $committee_id);
+}
+
+function pba_handle_delete_document_item_permanently() {
+    if (!is_user_logged_in()) {
+        wp_die('Unauthorized', 403);
+    }
+
+    if (
+        !isset($_POST['pba_document_item_nonce']) ||
+        !wp_verify_nonce($_POST['pba_document_item_nonce'], 'pba_document_item_action')
+    ) {
+        wp_die('Invalid nonce', 403);
+    }
+
+    $page_slug        = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $document_item_id = absint($_POST['document_item_id'] ?? 0);
+    $committee_id     = absint($_POST['committee_id'] ?? 0);
+
+    if ($document_item_id < 1) {
+        pba_documents_redirect($page_slug, 'invalid_document_delete', $committee_id);
+    }
+
+    $item = pba_get_document_item_row($document_item_id);
+    if (!$item) {
+        pba_documents_redirect($page_slug, 'document_not_found', $committee_id);
+    }
+
+    $folder_id = isset($item['document_folder_id']) ? (int) $item['document_folder_id'] : 0;
+    $is_active = !empty($item['is_active']);
+
+    if ($folder_id < 1 || !pba_current_person_can_manage_folder($folder_id)) {
+        wp_die('Unauthorized', 403);
+    }
+
+    if ($is_active) {
+        pba_documents_redirect($page_slug, 'document_delete_failed', $committee_id);
+    }
+
+    $file_deleted = pba_delete_document_file_from_uploads(isset($item['file_url']) ? (string) $item['file_url'] : '');
+    if (!$file_deleted) {
+        pba_documents_redirect($page_slug, 'document_delete_failed', $committee_id);
+    }
+
+    $deleted = pba_supabase_delete(
+        'Document_Item',
+        array(
+            'document_item_id' => 'eq.' . $document_item_id,
+        )
+    );
+
+    if (is_wp_error($deleted)) {
+        pba_documents_redirect($page_slug, 'document_delete_failed', $committee_id);
+    }
+
+    pba_documents_redirect($page_slug, 'document_permanently_deleted', $committee_id);
 }

@@ -1095,6 +1095,19 @@ function pba_render_member_edit_view($member_id) {
     ob_start();
     echo pba_members_render_shared_styles_if_available();
     ?>
+    <style>
+    .pba-member-edit-wrap .pba-summary-value {
+        font-size: 18px;
+        line-height: 1.35;
+        font-weight: 600;
+    }
+
+    .pba-member-edit-wrap .pba-summary-label {
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+    </style>
     <div class="pba-member-edit-wrap pba-page-wrap">
         <p>
             <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Back to Members</a>
@@ -1114,40 +1127,41 @@ function pba_render_member_edit_view($member_id) {
                 <?php endif; ?>
             </div>
         </div>
-
-        <div class="pba-section">
-            <div class="pba-actions">
-                <?php if ($status === 'Active') : ?>
-                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
-                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                        <input type="hidden" name="action" value="pba_admin_disable_member">
-                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                        <button type="submit" class="pba-btn secondary">Disable</button>
-                    </form>
-                <?php elseif ($status === 'Disabled') : ?>
-                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
-                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                        <input type="hidden" name="action" value="pba_admin_enable_member">
-                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                        <button type="submit" class="pba-btn secondary">Enable</button>
-                    </form>
-                <?php elseif ($status === 'Pending') : ?>
-                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form" onsubmit="return confirm('Cancel this invite?');">
-                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                        <input type="hidden" name="action" value="pba_admin_cancel_invite">
-                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                        <button type="submit" class="pba-btn secondary">Cancel Invite</button>
-                    </form>
-                <?php elseif ($status === 'Expired') : ?>
-                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
-                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                        <input type="hidden" name="action" value="pba_admin_resend_invite">
-                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                        <button type="submit" class="pba-btn secondary">Resend Invite</button>
-                    </form>
-                <?php endif; ?>
+        <?php if (in_array($status, array('Active', 'Disabled', 'Pending', 'Expired'), true)) : ?>
+            <div class="pba-section">
+                <div class="pba-actions">
+                    <?php if ($status === 'Active') : ?>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
+                            <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                            <input type="hidden" name="action" value="pba_admin_disable_member">
+                            <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                            <button type="submit" class="pba-btn secondary">Disable</button>
+                        </form>
+                    <?php elseif ($status === 'Disabled') : ?>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
+                            <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                            <input type="hidden" name="action" value="pba_admin_enable_member">
+                            <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                            <button type="submit" class="pba-btn secondary">Enable</button>
+                        </form>
+                    <?php elseif ($status === 'Pending') : ?>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form" onsubmit="return confirm('Cancel this invite?');">
+                            <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                            <input type="hidden" name="action" value="pba_admin_cancel_invite">
+                            <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                            <button type="submit" class="pba-btn secondary">Cancel Invite</button>
+                        </form>
+                    <?php elseif ($status === 'Expired') : ?>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
+                            <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                            <input type="hidden" name="action" value="pba_admin_resend_invite">
+                            <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                            <button type="submit" class="pba-btn secondary">Resend Invite</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
 
         <div class="pba-section">
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-edit-form">

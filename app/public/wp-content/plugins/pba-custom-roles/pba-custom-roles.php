@@ -274,6 +274,29 @@ if (!function_exists('pba_get_current_person_record')) {
         return $cached_person;
     }
 }
+if (!function_exists('pba_current_person_id')) {
+    function pba_current_person_id() {
+        $person = pba_get_current_person_record();
+
+        if (!$person || empty($person['person_id'])) {
+            return 0;
+        }
+
+        return (int) $person['person_id'];
+    }
+}
+
+if (!function_exists('pba_current_person_id')) {
+    function pba_current_person_id() {
+        $person = pba_get_current_person_record();
+
+        if (!$person || empty($person['person_id'])) {
+            return 0;
+        }
+
+        return (int) $person['person_id'];
+    }
+}
 
 /*
  * Backward-compatible helper functions so existing site code

@@ -9,9 +9,10 @@ add_action('admin_post_pba_rename_document_folder', 'pba_handle_rename_document_
 add_action('admin_post_pba_deactivate_document_folder', 'pba_handle_deactivate_document_folder');
 
 function pba_documents_redirect($page_slug, $status = '', $committee_id = 0) {
-    $args = array(
-        'page' => $page_slug,
-    );
+    $page_slug = pba_normalize_document_page_slug($page_slug);
+    $url = home_url('/' . $page_slug . '/');
+
+    $args = array();
 
     if ($status !== '') {
         $args['pba_documents_status'] = $status;
@@ -21,12 +22,16 @@ function pba_documents_redirect($page_slug, $status = '', $committee_id = 0) {
         $args['committee_id'] = (int) $committee_id;
     }
 
-    wp_safe_redirect(add_query_arg($args, home_url('/')));
+    if (!empty($args)) {
+        $url = add_query_arg($args, $url);
+    }
+
+    wp_safe_redirect($url);
     exit;
 }
 
 function pba_normalize_document_page_slug($raw_page) {
-    $raw_page = (string) $raw_page;
+    $raw_page = sanitize_title((string) $raw_page);
 
     if ($raw_page === 'committee-documents') {
         return 'committee-documents';
@@ -47,10 +52,11 @@ function pba_handle_create_document_folder() {
         wp_die('Invalid nonce', 403);
     }
 
-    $page_slug   = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
-    $folder_name = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
+    $page_slug    = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $folder_name  = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
     $folder_scope = sanitize_text_field(wp_unslash($_POST['folder_scope'] ?? ''));
     $committee_id = absint($_POST['committee_id'] ?? 0);
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
     if ($folder_name === '' || !in_array($folder_scope, array('Board', 'Committee', 'Admin'), true)) {
         pba_documents_redirect($page_slug, 'invalid_folder_input', $committee_id);
@@ -65,15 +71,16 @@ function pba_handle_create_document_folder() {
     }
 
     $inserted = pba_supabase_insert('Document_Folder', array(
-        'folder_name'          => $folder_name,
-        'folder_scope'         => $folder_scope,
-        'committee_id'         => $committee_id > 0 ? $committee_id : null,
-        'parent_folder_id'     => null,
-        'display_order'        => null,
-        'is_active'            => true,
-        'created_by_person_id' => pba_current_person_id(),
-        'notes'                => null,
-        'last_modified_at'     => gmdate('c'),
+        'folder_name'               => $folder_name,
+        'folder_scope'              => $folder_scope,
+        'committee_id'              => $committee_id > 0 ? $committee_id : null,
+        'parent_folder_id'          => null,
+        'display_order'             => null,
+        'is_active'                 => true,
+        'created_by_person_id'      => $current_person_id > 0 ? $current_person_id : null,
+        'last_modified_by_person_id'=> $current_person_id > 0 ? $current_person_id : null,
+        'notes'                     => null,
+        'last_modified_at'          => gmdate('c'),
     ));
 
     if (is_wp_error($inserted)) {
@@ -99,6 +106,7 @@ function pba_handle_rename_document_folder() {
     $folder_id    = absint($_POST['folder_id'] ?? 0);
     $folder_name  = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
     $committee_id = absint($_POST['committee_id'] ?? 0);
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
     if ($folder_id < 1 || $folder_name === '') {
         pba_documents_redirect($page_slug, 'invalid_folder_rename', $committee_id);
@@ -111,8 +119,9 @@ function pba_handle_rename_document_folder() {
     $updated = pba_supabase_update(
         'Document_Folder',
         array(
-            'folder_name'       => $folder_name,
-            'last_modified_at'  => gmdate('c'),
+            'folder_name'               => $folder_name,
+            'last_modified_at'          => gmdate('c'),
+            'last_modified_by_person_id'=> $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_folder_id' => 'eq.' . $folder_id,
@@ -141,6 +150,7 @@ function pba_handle_deactivate_document_folder() {
     $page_slug    = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
     $folder_id    = absint($_POST['folder_id'] ?? 0);
     $committee_id = absint($_POST['committee_id'] ?? 0);
+    $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
     if ($folder_id < 1) {
         pba_documents_redirect($page_slug, 'invalid_folder_delete', $committee_id);
@@ -153,8 +163,9 @@ function pba_handle_deactivate_document_folder() {
     $updated = pba_supabase_update(
         'Document_Folder',
         array(
-            'is_active'         => false,
-            'last_modified_at'  => gmdate('c'),
+            'is_active'                 => false,
+            'last_modified_at'          => gmdate('c'),
+            'last_modified_by_person_id'=> $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_folder_id' => 'eq.' . $folder_id,
