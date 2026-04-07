@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once dirname(__FILE__) . '/pba-admin-list-ui.php';
+
 add_action('init', 'pba_register_members_shortcode');
 
 function pba_register_members_shortcode() {
@@ -77,6 +79,14 @@ if (!function_exists('pba_get_active_role_names_for_person')) {
     }
 }
 
+function pba_members_render_shared_styles_if_available() {
+    if (function_exists('pba_shared_list_ui_render_styles')) {
+        return pba_shared_list_ui_render_styles();
+    }
+
+    return '';
+}
+
 function pba_render_members_shortcode() {
     if (!is_user_logged_in()) {
         return '<p>Please log in to access this page.</p>';
@@ -103,17 +113,34 @@ function pba_render_members_status_message() {
         return '';
     }
 
-    $message = str_replace('_', ' ', $status);
-    $success_statuses = array(
-        'member_saved',
-        'member_disabled',
-        'member_enabled',
-        'invite_cancelled',
-        'invite_resent',
+    $success_messages = array(
+        'member_saved'     => 'Member saved successfully.',
+        'member_disabled'  => 'Member disabled successfully.',
+        'member_enabled'   => 'Member enabled successfully.',
+        'invite_cancelled' => 'Invitation cancelled successfully.',
+        'invite_resent'    => 'Invitation resent successfully.',
     );
-    $class = in_array($status, $success_statuses, true) ? 'pba-members-message' : 'pba-members-message error';
 
-    return '<div class="' . esc_attr($class) . '">' . esc_html(ucfirst($message)) . '</div>';
+    $error_messages = array(
+        'invalid_request' => 'We could not process that request.',
+        'save_failed'     => 'We could not save that member.',
+    );
+
+    if (isset($success_messages[$status])) {
+        if (function_exists('pba_shared_render_message')) {
+            return pba_shared_render_message('success', 'Success', $success_messages[$status]);
+        }
+
+        return '<div class="pba-message success"><div class="pba-message-title">Success</div><div class="pba-message-body">' . esc_html($success_messages[$status]) . '</div></div>';
+    }
+
+    $text = isset($error_messages[$status]) ? $error_messages[$status] : ucfirst(str_replace('_', ' ', $status));
+
+    if (function_exists('pba_shared_render_message')) {
+        return pba_shared_render_message('error', 'Please review', $text);
+    }
+
+    return '<div class="pba-message error"><div class="pba-message-title">Please review</div><div class="pba-message-body">' . esc_html($text) . '</div></div>';
 }
 
 function pba_get_members_base_url() {
@@ -188,454 +215,6 @@ function pba_get_members_list_url($overrides = array()) {
     return add_query_arg($query_args, pba_get_members_base_url());
 }
 
-function pba_render_members_admin_styles() {
-    ob_start();
-    ?>
-    <style>
-        .pba-members-wrap {
-            max-width: 1480px;
-            margin: 0 auto;
-            color: #17324a;
-        }
-        .pba-members-message {
-            margin: 0 0 16px;
-            padding: 12px 16px;
-            background: #eef6ee;
-            border-radius: 10px;
-        }
-        .pba-members-message.error {
-            background: #f8e9e9;
-        }
-        .pba-members-hero {
-            margin: 0 0 20px;
-            padding: 24px;
-            border: 1px solid #dde7f0;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #ffffff 0%, #f5f9fc 100%);
-            box-shadow: 0 8px 24px rgba(14, 46, 76, 0.06);
-        }
-        .pba-members-hero-top {
-            display: flex;
-            justify-content: space-between;
-            gap: 18px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
-        .pba-members-hero p {
-            margin: 0;
-            color: #4e6477;
-            max-width: 760px;
-        }
-        .pba-members-kpis {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 14px;
-            margin-top: 20px;
-        }
-        .pba-members-kpi {
-            padding: 16px 18px;
-            border-radius: 16px;
-            background: #ffffff;
-            border: 1px solid #e3ebf3;
-            box-shadow: 0 6px 18px rgba(14, 46, 76, 0.05);
-        }
-        .pba-members-kpi-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            color: #5f7386;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-        .pba-members-kpi-value {
-            font-size: 28px;
-            line-height: 1.1;
-            font-weight: 700;
-            color: #102a43;
-        }
-        .pba-members-card {
-            border: 1px solid #dde7f0;
-            border-radius: 18px;
-            background: #ffffff;
-            box-shadow: 0 10px 24px rgba(14, 46, 76, 0.05);
-            overflow: hidden;
-        }
-        .pba-members-toolbar {
-            padding: 18px;
-            border-bottom: 1px solid #e5edf5;
-            background: #fbfdff;
-        }
-        .pba-members-search {
-            display: grid;
-            grid-template-columns: minmax(220px, 2.2fr) minmax(180px, 1fr) minmax(120px, 140px) auto auto;
-            gap: 12px;
-            align-items: end;
-        }
-        .pba-members-field label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-            color: #607487;
-        }
-        .pba-members-field input[type="text"],
-        .pba-members-field select {
-            width: 100%;
-            min-height: 44px;
-            padding: 10px 12px;
-            border: 1px solid #cdd9e5;
-            border-radius: 12px;
-            background: #ffffff;
-            color: #17324a;
-            box-sizing: border-box;
-        }
-        .pba-members-btn,
-        .pba-member-edit-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 44px;
-            padding: 10px 16px;
-            border: 1px solid #0d3b66;
-            background: #0d3b66;
-            color: #fff;
-            border-radius: 12px;
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: 600;
-            line-height: 1.2;
-            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-            box-sizing: border-box;
-        }
-        .pba-members-btn:hover,
-        .pba-member-edit-btn:hover {
-            background: #0b3154;
-            border-color: #0b3154;
-            transform: translateY(-1px);
-            color: #fff;
-        }
-        .pba-members-btn.secondary,
-        .pba-member-edit-btn.secondary {
-            background: #ffffff;
-            color: #0d3b66;
-            border: 1px solid #c9d8e6;
-            border-radius: 999px;
-            min-height: 38px;
-            padding: 8px 14px;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 1px 2px rgba(13, 59, 102, 0.04);
-        }
-        .pba-members-btn.secondary:hover,
-        .pba-member-edit-btn.secondary:hover {
-            background: #f3f8fc;
-            color: #0b3154;
-            border-color: #9fb8cd;
-            box-shadow: 0 4px 12px rgba(13, 59, 102, 0.10);
-            transform: translateY(-1px);
-        }
-        .pba-members-btn.secondary:focus,
-        .pba-member-edit-btn.secondary:focus {
-            outline: 2px solid #9fc2df;
-            outline-offset: 2px;
-        }
-        .pba-members-resultsbar {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            padding: 14px 18px;
-            border-bottom: 1px solid #e5edf5;
-            color: #597084;
-            font-size: 14px;
-        }
-        .pba-members-filter-summary {
-            display: inline-flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .pba-members-chip,
-        .pba-members-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .pba-members-chip {
-            background: #eef4fa;
-            color: #31536f;
-        }
-        .pba-members-badge {
-            background: #eef3f8;
-            color: #21425c;
-        }
-        .pba-members-badge.status-active,
-        .pba-members-badge.status-yes {
-            background: #eaf7ef;
-            color: #21633f;
-        }
-        .pba-members-badge.status-inactive {
-            background: #f7eee7;
-            color: #8f4a1f;
-        }
-        .pba-members-grid-wrap {
-            position: relative;
-            overflow-x: auto;
-            overflow-y: visible;
-        }
-        .pba-members-grid-wrap.is-loading::after {
-            content: "Refreshing…";
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            z-index: 3;
-            padding: 7px 12px;
-            background: rgba(13, 59, 102, 0.92);
-            color: #fff;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .pba-members-table {
-            width: 100%;
-            min-width: 1160px;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        .pba-members-table th,
-        .pba-members-table td {
-            padding: 14px 16px;
-            text-align: left;
-            vertical-align: middle;
-            border-bottom: 1px solid #edf2f7;
-            background: #fff;
-        }
-        .pba-members-table tbody tr:hover td {
-            background: #fbfdff;
-        }
-        .pba-members-table th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: #f8fbfe;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #607487;
-            font-weight: 800;
-        }
-        .pba-members-table th:first-child { border-top-left-radius: 12px; }
-        .pba-members-table th:last-child { border-top-right-radius: 12px; }
-        .pba-members-table td strong {
-            color: #17324a;
-            font-size: 15px;
-        }
-        .pba-members-muted {
-            color: #647b8d;
-            font-size: 13px;
-        }
-        .pba-members-sort-link {
-            color: inherit;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .pba-members-sort-link:hover {
-            color: #0d3b66;
-        }
-        .pba-members-sort-indicator {
-            display: inline-block;
-            min-width: 14px;
-            color: #0d3b66;
-        }
-        .pba-members-empty {
-            padding: 34px 20px;
-            text-align: center;
-            color: #5f7386;
-        }
-        .pba-members-pagination {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            align-items: center;
-            padding: 16px 18px 18px;
-            flex-wrap: wrap;
-        }
-        .pba-members-page-links {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .pba-members-page-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 42px;
-            min-height: 42px;
-            padding: 0 12px;
-            border-radius: 12px;
-            text-decoration: none;
-            border: 1px solid #d4e0eb;
-            background: #fff;
-            color: #17324a;
-            font-weight: 700;
-        }
-        .pba-members-page-link:hover {
-            background: #f5f9fd;
-            color: #17324a;
-        }
-        .pba-members-page-link.current {
-            background: #0d3b66;
-            border-color: #0d3b66;
-            color: #fff;
-        }
-        .pba-members-skeleton {
-            display: none;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            padding: 18px;
-        }
-        .pba-members-grid-wrap.is-loading .pba-members-skeleton {
-            display: grid;
-        }
-        .pba-members-skeleton-line {
-            height: 14px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #edf3f8 0%, #f7fafc 50%, #edf3f8 100%);
-            background-size: 200% 100%;
-            animation: pba-members-shimmer 1.4s linear infinite;
-        }
-        .pba-members-pill-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .pba-members-pill {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: #eef4fa;
-            color: #31536f;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        @keyframes pba-members-shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        @media (max-width: 1080px) {
-            .pba-members-search {
-                grid-template-columns: repeat(2, minmax(220px, 1fr));
-            }
-        }
-        @media (max-width: 680px) {
-            .pba-members-hero {
-                padding: 20px;
-            }
-            .pba-members-search {
-                grid-template-columns: 1fr;
-            }
-            .pba-members-pagination {
-                align-items: flex-start;
-            }
-        }
-
-        .pba-member-edit-wrap {
-            max-width: 1200px;
-            margin: 0 auto;
-            color: #17324a;
-        }
-        .pba-member-summary {
-            margin: 0 0 24px;
-            padding: 18px;
-            border: 1px solid #d7d7d7;
-            border-radius: 18px;
-            background: #fff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .pba-member-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px 24px;
-            margin-top: 14px;
-        }
-        .pba-member-summary-item strong {
-            display: block;
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            margin-bottom: 4px;
-        }
-        .pba-member-edit-form table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            border: 1px solid #dde7f0;
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 10px 24px rgba(14, 46, 76, 0.05);
-        }
-        .pba-member-edit-form th,
-        .pba-member-edit-form td {
-            padding: 12px 8px;
-            text-align: left;
-            vertical-align: top;
-            border-bottom: 1px solid #eee;
-        }
-        .pba-member-edit-form th {
-            width: 220px;
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #607487;
-            background: #fbfdff;
-        }
-        .pba-member-edit-input,
-        .pba-member-edit-select {
-            width: 360px;
-            max-width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #cdd9e5;
-            border-radius: 12px;
-            background: #ffffff;
-            color: #17324a;
-            box-sizing: border-box;
-        }
-        .pba-committee-box {
-            margin-bottom: 10px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            background: #fbfdff;
-        }
-        .pba-member-actions {
-            margin: 18px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .pba-member-action-form {
-            display: inline-block;
-        }
-    </style>
-    <?php
-    return ob_get_clean();
-}
-
 function pba_render_members_list_view() {
     $request_args = pba_get_members_list_request_args();
     $data = pba_get_members_list_data($request_args);
@@ -645,9 +224,9 @@ function pba_render_members_list_view() {
     }
 
     ob_start();
-    echo pba_render_members_admin_styles();
+    echo pba_members_render_shared_styles_if_available();
     ?>
-    <div class="pba-members-wrap">
+    <div class="pba-members-wrap pba-page-wrap">
         <?php echo pba_render_members_status_message(); ?>
 
         <div id="pba-members-admin-root">
@@ -655,113 +234,15 @@ function pba_render_members_list_view() {
         </div>
     </div>
 
-    <script>
-        (function () {
-            var root = document.getElementById('pba-members-admin-root');
-
-            if (!root || !window.fetch || !window.URL) {
-                return;
-            }
-
-            function getForm() {
-                return root.querySelector('#pba-members-search-form');
-            }
-
-            function getShell() {
-                return root.querySelector('.pba-members-admin-list-shell');
-            }
-
-            function bindInteractiveElements() {
-                var form = getForm();
-                if (form && form.dataset.bound !== '1') {
-                    form.dataset.bound = '1';
-                    form.addEventListener('submit', function (event) {
-                        event.preventDefault();
-                        var url = buildFormUrl(form);
-                        window.history.pushState({}, '', url);
-                        fetchIntoRoot(url);
-                    });
-                }
-
-                var pageLinks = root.querySelectorAll('[data-members-ajax-link="1"]');
-                pageLinks.forEach(function (link) {
-                    if (link.dataset.bound === '1') {
-                        return;
-                    }
-
-                    link.dataset.bound = '1';
-                    link.addEventListener('click', function (event) {
-                        event.preventDefault();
-                        window.history.pushState({}, '', link.href);
-                        fetchIntoRoot(link.href);
-                    });
-                });
-            }
-
-            function setLoading(isLoading) {
-                var shell = getShell();
-                if (!shell) {
-                    return;
-                }
-
-                var wrap = shell.querySelector('.pba-members-grid-wrap');
-                if (!wrap) {
-                    return;
-                }
-
-                if (isLoading) {
-                    wrap.classList.add('is-loading');
-                } else {
-                    wrap.classList.remove('is-loading');
-                }
-            }
-
-            function buildFormUrl(form) {
-                var actionUrl = form.action || window.location.pathname;
-                var parsed = new URL(actionUrl, window.location.origin);
-                var params = new URLSearchParams(new FormData(form));
-                parsed.search = params.toString();
-                return parsed.toString();
-            }
-
-            function fetchIntoRoot(url) {
-                setLoading(true);
-
-                var parsed = new URL(url, window.location.origin);
-                parsed.searchParams.set('pba_members_partial', '1');
-
-                window.fetch(parsed.toString(), {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error('Request failed');
-                    }
-                    return response.text();
-                })
-                .then(function (html) {
-                    root.innerHTML = html;
-                    bindInteractiveElements();
-                })
-                .catch(function () {
-                    window.location.href = url;
-                })
-                .finally(function () {
-                    setLoading(false);
-                });
-            }
-
-            window.addEventListener('popstate', function () {
-                fetchIntoRoot(window.location.href);
-            });
-
-            bindInteractiveElements();
-        })();
-    </script>
     <?php
+    echo pba_admin_list_render_ajax_script(array(
+        'root_id' => 'pba-members-admin-root',
+        'form_id' => 'pba-members-search-form',
+        'shell_selector' => '.pba-members-admin-list-shell',
+        'loading_selector' => '.pba-admin-list-grid-wrap',
+        'ajax_link_attr' => 'data-members-ajax-link',
+        'partial_param' => 'pba_members_partial',
+    ));
 
     return ob_get_clean();
 }
@@ -1288,49 +769,55 @@ function pba_paginate_members_rows($rows, $page, $per_page) {
     );
 }
 
+function pba_render_members_summary_card($label, $value, $note = '') {
+    if (function_exists('pba_shared_render_summary_card')) {
+        return pba_shared_render_summary_card($label, $value, $note);
+    }
+
+    ob_start();
+    ?>
+    <div class="pba-summary-card">
+        <div class="pba-summary-label"><?php echo esc_html($label); ?></div>
+        <div class="pba-summary-value"><?php echo esc_html((string) $value); ?></div>
+        <?php if ($note !== '') : ?>
+            <div class="pba-summary-note"><?php echo esc_html($note); ?></div>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
 function pba_render_members_dynamic_content($data, $request_args) {
     ob_start();
     ?>
-    <div class="pba-members-hero">
-        <div class="pba-members-hero-top">
+    <div class="pba-admin-list-hero">
+        <div class="pba-admin-list-hero-top">
             <div>
                 <p>View and manage member records, roles, committee assignments, and invite status with a faster, richer table experience.</p>
             </div>
         </div>
 
-        <div class="pba-members-kpis">
-            <div class="pba-members-kpi">
-                <span class="pba-members-kpi-label">Filtered Members</span>
-                <span class="pba-members-kpi-value"><?php echo esc_html(number_format_i18n($data['total_filtered'])); ?></span>
-            </div>
-            <div class="pba-members-kpi">
-                <span class="pba-members-kpi-label">On This Page</span>
-                <span class="pba-members-kpi-value"><?php echo esc_html(number_format_i18n(count($data['page_rows']))); ?></span>
-            </div>
-            <div class="pba-members-kpi">
-                <span class="pba-members-kpi-label">Page</span>
-                <span class="pba-members-kpi-value"><?php echo esc_html(number_format_i18n($data['pagination']['current_page'])); ?> / <?php echo esc_html(number_format_i18n($data['pagination']['total_pages'])); ?></span>
-            </div>
-            <div class="pba-members-kpi">
-                <span class="pba-members-kpi-label">Page Size</span>
-                <span class="pba-members-kpi-value"><?php echo esc_html(number_format_i18n($request_args['per_page'])); ?></span>
-            </div>
+        <div class="pba-summary-grid">
+            <?php echo pba_render_members_summary_card('Filtered Members', number_format_i18n($data['total_filtered'])); ?>
+            <?php echo pba_render_members_summary_card('On This Page', number_format_i18n(count($data['page_rows']))); ?>
+            <?php echo pba_render_members_summary_card('Page', number_format_i18n($data['pagination']['current_page']) . ' / ' . number_format_i18n($data['pagination']['total_pages'])); ?>
+            <?php echo pba_render_members_summary_card('Page Size', number_format_i18n($request_args['per_page'])); ?>
         </div>
     </div>
 
-    <div class="pba-members-card">
-        <div class="pba-members-toolbar">
-            <form method="get" class="pba-members-search" id="pba-members-search-form">
+    <div class="pba-section">
+        <div class="pba-admin-list-toolbar">
+            <form method="get" class="pba-members-search" id="pba-members-search-form" style="display:grid;grid-template-columns:minmax(220px,2fr) minmax(180px,1fr) minmax(120px,140px) auto auto;gap:12px;align-items:end;">
                 <input type="hidden" name="member_page" value="1">
                 <input type="hidden" name="member_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
                 <input type="hidden" name="member_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
 
-                <div class="pba-members-field">
+                <div class="pba-field">
                     <label for="member_search">Search</label>
                     <input type="text" id="member_search" name="member_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Name or email">
                 </div>
 
-                <div class="pba-members-field">
+                <div class="pba-field">
                     <label for="member_status_filter">Status</label>
                     <select id="member_status_filter" name="member_status_filter">
                         <option value="">All statuses</option>
@@ -1340,7 +827,7 @@ function pba_render_members_dynamic_content($data, $request_args) {
                     </select>
                 </div>
 
-                <div class="pba-members-field">
+                <div class="pba-field">
                     <label for="member_per_page">Rows</label>
                     <select id="member_per_page" name="member_per_page">
                         <option value="25" <?php selected($request_args['per_page'], 25); ?>>25</option>
@@ -1349,8 +836,8 @@ function pba_render_members_dynamic_content($data, $request_args) {
                     </select>
                 </div>
 
-                <button type="submit" class="pba-members-btn">Apply</button>
-                <a href="<?php echo esc_url(pba_get_members_base_url()); ?>" class="pba-members-btn secondary">Reset</a>
+                <button type="submit" class="pba-btn">Apply</button>
+                <a href="<?php echo esc_url(pba_get_members_base_url()); ?>" class="pba-btn secondary">Reset</a>
             </form>
         </div>
 
@@ -1369,29 +856,29 @@ function pba_render_members_list_shell($data, $request_args) {
     $pagination = $data['pagination'];
     $page_rows = $data['page_rows'];
     ?>
-    <div class="pba-members-resultsbar">
+    <div class="pba-admin-list-resultsbar">
         <div>
             Showing <?php echo esc_html(number_format_i18n($pagination['start_number'])); ?>–<?php echo esc_html(number_format_i18n($pagination['end_number'])); ?> of <?php echo esc_html(number_format_i18n($pagination['total_rows'])); ?> members
         </div>
-        <div class="pba-members-filter-summary">
+        <div class="pba-admin-list-filter-summary">
             <?php if ($request_args['search'] !== '') : ?>
-                <span class="pba-members-chip">Search: <?php echo esc_html($request_args['search']); ?></span>
+                <span class="pba-admin-list-chip">Search: <?php echo esc_html($request_args['search']); ?></span>
             <?php endif; ?>
             <?php if ($request_args['status_filter'] !== '') : ?>
-                <span class="pba-members-chip">Status: <?php echo esc_html($request_args['status_filter']); ?></span>
+                <span class="pba-admin-list-chip">Status: <?php echo esc_html($request_args['status_filter']); ?></span>
             <?php endif; ?>
         </div>
     </div>
 
-    <div class="pba-members-grid-wrap" aria-live="polite">
-        <div class="pba-members-skeleton" aria-hidden="true">
-            <div class="pba-members-skeleton-line"></div>
-            <div class="pba-members-skeleton-line"></div>
-            <div class="pba-members-skeleton-line"></div>
-            <div class="pba-members-skeleton-line"></div>
+    <div class="pba-admin-list-grid-wrap" aria-live="polite">
+        <div class="pba-admin-list-skeleton" aria-hidden="true">
+            <div class="pba-admin-list-skeleton-line"></div>
+            <div class="pba-admin-list-skeleton-line"></div>
+            <div class="pba-admin-list-skeleton-line"></div>
+            <div class="pba-admin-list-skeleton-line"></div>
         </div>
 
-        <table class="pba-members-table">
+        <table class="pba-table">
             <thead>
                 <tr>
                     <?php echo pba_render_members_sortable_th('Name', 'name', $request_args); ?>
@@ -1407,7 +894,7 @@ function pba_render_members_list_shell($data, $request_args) {
             <tbody>
                 <?php if (empty($page_rows)) : ?>
                     <tr>
-                        <td colspan="8" class="pba-members-empty">No members found for the current filters.</td>
+                        <td colspan="8" class="pba-admin-list-empty">No members found for the current filters.</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($page_rows as $row) : ?>
@@ -1419,36 +906,28 @@ function pba_render_members_list_shell($data, $request_args) {
                         <tr>
                             <td>
                                 <strong><?php echo esc_html(($row['display_name'] ?? '') !== '' ? $row['display_name'] : ('Member #' . $person_id)); ?></strong>
-                                <div class="pba-members-muted">Member ID <?php echo esc_html((string) $person_id); ?></div>
+                                <div class="pba-admin-list-muted">Member ID <?php echo esc_html((string) $person_id); ?></div>
                             </td>
                             <td><?php echo esc_html($row['email_address'] ?? ''); ?></td>
                             <td><?php echo pba_render_members_status_badge($row['status'] ?? ''); ?></td>
                             <td><?php echo esc_html(($row['household_label'] ?? '') !== '' ? $row['household_label'] : '—'); ?></td>
                             <td>
                                 <?php if (!empty($roles)) : ?>
-                                    <div class="pba-members-pill-list">
-                                        <?php foreach ($roles as $role_name) : ?>
-                                            <span class="pba-members-pill"><?php echo esc_html($role_name); ?></span>
-                                        <?php endforeach; ?>
-                                    </div>
+                                    <?php echo esc_html(implode(', ', $roles)); ?>
                                 <?php else : ?>
                                     —
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (!empty($committees)) : ?>
-                                    <div class="pba-members-pill-list">
-                                        <?php foreach ($committees as $committee_label) : ?>
-                                            <span class="pba-members-pill"><?php echo esc_html($committee_label); ?></span>
-                                        <?php endforeach; ?>
-                                    </div>
+                                    <?php echo esc_html(implode(', ', $committees)); ?>
                                 <?php else : ?>
                                     —
                                 <?php endif; ?>
                             </td>
                             <td><?php echo esc_html(pba_format_datetime_display($row['last_modified_raw'] ?? '')); ?></td>
                             <td>
-                                <a class="pba-members-btn secondary" href="<?php echo esc_url(add_query_arg(array(
+                                <a class="pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                     'member_view' => 'edit',
                                     'member_id'   => $person_id,
                                 ), pba_get_members_base_url())); ?>">Manage &rarr;</a>
@@ -1467,92 +946,76 @@ function pba_render_members_list_shell($data, $request_args) {
 }
 
 function pba_render_members_sortable_th($label, $column, $request_args) {
-    $is_current = $request_args['sort'] === $column;
-    $next_direction = ($is_current && $request_args['direction'] === 'asc') ? 'desc' : 'asc';
-    $indicator = '↕';
-
-    if ($is_current) {
-        $indicator = $request_args['direction'] === 'asc' ? '↑' : '↓';
-    }
-
+    $next_direction = ($request_args['sort'] === $column && $request_args['direction'] === 'asc') ? 'desc' : 'asc';
     $url = pba_get_members_list_url(array(
         'member_sort'      => $column,
         'member_direction' => $next_direction,
         'member_page'      => 1,
     ));
 
-    return '<th><a class="pba-members-sort-link" data-members-ajax-link="1" href="' . esc_url($url) . '">' . esc_html($label) . '<span class="pba-members-sort-indicator">' . esc_html($indicator) . '</span></a></th>';
+    if (function_exists('pba_admin_list_render_sortable_th')) {
+        return pba_admin_list_render_sortable_th(array(
+            'label' => $label,
+            'column' => $column,
+            'current_sort' => $request_args['sort'],
+            'current_direction' => $request_args['direction'],
+            'url' => $url,
+            'link_attr' => 'data-members-ajax-link',
+            'link_class' => 'pba-admin-list-sort-link',
+            'indicator_class' => 'pba-admin-list-sort-indicator',
+        ));
+    }
+
+    $is_current = $request_args['sort'] === $column;
+    $indicator = '↕';
+    if ($is_current) {
+        $indicator = $request_args['direction'] === 'asc' ? '↑' : '↓';
+    }
+
+    return '<th><a class="pba-admin-list-sort-link" data-members-ajax-link="1" href="' . esc_url($url) . '">' . esc_html($label) . '<span class="pba-admin-list-sort-indicator">' . esc_html($indicator) . '</span></a></th>';
 }
 
 function pba_render_members_status_badge($status) {
     $status = trim((string) $status);
     $normalized = strtolower($status);
-    $class = 'status-unknown';
 
-    if ($normalized === 'active') {
-        $class = 'status-active';
-    } elseif ($normalized === 'disabled' || $normalized === 'inactive' || $normalized === 'expired') {
-        $class = 'status-inactive';
+    if (function_exists('pba_shared_render_status_badge')) {
+        if ($normalized === 'active') {
+            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'accepted');
+        }
+
+        if ($normalized === 'disabled' || $normalized === 'inactive' || $normalized === 'expired') {
+            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'disabled');
+        }
+
+        if ($normalized === 'pending') {
+            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'pending');
+        }
+
+        return pba_shared_render_status_badge($status !== '' ? $status : '—', 'default');
     }
 
-    return '<span class="pba-members-badge ' . esc_attr($class) . '">' . esc_html($status !== '' ? $status : '—') . '</span>';
+    return '<span class="pba-status-badge default">' . esc_html($status !== '' ? $status : '—') . '</span>';
 }
 
 function pba_render_members_pagination($pagination) {
-    if ((int) $pagination['total_pages'] <= 1) {
-        return '';
+    if (function_exists('pba_admin_list_render_pagination')) {
+        return pba_admin_list_render_pagination(array(
+            'pagination' => $pagination,
+            'url_builder' => 'pba_get_members_list_url',
+            'page_param' => 'member_page',
+            'container_class' => 'pba-admin-list-pagination',
+            'muted_class' => 'pba-admin-list-muted',
+            'links_class' => 'pba-admin-list-page-links',
+            'link_class' => 'pba-admin-list-page-link',
+            'current_class' => 'current',
+            'ajax_link_attr' => 'data-members-ajax-link',
+            'prev_label' => 'Prev',
+            'next_label' => 'Next',
+        ));
     }
 
-    $current_page = (int) $pagination['current_page'];
-    $total_pages = (int) $pagination['total_pages'];
-    $pages_to_show = array();
-
-    for ($page = 1; $page <= $total_pages; $page++) {
-        if ($page === 1 || $page === $total_pages || abs($page - $current_page) <= 2) {
-            $pages_to_show[] = $page;
-        }
-    }
-
-    $pages_to_show = array_values(array_unique($pages_to_show));
-    sort($pages_to_show);
-
-    ob_start();
-    ?>
-    <div class="pba-members-pagination">
-        <div class="pba-members-muted">
-            Page <?php echo esc_html(number_format_i18n($current_page)); ?> of <?php echo esc_html(number_format_i18n($total_pages)); ?>
-        </div>
-        <div class="pba-members-page-links">
-            <?php if ($current_page > 1) : ?>
-                <a class="pba-members-page-link" data-members-ajax-link="1" href="<?php echo esc_url(pba_get_members_list_url(array('member_page' => $current_page - 1))); ?>">Prev</a>
-            <?php endif; ?>
-
-            <?php
-            $last_rendered = 0;
-            foreach ($pages_to_show as $page_number) :
-                if ($last_rendered > 0 && $page_number > ($last_rendered + 1)) {
-                    echo '<span class="pba-members-muted">…</span>';
-                }
-
-                $classes = 'pba-members-page-link';
-                if ($page_number === $current_page) {
-                    $classes .= ' current';
-                }
-                ?>
-                <a class="<?php echo esc_attr($classes); ?>" data-members-ajax-link="1" href="<?php echo esc_url(pba_get_members_list_url(array('member_page' => $page_number))); ?>"><?php echo esc_html(number_format_i18n($page_number)); ?></a>
-                <?php
-                $last_rendered = $page_number;
-            endforeach;
-            ?>
-
-            <?php if ($current_page < $total_pages) : ?>
-                <a class="pba-members-page-link" data-members-ajax-link="1" href="<?php echo esc_url(pba_get_members_list_url(array('member_page' => $current_page + 1))); ?>">Next</a>
-            <?php endif; ?>
-        </div>
-    </div>
-    <?php
-
-    return ob_get_clean();
+    return '';
 }
 
 function pba_render_member_edit_view($member_id) {
@@ -1593,176 +1056,168 @@ function pba_render_member_edit_view($member_id) {
     $display_name = trim(((string) ($member['first_name'] ?? '')) . ' ' . ((string) ($member['last_name'] ?? '')));
 
     ob_start();
-    echo pba_render_members_admin_styles();
+    echo pba_members_render_shared_styles_if_available();
     ?>
-    <div class="pba-member-edit-wrap">
+    <div class="pba-member-edit-wrap pba-page-wrap">
         <p>
-            <a class="pba-member-edit-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Back to Members</a>
+            <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Back to Members</a>
         </p>
 
         <?php echo pba_render_members_status_message(); ?>
 
-        <div class="pba-member-summary">
-            <h3 style="margin:0;"><?php echo esc_html($display_name !== '' ? $display_name : ('Member #' . (int) $member['person_id'])); ?></h3>
-            <div class="pba-member-summary-grid">
-                <div class="pba-member-summary-item">
-                    <strong>Status</strong>
-                    <div><?php echo esc_html($status !== '' ? $status : '—'); ?></div>
-                </div>
-                <div class="pba-member-summary-item">
-                    <strong>Linked WP User ID</strong>
-                    <div><?php echo esc_html($wp_user_id !== '' ? $wp_user_id : 'Not linked'); ?></div>
-                </div>
-                <div class="pba-member-summary-item">
-                    <strong>Email Verified</strong>
-                    <div><?php echo esc_html($email_verified); ?></div>
-                </div>
-                <div class="pba-member-summary-item">
-                    <strong>Last Modified</strong>
-                    <div><?php echo esc_html(pba_format_datetime_display($member['last_modified_at'] ?? '')); ?></div>
-                </div>
+        <div class="pba-section">
+            <h3 style="margin:0 0 18px;"><?php echo esc_html($display_name !== '' ? $display_name : ('Member #' . (int) $member['person_id'])); ?></h3>
+            <div class="pba-summary-grid">
+                <?php echo pba_render_members_summary_card('Status', $status !== '' ? $status : '—'); ?>
+                <?php echo pba_render_members_summary_card('Linked WP User ID', $wp_user_id !== '' ? $wp_user_id : 'Not linked'); ?>
+                <?php echo pba_render_members_summary_card('Email Verified', $email_verified); ?>
+                <?php echo pba_render_members_summary_card('Last Modified', pba_format_datetime_display($member['last_modified_at'] ?? '')); ?>
                 <?php if (is_array($invite_data) && !empty($invite_data['expires_at_gmt'])) : ?>
-                    <div class="pba-member-summary-item">
-                        <strong>Invite Expires</strong>
-                        <div><?php echo esc_html(date('m/d/y h:i A', (int) $invite_data['expires_at_gmt'])); ?></div>
-                    </div>
+                    <?php echo pba_render_members_summary_card('Invite Expires', date('m/d/y h:i A', (int) $invite_data['expires_at_gmt'])); ?>
                 <?php endif; ?>
             </div>
         </div>
 
-        <div class="pba-member-actions">
-            <?php if ($status === 'Active') : ?>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
-                    <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                    <input type="hidden" name="action" value="pba_admin_disable_member">
-                    <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                    <button type="submit" class="pba-member-edit-btn secondary">Disable</button>
-                </form>
-            <?php elseif ($status === 'Disabled') : ?>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
-                    <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                    <input type="hidden" name="action" value="pba_admin_enable_member">
-                    <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                    <button type="submit" class="pba-member-edit-btn secondary">Enable</button>
-                </form>
-            <?php elseif ($status === 'Pending') : ?>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form" onsubmit="return confirm('Cancel this invite?');">
-                    <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                    <input type="hidden" name="action" value="pba_admin_cancel_invite">
-                    <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                    <button type="submit" class="pba-member-edit-btn secondary">Cancel Invite</button>
-                </form>
-            <?php elseif ($status === 'Expired') : ?>
-                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
-                    <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
-                    <input type="hidden" name="action" value="pba_admin_resend_invite">
-                    <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                    <button type="submit" class="pba-member-edit-btn secondary">Resend Invite</button>
-                </form>
-            <?php endif; ?>
+        <div class="pba-section">
+            <div class="pba-actions">
+                <?php if ($status === 'Active') : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
+                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_admin_disable_member">
+                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                        <button type="submit" class="pba-btn secondary">Disable</button>
+                    </form>
+                <?php elseif ($status === 'Disabled') : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
+                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_admin_enable_member">
+                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                        <button type="submit" class="pba-btn secondary">Enable</button>
+                    </form>
+                <?php elseif ($status === 'Pending') : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form" onsubmit="return confirm('Cancel this invite?');">
+                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_admin_cancel_invite">
+                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                        <button type="submit" class="pba-btn secondary">Cancel Invite</button>
+                    </form>
+                <?php elseif ($status === 'Expired') : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
+                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_admin_resend_invite">
+                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                        <button type="submit" class="pba-btn secondary">Resend Invite</button>
+                    </form>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-edit-form">
-            <?php wp_nonce_field('pba_member_admin_action', 'pba_member_admin_nonce'); ?>
-            <input type="hidden" name="action" value="pba_save_member_admin">
-            <input type="hidden" name="member_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+        <div class="pba-section">
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-edit-form">
+                <?php wp_nonce_field('pba_member_admin_action', 'pba_member_admin_nonce'); ?>
+                <input type="hidden" name="action" value="pba_save_member_admin">
+                <input type="hidden" name="member_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
 
-            <table>
-                <tr>
-                    <th><label for="household_id">Household</label></th>
-                    <td>
-                        <select name="household_id" id="household_id" class="pba-member-edit-select" required>
-                            <option value="">Select household</option>
-                            <?php if (!is_wp_error($households)) : ?>
-                                <?php foreach ($households as $household) : ?>
-                                    <?php $label = trim(($household['pb_street_number'] ?? '') . ' ' . ($household['pb_street_name'] ?? '')); ?>
-                                    <option value="<?php echo esc_attr($household['household_id']); ?>" <?php selected((string) $member['household_id'], (string) $household['household_id']); ?>>
-                                        <?php echo esc_html($label); ?>
-                                    </option>
+                <table class="pba-table">
+                    <tr>
+                        <th><label for="household_id">Household</label></th>
+                        <td>
+                            <div class="pba-field">
+                                <select name="household_id" id="household_id" required>
+                                    <option value="">Select household</option>
+                                    <?php if (!is_wp_error($households)) : ?>
+                                        <?php foreach ($households as $household) : ?>
+                                            <?php $label = trim(($household['pb_street_number'] ?? '') . ' ' . ($household['pb_street_name'] ?? '')); ?>
+                                            <option value="<?php echo esc_attr($household['household_id']); ?>" <?php selected((string) $member['household_id'], (string) $household['household_id']); ?>>
+                                                <?php echo esc_html($label); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="first_name">First Name</label></th>
+                        <td><div class="pba-field"><input type="text" name="first_name" id="first_name" value="<?php echo esc_attr($member['first_name'] ?? ''); ?>" required></div></td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="last_name">Last Name</label></th>
+                        <td><div class="pba-field"><input type="text" name="last_name" id="last_name" value="<?php echo esc_attr($member['last_name'] ?? ''); ?>" required></div></td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="email_address">Email Address</label></th>
+                        <td><div class="pba-field"><input type="email" name="email_address" id="email_address" value="<?php echo esc_attr($member['email_address'] ?? ''); ?>"></div></td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="status">Status</label></th>
+                        <td>
+                            <div class="pba-field">
+                                <select name="status" id="status">
+                                    <option value="Unregistered" <?php selected($member['status'] ?? '', 'Unregistered'); ?>>Unregistered</option>
+                                    <option value="Pending" <?php selected($member['status'] ?? '', 'Pending'); ?>>Pending</option>
+                                    <option value="Active" <?php selected($member['status'] ?? '', 'Active'); ?>>Active</option>
+                                    <option value="Disabled" <?php selected($member['status'] ?? '', 'Disabled'); ?>>Disabled</option>
+                                    <option value="Expired" <?php selected($member['status'] ?? '', 'Expired'); ?>>Expired</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Broad Roles</th>
+                        <td>
+                            <?php if (!is_wp_error($roles)) : ?>
+                                <?php foreach ($roles as $role) : ?>
+                                    <label style="display:block;margin-bottom:6px;">
+                                        <input type="checkbox" name="role_ids[]" value="<?php echo esc_attr($role['role_id']); ?>" <?php checked(in_array((int) $role['role_id'], $selected_role_ids, true)); ?>>
+                                        <?php echo esc_html($role['role_name']); ?>
+                                    </label>
                                 <?php endforeach; ?>
                             <?php endif; ?>
-                        </select>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
 
-                <tr>
-                    <th><label for="first_name">First Name</label></th>
-                    <td><input class="pba-member-edit-input" type="text" name="first_name" id="first_name" value="<?php echo esc_attr($member['first_name'] ?? ''); ?>" required></td>
-                </tr>
-
-                <tr>
-                    <th><label for="last_name">Last Name</label></th>
-                    <td><input class="pba-member-edit-input" type="text" name="last_name" id="last_name" value="<?php echo esc_attr($member['last_name'] ?? ''); ?>" required></td>
-                </tr>
-
-                <tr>
-                    <th><label for="email_address">Email Address</label></th>
-                    <td><input class="pba-member-edit-input" type="email" name="email_address" id="email_address" value="<?php echo esc_attr($member['email_address'] ?? ''); ?>"></td>
-                </tr>
-
-                <tr>
-                    <th><label for="status">Status</label></th>
-                    <td>
-                        <select name="status" id="status" class="pba-member-edit-select">
-                            <option value="Unregistered" <?php selected($member['status'] ?? '', 'Unregistered'); ?>>Unregistered</option>
-                            <option value="Pending" <?php selected($member['status'] ?? '', 'Pending'); ?>>Pending</option>
-                            <option value="Active" <?php selected($member['status'] ?? '', 'Active'); ?>>Active</option>
-                            <option value="Disabled" <?php selected($member['status'] ?? '', 'Disabled'); ?>>Disabled</option>
-                            <option value="Expired" <?php selected($member['status'] ?? '', 'Expired'); ?>>Expired</option>
-                        </select>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Broad Roles</th>
-                    <td>
-                        <?php if (!is_wp_error($roles)) : ?>
-                            <?php foreach ($roles as $role) : ?>
-                                <label style="display:block;margin-bottom:6px;">
-                                    <input type="checkbox" name="role_ids[]" value="<?php echo esc_attr($role['role_id']); ?>" <?php checked(in_array((int) $role['role_id'], $selected_role_ids, true)); ?>>
-                                    <?php echo esc_html($role['role_name']); ?>
-                                </label>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Committees</th>
-                    <td>
-                        <?php if (!is_wp_error($committees)) : ?>
-                            <?php foreach ($committees as $committee) : ?>
-                                <?php
-                                $committee_id = (int) $committee['committee_id'];
-                                $selected = isset($selected_committees[$committee_id]);
-                                $committee_role = $selected ? $selected_committees[$committee_id]['committee_role'] : '';
-                                ?>
-                                <div class="pba-committee-box">
-                                    <label>
-                                        <input type="checkbox" name="committee_ids[]" value="<?php echo esc_attr($committee_id); ?>" <?php checked($selected); ?>>
-                                        <?php echo esc_html($committee['committee_name']); ?>
-                                    </label>
-                                    <div style="margin-top:6px;">
-                                        <input
-                                            class="pba-member-edit-input"
-                                            type="text"
-                                            name="committee_roles[<?php echo esc_attr($committee_id); ?>]"
-                                            value="<?php echo esc_attr($committee_role); ?>"
-                                            placeholder="Committee role, e.g. Chair, Treasurer, Member"
-                                        >
+                    <tr>
+                        <th>Committees</th>
+                        <td>
+                            <?php if (!is_wp_error($committees)) : ?>
+                                <?php foreach ($committees as $committee) : ?>
+                                    <?php
+                                    $committee_id = (int) $committee['committee_id'];
+                                    $selected = isset($selected_committees[$committee_id]);
+                                    $committee_role = $selected ? $selected_committees[$committee_id]['committee_role'] : '';
+                                    ?>
+                                    <div class="pba-section" style="margin:0 0 10px; padding:12px;">
+                                        <label>
+                                            <input type="checkbox" name="committee_ids[]" value="<?php echo esc_attr($committee_id); ?>" <?php checked($selected); ?>>
+                                            <?php echo esc_html($committee['committee_name']); ?>
+                                        </label>
+                                        <div class="pba-field" style="margin-top:6px;">
+                                            <input
+                                                type="text"
+                                                name="committee_roles[<?php echo esc_attr($committee_id); ?>]"
+                                                value="<?php echo esc_attr($committee_role); ?>"
+                                                placeholder="Committee role, e.g. Chair, Treasurer, Member"
+                                            >
+                                        </div>
                                     </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            </table>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                </table>
 
-            <p style="margin-top:18px;">
-                <button type="submit" class="pba-member-edit-btn">Save Member</button>
-                <a class="pba-member-edit-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Cancel</a>
-            </p>
-        </form>
+                <p style="margin-top:18px;">
+                    <button type="submit" class="pba-btn">Save Member</button>
+                    <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Cancel</a>
+                </p>
+            </form>
+        </div>
     </div>
     <?php
 

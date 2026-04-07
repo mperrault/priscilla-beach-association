@@ -18,6 +18,7 @@ require_once __DIR__ . '/includes/auth-handlers.php';
 require_once __DIR__ . '/includes/invite-handlers.php';
 require_once __DIR__ . '/includes/shortcodes-member-invite.php';
 require_once __DIR__ . '/includes/menuing.php';
+require_once __DIR__ . '/includes/shared-list-ui.php';
 require_once __DIR__ . '/includes/shortcodes-household.php';
 require_once __DIR__ . '/includes/admin-menu.php';
 require_once __DIR__ . '/includes/admin-members.php';

@@ -28,7 +28,7 @@ function pba_render_member_directory_shortcode() {
 
     ob_start();
     ?>
-    <div class="pba-member-directory-wrap">
+    <div class="pba-member-directory-wrap pba-page-wrap">
         <div id="pba-member-directory-root">
             <?php echo pba_render_member_directory_page_shell($data, $request_args); ?>
         </div>
@@ -79,7 +79,7 @@ function pba_render_member_directory_page_shell($data, $request_args) {
     ?>
     <?php echo pba_render_member_directory_hero($data, $request_args); ?>
 
-    <div class="pba-admin-list-card">
+    <div class="pba-admin-list-card pba-section">
         <?php echo pba_render_member_directory_toolbar($request_args); ?>
 
         <div class="pba-member-directory-list-shell">
@@ -131,12 +131,12 @@ function pba_render_member_directory_toolbar($request_args) {
             <input type="hidden" name="directory_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
             <input type="hidden" name="directory_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
 
-            <div class="pba-admin-list-field">
+            <div class="pba-admin-list-field pba-field">
                 <label for="directory_search">Search</label>
                 <input type="text" id="directory_search" name="directory_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Name, email, household, or committee">
             </div>
 
-            <div class="pba-admin-list-field">
+            <div class="pba-admin-list-field pba-field">
                 <label for="directory_per_page">Rows</label>
                 <select id="directory_per_page" name="directory_per_page">
                     <option value="25" <?php selected($request_args['per_page'], 25); ?>>25</option>
@@ -146,8 +146,8 @@ function pba_render_member_directory_toolbar($request_args) {
             </div>
 
             <div style="display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
-                <button type="submit" class="pba-admin-list-btn">Apply</button>
-                <a href="<?php echo esc_url(pba_get_member_directory_base_url()); ?>" class="pba-admin-list-btn secondary">Reset</a>
+                <button type="submit" class="pba-admin-list-btn pba-btn">Apply</button>
+                <a href="<?php echo esc_url(pba_get_member_directory_base_url()); ?>" class="pba-admin-list-btn pba-btn secondary">Reset</a>
             </div>
         </form>
     </div>
@@ -378,7 +378,7 @@ function pba_render_member_directory_list_shell($data, $request_args) {
             <div class="pba-admin-list-skeleton-line"></div>
         </div>
 
-        <table class="pba-admin-list-table pba-member-directory-table">
+        <table class="pba-admin-list-table pba-table pba-member-directory-table">
             <thead>
                 <tr>
                     <?php echo pba_render_member_directory_sortable_th('Name', 'name', $request_args); ?>
@@ -422,12 +422,12 @@ function pba_render_member_directory_list_shell($data, $request_args) {
 
     <div class="pba-member-directory-mobile-cards">
         <?php if (empty($page_rows)) : ?>
-            <div class="pba-member-directory-mobile-card">
+            <div class="pba-member-directory-mobile-card pba-section">
                 <div class="pba-admin-list-empty" style="padding:0;">No members found for the current filters.</div>
             </div>
         <?php else : ?>
             <?php foreach ($page_rows as $row) : ?>
-                <div class="pba-member-directory-mobile-card">
+                <div class="pba-member-directory-mobile-card pba-section">
                     <h3><?php echo esc_html($row['name'] !== '' ? $row['name'] : 'Unnamed member'); ?></h3>
 
                     <div class="pba-member-directory-mobile-row">

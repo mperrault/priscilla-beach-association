@@ -68,14 +68,34 @@ function pba_render_households_admin_status_message() {
         return '';
     }
 
-    $message = str_replace('_', ' ', $status);
-    $success_statuses = array(
-        'household_saved',
+    $success_messages = array(
+        'household_saved' => 'Household saved successfully.',
     );
 
-    $class = in_array($status, $success_statuses, true) ? 'pba-households-message' : 'pba-households-message error';
+    $error_messages = array(
+        'invalid_request' => 'We could not process that request.',
+        'save_failed'     => 'We could not save that household.',
+    );
 
-    return '<div class="' . esc_attr($class) . '">' . esc_html(ucfirst($message)) . '</div>';
+    if (isset($success_messages[$status])) {
+        $text = $success_messages[$status];
+
+        if (function_exists('pba_shared_render_message')) {
+            return pba_shared_render_message('success', 'Success', $text);
+        }
+
+        return '<div class="pba-households-message">' . esc_html($text) . '</div>';
+    }
+
+    $text = isset($error_messages[$status])
+        ? $error_messages[$status]
+        : ucfirst(str_replace('_', ' ', $status));
+
+    if (function_exists('pba_shared_render_message')) {
+        return pba_shared_render_message('error', 'Please review', $text);
+    }
+
+    return '<div class="pba-households-message error">' . esc_html($text) . '</div>';
 }
 
 function pba_get_households_admin_list_request_args() {
@@ -168,7 +188,7 @@ function pba_render_households_admin_list_view() {
 
     ob_start();
     ?>
-    <div class="pba-households-wrap">
+    <div class="pba-households-wrap pba-page-wrap">
         <?php echo pba_render_households_admin_status_message(); ?>
 
         <div id="pba-households-admin-root">
@@ -218,19 +238,19 @@ function pba_render_households_admin_dynamic_content($data, $request_args) {
         </div>
     </div>
 
-    <div class="pba-admin-list-card">
+    <div class="pba-admin-list-card pba-section">
         <div class="pba-admin-list-toolbar">
             <form method="get" class="pba-households-search" id="pba-households-search-form">
                 <input type="hidden" name="household_page" value="1">
                 <input type="hidden" name="household_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
                 <input type="hidden" name="household_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
 
-                <div class="pba-admin-list-field">
+                <div class="pba-admin-list-field pba-field">
                     <label for="household_search">Search</label>
                     <input type="text" id="household_search" name="household_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Address, owner, or house admin">
                 </div>
 
-                <div class="pba-admin-list-field">
+                <div class="pba-admin-list-field pba-field">
                     <label for="household_status_filter">Status</label>
                     <select id="household_status_filter" name="household_status_filter">
                         <option value="">All statuses</option>
@@ -240,7 +260,7 @@ function pba_render_households_admin_dynamic_content($data, $request_args) {
                     </select>
                 </div>
 
-                <div class="pba-admin-list-field">
+                <div class="pba-admin-list-field pba-field">
                     <label for="household_owner_occupied">Owner occupied</label>
                     <select id="household_owner_occupied" name="household_owner_occupied">
                         <option value="">All</option>
@@ -249,7 +269,7 @@ function pba_render_households_admin_dynamic_content($data, $request_args) {
                     </select>
                 </div>
 
-                <div class="pba-admin-list-field">
+                <div class="pba-admin-list-field pba-field">
                     <label for="household_per_page">Rows</label>
                     <select id="household_per_page" name="household_per_page">
                         <option value="25" <?php selected($request_args['per_page'], 25); ?>>25</option>
@@ -258,8 +278,8 @@ function pba_render_households_admin_dynamic_content($data, $request_args) {
                     </select>
                 </div>
 
-                <button type="submit" class="pba-admin-list-btn">Apply</button>
-                <a href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>" class="pba-admin-list-btn secondary">Reset</a>
+                <button type="submit" class="pba-admin-list-btn pba-btn">Apply</button>
+                <a href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>" class="pba-admin-list-btn pba-btn secondary">Reset</a>
             </form>
         </div>
 
@@ -535,7 +555,7 @@ function pba_render_households_admin_list_shell($data, $request_args) {
             <div class="pba-admin-list-skeleton-line"></div>
         </div>
 
-        <table class="pba-admin-list-table pba-households-table">
+        <table class="pba-admin-list-table pba-table pba-households-table">
             <thead>
                 <tr>
                     <?php echo pba_render_households_admin_sortable_th('Address', 'address', $request_args); ?>
@@ -577,7 +597,7 @@ function pba_render_households_admin_list_shell($data, $request_args) {
                             <td><?php echo pba_render_households_admin_owner_occupied_badge($owner_occupied); ?></td>
                             <td><?php echo esc_html(function_exists('pba_format_datetime_display') ? pba_format_datetime_display($row['last_modified_raw'] ?? '') : ($row['last_modified_raw'] ?? '')); ?></td>
                             <td>
-                                <a class="pba-admin-list-btn secondary" href="<?php echo esc_url(add_query_arg(array(
+                                <a class="pba-admin-list-btn pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                     'household_view' => 'edit',
                                     'household_id'   => $household_id,
                                 ), pba_get_households_admin_base_url())); ?>">Manage &rarr;</a>
@@ -619,6 +639,19 @@ function pba_render_households_admin_sortable_th($label, $column, $request_args)
 function pba_render_households_admin_status_badge($status) {
     $status = trim((string) $status);
     $normalized = strtolower($status);
+
+    if (function_exists('pba_shared_render_status_badge')) {
+        if ($normalized === 'active') {
+            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'accepted');
+        }
+
+        if ($normalized === 'inactive' || $normalized === 'disabled') {
+            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'disabled');
+        }
+
+        return pba_shared_render_status_badge($status !== '' ? $status : '—', 'default');
+    }
+
     $class = 'status-unknown';
 
     if ($normalized === 'active') {
@@ -631,6 +664,18 @@ function pba_render_households_admin_status_badge($status) {
 }
 
 function pba_render_households_admin_owner_occupied_badge($owner_occupied) {
+    if (function_exists('pba_shared_render_status_badge')) {
+        if ($owner_occupied === null) {
+            return pba_shared_render_status_badge('—', 'default');
+        }
+
+        if ($owner_occupied) {
+            return pba_shared_render_status_badge('Yes', 'accepted');
+        }
+
+        return pba_shared_render_status_badge('No', 'disabled');
+    }
+
     if ($owner_occupied === null) {
         return '<span class="pba-admin-list-badge pba-households-badge">—</span>';
     }
@@ -656,6 +701,24 @@ function pba_render_households_admin_pagination($pagination) {
         'prev_label' => 'Prev',
         'next_label' => 'Next',
     ));
+}
+
+function pba_render_household_admin_edit_summary_card($label, $value, $note = '') {
+    if (function_exists('pba_shared_render_summary_card')) {
+        return pba_shared_render_summary_card($label, $value, $note);
+    }
+
+    ob_start();
+    ?>
+    <div class="pba-summary-card">
+        <div class="pba-summary-label"><?php echo esc_html($label); ?></div>
+        <div class="pba-summary-value"><?php echo esc_html((string) $value); ?></div>
+        <?php if ($note !== '') : ?>
+            <div class="pba-summary-note"><?php echo esc_html($note); ?></div>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
 }
 
 function pba_render_household_admin_edit_view($household_id) {
@@ -684,52 +747,29 @@ function pba_render_household_admin_edit_view($household_id) {
 
     ob_start();
     ?>
-    <div class="pba-household-edit-wrap">
+    <div class="pba-household-edit-wrap pba-page-wrap">
         <p>
-            <a class="pba-households-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">Back to Households</a>
+            <a class="pba-households-btn pba-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">Back to Households</a>
         </p>
 
         <?php echo pba_render_households_admin_status_message(); ?>
 
-        <div class="pba-household-summary">
-            <h3 style="margin:0;"><?php echo esc_html($address !== '' ? $address : ('Household #' . (int) $household['household_id'])); ?></h3>
-            <div class="pba-household-summary-grid">
-                <div class="pba-household-summary-item">
-                    <strong>Owner Name</strong>
-                    <div><?php echo esc_html(($household['owner_name_raw'] ?? '') !== '' ? $household['owner_name_raw'] : '—'); ?></div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Household Admin</strong>
-                    <div><?php echo esc_html($display_house_admin !== '' ? $display_house_admin : '—'); ?></div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Household Status</strong>
-                    <div><?php echo esc_html(($household['household_status'] ?? '') !== '' ? $household['household_status'] : '—'); ?></div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Members</strong>
-                    <div><?php echo esc_html((string) $household_stats['active_count']); ?> active / <?php echo esc_html((string) $household_stats['total_count']); ?> total</div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Owner Occupied</strong>
-                    <div><?php echo esc_html(array_key_exists('owner_occupied', $household) ? ($household['owner_occupied'] ? 'Yes' : 'No') : '—'); ?></div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Invite Policy</strong>
-                    <div><?php echo esc_html(isset($household['invite_policy']) && $household['invite_policy'] !== null ? (string) $household['invite_policy'] : '—'); ?></div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Last Modified</strong>
-                    <div><?php echo esc_html(function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['last_modified_at'] ?? '') : ($household['last_modified_at'] ?? '')); ?></div>
-                </div>
-                <div class="pba-household-summary-item">
-                    <strong>Created</strong>
-                    <div><?php echo esc_html(function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['created_at'] ?? '') : ($household['created_at'] ?? '')); ?></div>
-                </div>
+        <div class="pba-section pba-household-summary">
+            <h3 style="margin:0 0 18px;"><?php echo esc_html($address !== '' ? $address : ('Household #' . (int) $household['household_id'])); ?></h3>
+
+            <div class="pba-summary-grid">
+                <?php echo pba_render_household_admin_edit_summary_card('Owner Name', ($household['owner_name_raw'] ?? '') !== '' ? $household['owner_name_raw'] : '—'); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Household Admin', $display_house_admin !== '' ? $display_house_admin : '—'); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Household Status', ($household['household_status'] ?? '') !== '' ? $household['household_status'] : '—'); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Members', (string) $household_stats['active_count'] . ' active / ' . (string) $household_stats['total_count'] . ' total'); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Owner Occupied', array_key_exists('owner_occupied', $household) ? ($household['owner_occupied'] ? 'Yes' : 'No') : '—'); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Invite Policy', isset($household['invite_policy']) && $household['invite_policy'] !== null ? (string) $household['invite_policy'] : '—'); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Last Modified', function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['last_modified_at'] ?? '') : ($household['last_modified_at'] ?? '')); ?>
+                <?php echo pba_render_household_admin_edit_summary_card('Created', function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['created_at'] ?? '') : ($household['created_at'] ?? '')); ?>
             </div>
         </div>
 
-        <details class="pba-household-detail-section" open>
+        <details class="pba-household-detail-section pba-section" open>
             <summary>Admin & Contact</summary>
             <div class="pba-household-detail-body">
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-edit-form">
@@ -737,53 +777,53 @@ function pba_render_household_admin_edit_view($household_id) {
                     <input type="hidden" name="action" value="pba_save_household_admin">
                     <input type="hidden" name="household_id" value="<?php echo esc_attr((int) $household['household_id']); ?>">
 
-                    <table>
+                    <table class="pba-table pba-household-display-table">
                         <tr>
                             <th><label for="pb_street_number">Street Number</label></th>
-                            <td><input class="pba-household-edit-input" type="text" name="pb_street_number" id="pb_street_number" value="<?php echo esc_attr($household['pb_street_number'] ?? ''); ?>" readonly></td>
+                            <td><div class="pba-field"><input class="pba-household-edit-input" type="text" name="pb_street_number" id="pb_street_number" value="<?php echo esc_attr($household['pb_street_number'] ?? ''); ?>" readonly></div></td>
                         </tr>
                         <tr>
                             <th><label for="pb_street_name">Street Name</label></th>
-                            <td><input class="pba-household-edit-input" type="text" name="pb_street_name" id="pb_street_name" value="<?php echo esc_attr($household['pb_street_name'] ?? ''); ?>" readonly></td>
+                            <td><div class="pba-field"><input class="pba-household-edit-input" type="text" name="pb_street_name" id="pb_street_name" value="<?php echo esc_attr($household['pb_street_name'] ?? ''); ?>" readonly></div></td>
                         </tr>
                         <tr>
                             <th><label for="household_admin_first_name">Household Admin First Name</label></th>
-                            <td><input class="pba-household-edit-input" type="text" name="household_admin_first_name" id="household_admin_first_name" value="<?php echo esc_attr($household['household_admin_first_name'] ?? ''); ?>"></td>
+                            <td><div class="pba-field"><input class="pba-household-edit-input" type="text" name="household_admin_first_name" id="household_admin_first_name" value="<?php echo esc_attr($household['household_admin_first_name'] ?? ''); ?>"></div></td>
                         </tr>
                         <tr>
                             <th><label for="household_admin_last_name">Household Admin Last Name</label></th>
-                            <td><input class="pba-household-edit-input" type="text" name="household_admin_last_name" id="household_admin_last_name" value="<?php echo esc_attr($household['household_admin_last_name'] ?? ''); ?>"></td>
+                            <td><div class="pba-field"><input class="pba-household-edit-input" type="text" name="household_admin_last_name" id="household_admin_last_name" value="<?php echo esc_attr($household['household_admin_last_name'] ?? ''); ?>"></div></td>
                         </tr>
                         <tr>
                             <th><label for="household_admin_email_address">Household Admin Email</label></th>
-                            <td><input class="pba-household-edit-input" type="email" name="household_admin_email_address" id="household_admin_email_address" value="<?php echo esc_attr($household['household_admin_email_address'] ?? ''); ?>"></td>
+                            <td><div class="pba-field"><input class="pba-household-edit-input" type="email" name="household_admin_email_address" id="household_admin_email_address" value="<?php echo esc_attr($household['household_admin_email_address'] ?? ''); ?>"></div></td>
                         </tr>
                         <tr>
                             <th><label for="correspondence_address">Correspondence Address</label></th>
-                            <td><textarea class="pba-household-edit-textarea" name="correspondence_address" id="correspondence_address"><?php echo esc_textarea($household['correspondence_address'] ?? ''); ?></textarea></td>
+                            <td><div class="pba-field"><textarea class="pba-household-edit-textarea" name="correspondence_address" id="correspondence_address"><?php echo esc_textarea($household['correspondence_address'] ?? ''); ?></textarea></div></td>
                         </tr>
                         <tr>
                             <th><label for="invite_policy">Invite Policy</label></th>
-                            <td><input class="pba-household-edit-input" type="number" name="invite_policy" id="invite_policy" value="<?php echo esc_attr(isset($household['invite_policy']) && $household['invite_policy'] !== null ? (string) $household['invite_policy'] : ''); ?>"></td>
+                            <td><div class="pba-field"><input class="pba-household-edit-input" type="number" name="invite_policy" id="invite_policy" value="<?php echo esc_attr(isset($household['invite_policy']) && $household['invite_policy'] !== null ? (string) $household['invite_policy'] : ''); ?>"></div></td>
                         </tr>
                         <tr>
                             <th><label for="notes">Notes</label></th>
-                            <td><textarea class="pba-household-edit-textarea" name="notes" id="notes"><?php echo esc_textarea($household['notes'] ?? ''); ?></textarea></td>
+                            <td><div class="pba-field"><textarea class="pba-household-edit-textarea" name="notes" id="notes"><?php echo esc_textarea($household['notes'] ?? ''); ?></textarea></div></td>
                         </tr>
                     </table>
 
                     <p style="margin-top:18px;">
-                        <button type="submit" class="pba-households-btn">Save Household</button>
-                        <a class="pba-households-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">Cancel</a>
+                        <button type="submit" class="pba-households-btn pba-btn">Save Household</button>
+                        <a class="pba-households-btn pba-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">Cancel</a>
                     </p>
                 </form>
             </div>
         </details>
 
-        <details class="pba-household-detail-section" open>
+        <details class="pba-household-detail-section pba-section" open>
             <summary>Members</summary>
             <div class="pba-household-detail-body">
-                <table class="pba-household-members-table">
+                <table class="pba-household-members-table pba-table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -806,10 +846,10 @@ function pba_render_household_admin_edit_view($household_id) {
                                 <tr>
                                     <td><?php echo esc_html($name !== '' ? $name : 'Unnamed member'); ?></td>
                                     <td><?php echo esc_html($member['email_address'] ?? ''); ?></td>
-                                    <td><span class="pba-household-status-badge"><?php echo esc_html($member['status'] ?? ''); ?></span></td>
+                                    <td><?php echo pba_render_households_admin_status_badge($member['status'] ?? ''); ?></td>
                                     <td><?php echo esc_html(!empty($roles) ? implode(', ', $roles) : ''); ?></td>
                                     <td>
-                                        <a class="pba-households-btn secondary" href="<?php echo esc_url(add_query_arg(array(
+                                        <a class="pba-households-btn pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                             'member_view' => 'edit',
                                             'member_id'   => $person_id,
                                         ), home_url('/members/'))); ?>">Edit Member</a>
@@ -822,10 +862,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section" open>
+        <details class="pba-household-detail-section pba-section" open>
             <summary>Association & Ownership</summary>
             <div class="pba-household-detail-body">
-                <table class="pba-household-display-table">
+                <table class="pba-household-display-table pba-table">
                     <tr>
                         <th>Household Status</th>
                         <td><?php echo esc_html(($household['household_status'] ?? '') !== '' ? $household['household_status'] : '—'); ?></td>
@@ -850,10 +890,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section">
+        <details class="pba-household-detail-section pba-section">
             <summary>Property Details</summary>
             <div class="pba-household-detail-body">
-                <table class="pba-household-display-table">
+                <table class="pba-household-display-table pba-table">
                     <tr><th>Property ID</th><td><?php echo esc_html($household['property_id'] ?? ''); ?></td></tr>
                     <tr><th>Location ID</th><td><?php echo esc_html($household['location_id'] ?? ''); ?></td></tr>
                     <tr><th>Use Code</th><td><?php echo esc_html($household['use_code'] ?? ''); ?></td></tr>
@@ -869,10 +909,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section">
+        <details class="pba-household-detail-section pba-section">
             <summary>Valuation</summary>
             <div class="pba-household-detail-body">
-                <table class="pba-household-display-table">
+                <table class="pba-household-display-table pba-table">
                     <tr><th>Building Value</th><td><?php echo esc_html(pba_format_usd($household['building_value'] ?? '')); ?></td></tr>
                     <tr><th>Land Value</th><td><?php echo esc_html(pba_format_usd($household['land_value'] ?? '')); ?></td></tr>
                     <tr><th>Other Value</th><td><?php echo esc_html(pba_format_usd($household['other_value'] ?? '')); ?></td></tr>
@@ -882,10 +922,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section">
+        <details class="pba-household-detail-section pba-section">
             <summary>Sales & Assessor</summary>
             <div class="pba-household-detail-body">
-                <table class="pba-household-display-table">
+                <table class="pba-household-display-table pba-table">
                     <tr><th>Last Sale Price</th><td><?php echo esc_html(pba_format_usd($household['last_sale_price'] ?? '')); ?></td></tr>
                     <tr><th>Last Sale Date</th><td><?php echo esc_html(isset($household['last_sale_date']) ? (string) $household['last_sale_date'] : ''); ?></td></tr>
                     <tr><th>Assessor Book</th><td><?php echo esc_html($household['assessor_book_raw'] ?? ''); ?></td></tr>

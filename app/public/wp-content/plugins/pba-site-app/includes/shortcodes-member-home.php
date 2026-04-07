@@ -77,71 +77,37 @@ function pba_render_member_home_shortcode() {
         );
     }
 
+    $welcome_title = 'Welcome' . ($first_name !== '' ? ', ' . $first_name : '');
+
     ob_start();
+
+    if (function_exists('pba_shared_list_ui_render_styles')) {
+        echo pba_shared_list_ui_render_styles();
+    }
     ?>
-    <style>
-        .pba-member-home-wrap {
-            max-width: 1100px;
-            margin: 0 auto;
+    <div class="pba-page-wrap pba-member-home-wrap">
+        <?php
+        if (function_exists('pba_shared_render_page_hero')) {
+            echo pba_shared_render_page_hero('Member Home', $welcome_title, 'Select a section below to get started.');
+        } else {
+            ?>
+            <div class="pba-page-hero">
+                <div class="pba-page-eyebrow">Member Home</div>
+                <h2 class="pba-page-title"><?php echo esc_html($welcome_title); ?></h2>
+                <p class="pba-page-intro">Select a section below to get started.</p>
+            </div>
+            <?php
         }
+        ?>
 
-        .pba-member-home-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 18px;
-            margin-top: 24px;
-        }
-        .pba-member-home-card {
-            border: 1px solid #d7d7d7;
-            border-radius: 8px;
-            padding: 18px;
-            background: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pba-member-home-card h3 {
-            margin: 0 0 10px;
-            font-size: 20px;
-        }
-
-        .pba-member-home-card p {
-            margin: 0 0 16px;
-            color: #555;
-        }
-
-        .pba-member-home-btn {
-            display: inline-block;
-            padding: 10px 14px;
-            border-radius: 4px;
-            background: #0d3b66;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .pba-member-home-btn:hover {
-            background: #0b3154;
-            color: #fff;
-        }
-
-        .pba-member-home-roles {
-            margin-top: 5px;
-            color: #666;
-            font-size: 14px;
-        }
-    </style>
-
-    <div class="pba-member-home-wrap">
-        <h2>Welcome<?php echo $first_name !== '' ? ', ' . esc_html($first_name) : ''; ?></h2>
-        <p>Select a section below to get started.</p>
-        <div class="pba-member-home-grid">
+        <div class="pba-home-card-grid">
             <?php foreach ($cards as $card) : ?>
-                <div class="pba-member-home-card">
-                    <h3><?php echo esc_html($card['title']); ?></h3>
-                    <p><?php echo esc_html($card['description']); ?></p>
-                    <a class="pba-member-home-btn" href="<?php echo esc_url($card['url']); ?>">Open</a>
+                <div class="pba-section pba-home-card">
+                    <h3 class="pba-home-card-title"><?php echo esc_html($card['title']); ?></h3>
+                    <p class="pba-home-card-text"><?php echo esc_html($card['description']); ?></p>
+                    <div class="pba-home-card-actions">
+                        <a class="pba-btn" href="<?php echo esc_url($card['url']); ?>">Open</a>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
