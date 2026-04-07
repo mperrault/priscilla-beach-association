@@ -58,27 +58,128 @@ function pba_render_profile_shortcode() {
     }
 
     $password_url = home_url('/change-password/');
-    
+    $status_label = trim((string) ($person['status'] ?? ''));
+    $email_verified_label = !empty($person['email_verified']) ? 'Yes' : 'No';
+    $role_count = count($role_names);
+    $committee_count = count($committee_labels);
+
     ob_start();
     ?>
     <style>
         .pba-profile-wrap {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
+            color: #17324a;
         }
 
-        .pba-profile-section {
-            margin: 0 0 24px;
-            padding: 20px;
-            border: 1px solid #d7d7d7;
-            border-radius: 8px;
+        .pba-profile-message {
+            margin: 0 0 16px;
+            padding: 12px 16px;
+            background: #eef6ee;
+            border-radius: 10px;
+        }
+
+        .pba-profile-message.error {
+            background: #f8e9e9;
+        }
+
+        .pba-profile-hero {
+            margin: 0 0 20px;
+            padding: 24px;
+            border: 1px solid #dde7f0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f9fc 100%);
+            box-shadow: 0 8px 24px rgba(14, 46, 76, 0.06);
+        }
+
+        .pba-profile-hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .pba-profile-hero-title {
+            margin: 0 0 8px;
+            font-size: 30px;
+            line-height: 1.15;
+            font-weight: 700;
+            color: #102a43;
+        }
+
+        .pba-profile-hero p {
+            margin: 0;
+            color: #4e6477;
+            max-width: 760px;
+        }
+
+        .pba-profile-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .pba-profile-kpi {
+            padding: 16px 18px;
+            border-radius: 16px;
             background: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid #e3ebf3;
+            box-shadow: 0 6px 18px rgba(14, 46, 76, 0.05);
         }
 
-        .pba-profile-section h3 {
-            margin: 0 0 14px;
+        .pba-profile-kpi-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #5f7386;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .pba-profile-kpi-value {
+            font-size: 24px;
+            line-height: 1.15;
+            font-weight: 700;
+            color: #102a43;
+        }
+
+        .pba-profile-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        .pba-profile-card {
+            border: 1px solid #dde7f0;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 10px 24px rgba(14, 46, 76, 0.05);
+            overflow: hidden;
+        }
+
+        .pba-profile-card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5edf5;
+            background: #fbfdff;
+        }
+
+        .pba-profile-card-header h3 {
+            margin: 0;
             font-size: 22px;
+            line-height: 1.2;
+            color: #102a43;
+        }
+
+        .pba-profile-card-header p {
+            margin: 8px 0 0;
+            color: #5f7386;
+        }
+
+        .pba-profile-card-body {
+            padding: 20px;
         }
 
         .pba-profile-table {
@@ -88,182 +189,417 @@ function pba_render_profile_shortcode() {
 
         .pba-profile-table th,
         .pba-profile-table td {
-            padding: 12px 8px;
+            padding: 14px 8px;
             text-align: left;
             vertical-align: top;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .pba-profile-table tr:last-child th,
+        .pba-profile-table tr:last-child td {
+            border-bottom: none;
         }
 
         .pba-profile-table th {
             width: 240px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #607487;
         }
 
         .pba-profile-input {
-            width: 360px;
+            width: 420px;
             max-width: 100%;
-            padding: 8px 10px;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cdd9e5;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #17324a;
+            box-sizing: border-box;
         }
 
         .pba-profile-actions {
-            margin-top: 18px;
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .pba-profile-btn {
-            display: inline-block;
-            padding: 10px 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 16px;
             border: 1px solid #0d3b66;
-            border-radius: 4px;
             background: #0d3b66;
             color: #fff;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 600;
             cursor: pointer;
-        }
-
-        .pba-profile-btn.secondary {
-            background: #fff;
-            color: #0d3b66;
+            font-weight: 600;
+            line-height: 1.2;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
         }
 
         .pba-profile-btn:hover {
             background: #0b3154;
+            border-color: #0b3154;
+            transform: translateY(-1px);
             color: #fff;
         }
 
-        .pba-profile-btn.secondary:hover {
-            background: #f5f8fb;
+        .pba-profile-btn[disabled] {
+            opacity: 0.72;
+            cursor: wait;
+            transform: none;
+        }
+
+        .pba-profile-btn.secondary {
+            background: #ffffff;
             color: #0d3b66;
+            border: 1px solid #c9d8e6;
+            border-radius: 999px;
+            min-height: 38px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(13, 59, 102, 0.04);
+        }
+
+        .pba-profile-btn.secondary:hover {
+            background: #f3f8fc;
+            color: #0b3154;
+            border-color: #9fb8cd;
+            box-shadow: 0 4px 12px rgba(13, 59, 102, 0.10);
+            transform: translateY(-1px);
+        }
+
+        .pba-profile-btn.secondary:focus {
+            outline: 2px solid #9fc2df;
+            outline-offset: 2px;
         }
 
         .pba-profile-muted {
-            color: #666;
+            color: #5f7386;
         }
 
-        .pba-profile-message {
-            margin: 0 0 16px;
-            padding: 12px 16px;
-            background: #eef6ee;
-            border-radius: 6px;
+        .pba-profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: #eef3f8;
+            color: #21425c;
         }
 
-        .pba-profile-message.error {
-            background: #f8e9e9;
+        .pba-profile-badge.status-active,
+        .pba-profile-badge.verified-yes {
+            background: #eaf7ef;
+            color: #21633f;
+        }
+
+        .pba-profile-badge.status-inactive,
+        .pba-profile-badge.verified-no {
+            background: #f7eee7;
+            color: #8f4a1f;
+        }
+
+        .pba-profile-pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pba-profile-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #eef4fa;
+            color: #31536f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .pba-profile-note {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid #edf2f7;
+            color: #5f7386;
+        }
+
+        body.pba-profile-submitting,
+        html.pba-profile-submitting {
+            cursor: wait !important;
+        }
+
+        body.pba-profile-submitting * {
+            cursor: wait !important;
+        }
+
+        @media (max-width: 900px) {
+            .pba-profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .pba-profile-hero {
+                padding: 20px;
+            }
+
+            .pba-profile-hero-title {
+                font-size: 26px;
+            }
+
+            .pba-profile-table,
+            .pba-profile-table tbody,
+            .pba-profile-table tr,
+            .pba-profile-table th,
+            .pba-profile-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .pba-profile-table th {
+                padding-bottom: 4px;
+                border-bottom: none;
+            }
+
+            .pba-profile-table td {
+                padding-top: 0;
+            }
         }
     </style>
 
     <div class="pba-profile-wrap">
-        <!-- h2>My Profile</h2 -->
-        <p>Update your basic account information below.</p>
-
         <?php echo $status_message; ?>
 
-        <div class="pba-profile-section">
-            <h3>Profile Information</h3>
+        <div class="pba-profile-hero">
+            <div class="pba-profile-hero-top">
+                <div>
+                    <!-- div class="pba-profile-hero-title">My Profile</div -->
+                    <p>Review and update your account details, and see your association information in one place.</p>
+                </div>
+            </div>
 
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-                <?php wp_nonce_field('pba_save_profile_action', 'pba_save_profile_nonce'); ?>
-                <input type="hidden" name="action" value="pba_save_profile">
+            <div class="pba-profile-kpis">
+                <div class="pba-profile-kpi">
+                    <span class="pba-profile-kpi-label">Status</span>
+                    <span class="pba-profile-kpi-value"><?php echo esc_html($status_label !== '' ? $status_label : '—'); ?></span>
+                </div>
+                <div class="pba-profile-kpi">
+                    <span class="pba-profile-kpi-label">Email Verified</span>
+                    <span class="pba-profile-kpi-value"><?php echo esc_html($email_verified_label); ?></span>
+                </div>
+                <div class="pba-profile-kpi">
+                    <span class="pba-profile-kpi-label">PBA Roles</span>
+                    <span class="pba-profile-kpi-value"><?php echo esc_html(number_format_i18n($role_count)); ?></span>
+                </div>
+                <div class="pba-profile-kpi">
+                    <span class="pba-profile-kpi-label">Committees</span>
+                    <span class="pba-profile-kpi-value"><?php echo esc_html(number_format_i18n($committee_count)); ?></span>
+                </div>
+            </div>
+        </div>
 
+        <div class="pba-profile-grid">
+            <div class="pba-profile-card">
+                <div class="pba-profile-card-header">
+                    <h3>Profile Information</h3>
+                    <p>Update your basic account information below.</p>
+                </div>
+
+                <div class="pba-profile-card-body">
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="pba-profile-form">
+                        <?php wp_nonce_field('pba_save_profile_action', 'pba_save_profile_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_save_profile">
+
+                        <table class="pba-profile-table">
+                            <tr>
+                                <th><label for="first_name">First Name</label></th>
+                                <td>
+                                    <input
+                                        class="pba-profile-input"
+                                        type="text"
+                                        name="first_name"
+                                        id="first_name"
+                                        value="<?php echo esc_attr($person['first_name'] ?? ''); ?>"
+                                        required
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="last_name">Last Name</label></th>
+                                <td>
+                                    <input
+                                        class="pba-profile-input"
+                                        type="text"
+                                        name="last_name"
+                                        id="last_name"
+                                        value="<?php echo esc_attr($person['last_name'] ?? ''); ?>"
+                                        required
+                                    >
+                                </td>
+                            </tr>
+                            <tr>
+                                <th><label for="email_address">Email Address</label></th>
+                                <td>
+                                    <input
+                                        class="pba-profile-input"
+                                        type="email"
+                                        name="email_address"
+                                        id="email_address"
+                                        value="<?php echo esc_attr($person['email_address'] ?? ''); ?>"
+                                    >
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div class="pba-profile-actions">
+                            <button type="submit" class="pba-profile-btn" id="pba-profile-save-btn" data-processing-text="Saving...">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="pba-profile-card">
+                <div class="pba-profile-card-header">
+                    <h3>Security</h3>
+                    <p>Manage your password and account access.</p>
+                </div>
+
+                <div class="pba-profile-card-body">
+                    <table class="pba-profile-table">
+                        <tr>
+                            <th>Password</th>
+                            <td>Password changes are managed through your WordPress account profile.</td>
+                        </tr>
+                    </table>
+
+                    <div class="pba-profile-actions">
+                        <a class="pba-profile-btn secondary" href="<?php echo esc_url($password_url); ?>">Change Password</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pba-profile-card" style="margin-top: 20px;">
+            <div class="pba-profile-card-header">
+                <h3>Association Information</h3>
+                <p>Your current membership, household, role, and committee details.</p>
+            </div>
+
+            <div class="pba-profile-card-body">
                 <table class="pba-profile-table">
                     <tr>
-                        <th><label for="first_name">First Name</label></th>
+                        <th>Status</th>
                         <td>
-                            <input
-                                class="pba-profile-input"
-                                type="text"
-                                name="first_name"
-                                id="first_name"
-                                value="<?php echo esc_attr($person['first_name'] ?? ''); ?>"
-                                required
-                            >
+                            <?php
+                            $status_class = 'status-inactive';
+                            if (strtolower($status_label) === 'active') {
+                                $status_class = 'status-active';
+                            }
+                            ?>
+                            <span class="pba-profile-badge <?php echo esc_attr($status_class); ?>">
+                                <?php echo esc_html($status_label !== '' ? $status_label : '—'); ?>
+                            </span>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="last_name">Last Name</label></th>
+                        <th>Email Verified</th>
                         <td>
-                            <input
-                                class="pba-profile-input"
-                                type="text"
-                                name="last_name"
-                                id="last_name"
-                                value="<?php echo esc_attr($person['last_name'] ?? ''); ?>"
-                                required
-                            >
+                            <span class="pba-profile-badge <?php echo !empty($person['email_verified']) ? 'verified-yes' : 'verified-no'; ?>">
+                                <?php echo esc_html($email_verified_label); ?>
+                            </span>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="email_address">Email Address</label></th>
+                        <th>Household</th>
+                        <td><?php echo esc_html($household_label !== '' ? $household_label : '—'); ?></td>
+                    </tr>
+                    <tr>
+                        <th>PBA Roles</th>
                         <td>
-                            <input
-                                class="pba-profile-input"
-                                type="email"
-                                name="email_address"
-                                id="email_address"
-                                value="<?php echo esc_attr($person['email_address'] ?? ''); ?>"
-                            >
+                            <?php if (!empty($role_names)) : ?>
+                                <div class="pba-profile-pill-list">
+                                    <?php foreach ($role_names as $role_name) : ?>
+                                        <span class="pba-profile-pill"><?php echo esc_html($role_name); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else : ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Committees</th>
+                        <td>
+                            <?php if (!empty($committee_labels)) : ?>
+                                <div class="pba-profile-pill-list">
+                                    <?php foreach ($committee_labels as $committee_label) : ?>
+                                        <span class="pba-profile-pill"><?php echo esc_html($committee_label); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else : ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Last Modified</th>
+                        <td>
+                            <?php
+                            if (function_exists('pba_format_datetime_display')) {
+                                echo esc_html(pba_format_datetime_display($person['last_modified_at'] ?? ''));
+                            } else {
+                                echo esc_html($person['last_modified_at'] ?? '');
+                            }
+                            ?>
                         </td>
                     </tr>
                 </table>
 
-                <div class="pba-profile-actions">
-                    <button type="submit" class="pba-profile-btn">Save Changes</button>
+                <div class="pba-profile-note">
+                    Contact an administrator to change household, roles, or committee assignments.
                 </div>
-            </form>
-        </div>
-
-        <div class="pba-profile-section">
-            <h3>Association Information</h3>
-
-            <table class="pba-profile-table">
-                <tr>
-                    <th>Status</th>
-                    <td><?php echo esc_html($person['status'] ?? ''); ?></td>
-                </tr>
-                <tr>
-                    <th>Email Verified</th>
-                    <td><?php echo !empty($person['email_verified']) ? 'Yes' : 'No'; ?></td>
-                </tr>
-                <tr>
-                    <th>Household</th>
-                    <td><?php echo esc_html($household_label !== '' ? $household_label : ''); ?></td>
-                </tr>
-                <tr>
-                    <th>PBA Roles</th>
-                    <td><?php echo esc_html(!empty($role_names) ? implode(', ', $role_names) : ''); ?></td>
-                </tr>
-                <tr>
-                    <th>Committees</th>
-                    <td><?php echo esc_html(!empty($committee_labels) ? implode(', ', $committee_labels) : ''); ?></td>
-                </tr>
-                <tr>
-                    <th>Last Modified</th>
-                    <td>
-                        <?php
-                        if (function_exists('pba_format_datetime_display')) {
-                            echo esc_html(pba_format_datetime_display($person['last_modified_at'] ?? ''));
-                        } else {
-                            echo esc_html($person['last_modified_at'] ?? '');
-                        }
-                        ?>
-                    </td>
-                </tr>
-            </table>
-
-            <p class="pba-profile-muted" style="margin-top:14px;">
-                Contact an administrator to change household, roles, or committee assignments.
-            </p>
-        </div>
-
-        <div class="pba-profile-section">
-            <h3>Security</h3>
-            <p>
-                Password changes are managed through your WordPress account profile.
-            </p>
-            <p>
-                <a class="pba-profile-btn secondary" href="<?php echo esc_url($password_url); ?>">Change Password</a>
-            </p>
+            </div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            var form = document.getElementById('pba-profile-form');
+            var saveBtn = document.getElementById('pba-profile-save-btn');
+
+            if (!form || !saveBtn) {
+                return;
+            }
+
+            form.addEventListener('submit', function () {
+                document.documentElement.classList.add('pba-profile-submitting');
+                document.body.classList.add('pba-profile-submitting');
+
+                saveBtn.disabled = true;
+
+                if (!saveBtn.dataset.originalText) {
+                    saveBtn.dataset.originalText = saveBtn.textContent;
+                }
+
+                saveBtn.textContent = saveBtn.getAttribute('data-processing-text') || 'Saving...';
+            });
+        })();
+    </script>
     <?php
 
     return ob_get_clean();

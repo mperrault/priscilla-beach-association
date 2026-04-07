@@ -344,14 +344,6 @@ function pba_render_household_dashboard() {
         </div>
 
         <?php echo pba_render_household_previous_invitations_table($previous_rows, 'Previous Invitations'); ?>
-        <?php
-            echo '<pre>';
-            echo 'wp user id: ' . get_current_user_id() . PHP_EOL;
-            echo 'pba_person_id: ' . get_user_meta(get_current_user_id(), 'pba_person_id', true) . PHP_EOL;
-            echo 'pba_household_id: ' . get_user_meta(get_current_user_id(), 'pba_household_id', true) . PHP_EOL;
-            echo '</pre>';
-        ?>
-    
     </div>
 
     <script>

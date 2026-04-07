@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-function pba_supabase_headers($prefer_return_representation = false) {
+function pba_supabase_headers($prefer_return_representation = false, $prefer_tokens = array()) {
     $headers = array(
         'apikey'        => SUPABASE_API_KEY,
         'Authorization' => 'Bearer ' . SUPABASE_API_KEY,
@@ -12,17 +12,54 @@ function pba_supabase_headers($prefer_return_representation = false) {
         'Content-Type'  => 'application/json',
     );
 
+    $prefer_values = array();
+
     if ($prefer_return_representation) {
-        $headers['Prefer'] = 'return=representation';
+        $prefer_values[] = 'return=representation';
+    }
+
+    foreach ((array) $prefer_tokens as $token) {
+        $token = trim((string) $token);
+        if ($token !== '') {
+            $prefer_values[] = $token;
+        }
+    }
+
+    $prefer_values = array_values(array_unique($prefer_values));
+
+    if (!empty($prefer_values)) {
+        $headers['Prefer'] = implode(',', $prefer_values);
     }
 
     return $headers;
 }
 
-function pba_supabase_get($table, $query_args = array()) {
+function pba_supabase_extract_total_count_from_response($response) {
+    $content_range = wp_remote_retrieve_header($response, 'content-range');
+
+    if (!is_string($content_range) || $content_range === '') {
+        return null;
+    }
+
+    if (preg_match('#/(\d+)$#', $content_range, $matches)) {
+        return (int) $matches[1];
+    }
+
+    return null;
+}
+
+function pba_supabase_get($table, $query_args = array(), $options = array()) {
     static $request_cache = array();
 
-    $cache_key = md5($table . '|' . wp_json_encode($query_args));
+    $defaults = array(
+        'return_meta' => false,
+        'count'       => false,   // false | 'exact' | 'planned' | 'estimated'
+        'timeout'     => 20,
+    );
+
+    $options = wp_parse_args($options, $defaults);
+
+    $cache_key = md5($table . '|' . wp_json_encode($query_args) . '|' . wp_json_encode($options));
     if (array_key_exists($cache_key, $request_cache)) {
         return $request_cache[$cache_key];
     }
@@ -33,9 +70,14 @@ function pba_supabase_get($table, $query_args = array()) {
         $url .= '?' . http_build_query($query_args, '', '&', PHP_QUERY_RFC3986);
     }
 
+    $prefer_tokens = array();
+    if (!empty($options['count'])) {
+        $prefer_tokens[] = 'count=' . $options['count'];
+    }
+
     $response = wp_remote_get($url, array(
-        'headers' => pba_supabase_headers(),
-        'timeout' => 20,
+        'headers' => pba_supabase_headers(false, $prefer_tokens),
+        'timeout' => (int) $options['timeout'],
     ));
 
     if (is_wp_error($response)) {
@@ -49,20 +91,32 @@ function pba_supabase_get($table, $query_args = array()) {
 
     if ($status < 200 || $status >= 300) {
         $request_cache[$cache_key] = new WP_Error('supabase_get_failed', 'Supabase GET failed', array(
-            'status' => $status,
-            'body'   => $body,
-            'table'  => $table,
-            'query'  => $query_args,
+            'status'  => $status,
+            'body'    => $body,
+            'table'   => $table,
+            'query'   => $query_args,
+            'options' => $options,
         ));
         return $request_cache[$cache_key];
     }
 
     if (!is_array($data)) {
         $request_cache[$cache_key] = new WP_Error('supabase_get_invalid_json', 'Invalid Supabase GET JSON', array(
-            'status' => $status,
-            'body'   => $body,
-            'table'  => $table,
+            'status'  => $status,
+            'body'    => $body,
+            'table'   => $table,
+            'options' => $options,
         ));
+        return $request_cache[$cache_key];
+    }
+
+    if (!empty($options['return_meta'])) {
+        $request_cache[$cache_key] = array(
+            'rows'    => $data,
+            'count'   => pba_supabase_extract_total_count_from_response($response),
+            'status'  => $status,
+            'headers' => wp_remote_retrieve_headers($response),
+        );
         return $request_cache[$cache_key];
     }
 

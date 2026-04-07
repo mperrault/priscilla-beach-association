@@ -1,0 +1,186 @@
+.pba-households-wrap {
+    max-width: 1480px;
+    margin: 0 auto;
+    color: #17324a;
+}
+
+.pba-households-message {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    background: #eef6ee;
+    border-radius: 10px;
+}
+
+.pba-households-message.error {
+    background: #f8e9e9;
+}
+
+.pba-households-search {
+    display: grid;
+    grid-template-columns: minmax(220px, 2.2fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(120px, 140px) auto auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.pba-households-badge.status-active,
+.pba-households-badge.owner-yes {
+    background: #eaf7ef;
+    color: #21633f;
+}
+
+.pba-households-badge.status-inactive,
+.pba-households-badge.owner-no {
+    background: #f7eee7;
+    color: #8f4a1f;
+}
+
+.pba-households-badge.status-unknown {
+    background: #eef3f8;
+    color: #46617a;
+}
+
+.pba-households-table {
+    min-width: 1120px;
+}
+
+.pba-household-edit-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pba-households-btn {
+    display: inline-block;
+    padding: 9px 14px;
+    border: 1px solid #0d3b66;
+    background: #0d3b66;
+    color: #fff;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.pba-households-btn.secondary {
+    background: #fff;
+    color: #0d3b66;
+}
+
+.pba-household-summary {
+    margin: 0 0 24px;
+    padding: 18px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.pba-household-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px 24px;
+    margin-top: 14px;
+}
+
+.pba-household-summary-item strong {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+}
+
+.pba-household-detail-section {
+    margin-top: 18px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.pba-household-detail-section summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 16px;
+    font-weight: 600;
+    background: #f7f9fb;
+    border-bottom: 1px solid #e7edf3;
+}
+
+.pba-household-detail-section summary::-webkit-details-marker {
+    display: none;
+}
+
+.pba-household-detail-section[open] summary {
+    background: #eef3f8;
+}
+
+.pba-household-detail-body {
+    padding: 16px;
+}
+
+.pba-household-edit-form table,
+.pba-household-display-table,
+.pba-household-members-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pba-household-edit-form th,
+.pba-household-edit-form td,
+.pba-household-display-table th,
+.pba-household-display-table td,
+.pba-household-members-table th,
+.pba-household-members-table td {
+    padding: 12px 8px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #eee;
+}
+
+.pba-household-edit-form th,
+.pba-household-display-table th {
+    width: 240px;
+}
+
+.pba-household-edit-input,
+.pba-household-edit-textarea {
+    width: 420px;
+    max-width: 100%;
+    padding: 8px 10px;
+}
+
+.pba-household-edit-input[readonly] {
+    background: #f7f7f7;
+    color: #555;
+    cursor: not-allowed;
+}
+
+.pba-household-edit-textarea {
+    min-height: 90px;
+}
+
+.pba-household-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #eef3f8;
+    color: #21425c;
+}
+
+.pba-household-muted {
+    color: #666;
+}
+
+@media (max-width: 1080px) {
+    .pba-households-search {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .pba-households-search {
+        grid-template-columns: 1fr;
+    }
+}

@@ -255,3 +255,112 @@ function pba_update_pending_household_invites_to_expired($household_id, $invited
         }
     }
 }
+
+if (!function_exists('pba_map_app_role_name_to_wp_role')) {
+    function pba_map_app_role_name_to_wp_role($role_name) {
+        $normalized = strtolower(trim((string) $role_name));
+
+        $map = array(
+            'pbaadmin'             => 'pba_admin',
+            'pba admin'            => 'pba_admin',
+            'pbaboardmember'       => 'pba_board_member',
+            'pba board member'     => 'pba_board_member',
+            'pbacommitteemember'   => 'pba_committee_member',
+            'pba committee member' => 'pba_committee_member',
+            'pbahouseholdadmin'    => 'pba_house_admin',
+            'pba household admin'  => 'pba_house_admin',
+            'pbahouseadmin'        => 'pba_house_admin',
+            'pba house admin'      => 'pba_house_admin',
+            'household admin'      => 'pba_house_admin',
+            'house admin'          => 'pba_house_admin',
+            'pbamember'            => 'subscriber',
+            'pba member'           => 'subscriber',
+        );
+
+        return isset($map[$normalized]) ? $map[$normalized] : '';
+    }
+}
+
+if (!function_exists('pba_sync_wp_role_for_person')) {
+    function pba_sync_wp_role_for_person($person_id) {
+        $person_id = (int) $person_id;
+
+        if ($person_id < 1) {
+            return false;
+        }
+
+        $person_rows = pba_supabase_get('Person', array(
+            'select'    => 'person_id,wp_user_id,status',
+            'person_id' => 'eq.' . $person_id,
+            'limit'     => 1,
+        ));
+
+        if (is_wp_error($person_rows) || empty($person_rows[0])) {
+            return false;
+        }
+
+        $person = $person_rows[0];
+        $wp_user_id = isset($person['wp_user_id']) ? (int) $person['wp_user_id'] : 0;
+        $status = isset($person['status']) ? trim((string) $person['status']) : '';
+
+        if ($wp_user_id < 1) {
+            return false;
+        }
+
+        $user = get_userdata($wp_user_id);
+
+        if (!$user) {
+            return false;
+        }
+
+        if (in_array('administrator', (array) $user->roles, true)) {
+            return true;
+        }
+
+        $managed_wp_roles = array(
+            'pba_admin',
+            'pba_board_member',
+            'pba_committee_member',
+            'pba_house_admin',
+            'subscriber',
+        );
+
+        $active_role_names = array();
+        if (function_exists('pba_get_active_role_names_for_person')) {
+            $active_role_names = pba_get_active_role_names_for_person($person_id);
+        }
+
+        $target_roles = array();
+
+        foreach ((array) $active_role_names as $role_name) {
+            $wp_role = pba_map_app_role_name_to_wp_role($role_name);
+            if ($wp_role !== '') {
+                $target_roles[] = $wp_role;
+            }
+        }
+
+        $target_roles = array_values(array_unique($target_roles));
+
+        if ($status !== 'Active') {
+            $target_roles = array('subscriber');
+        }
+
+        if (empty($target_roles)) {
+            $target_roles = array('subscriber');
+        }
+
+        foreach ($managed_wp_roles as $managed_role) {
+            if (in_array($managed_role, (array) $user->roles, true) && !in_array($managed_role, $target_roles, true)) {
+                $user->remove_role($managed_role);
+            }
+        }
+
+        foreach ($target_roles as $target_role) {
+            if (!in_array($target_role, (array) $user->roles, true)) {
+                $user->add_role($target_role);
+            }
+        }
+
+        return true;
+    }
+}

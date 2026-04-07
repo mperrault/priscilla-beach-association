@@ -13,6 +13,29 @@ add_action('admin_post_pba_house_admin_verify', 'pba_handle_house_admin_verify')
 add_action('admin_post_nopriv_pba_house_admin_create_user', 'pba_handle_house_admin_create_user');
 add_action('admin_post_pba_house_admin_create_user', 'pba_handle_house_admin_create_user');
 
+function pba_auth_normalize_compare_value($value) {
+    $value = is_string($value) ? $value : (string) $value;
+    $value = trim(wp_strip_all_tags($value));
+    $value = preg_replace('/\s+/', ' ', $value);
+    return strtolower($value);
+}
+
+function pba_auth_find_allowed_street($street_name) {
+    $normalized_input = pba_auth_normalize_compare_value($street_name);
+
+    foreach (pba_allowed_streets() as $allowed_street) {
+        if (pba_auth_normalize_compare_value($allowed_street) === $normalized_input) {
+            return $allowed_street;
+        }
+    }
+
+    return '';
+}
+
+function pba_auth_values_match($left, $right) {
+    return pba_auth_normalize_compare_value($left) === pba_auth_normalize_compare_value($right);
+}
+
 function pba_handle_member_login() {
     if (
         !isset($_POST['pba_member_login_nonce']) ||
@@ -70,6 +93,7 @@ function pba_handle_member_login() {
         wp_safe_redirect(home_url('/household/'));
         exit;
     }
+
     wp_safe_redirect(home_url('/member-home/'));
     exit;
 }
@@ -100,63 +124,112 @@ function pba_handle_house_admin_verify() {
         pba_registration_redirect('invalid_house_number');
     }
 
-    if (!in_array($street_name, pba_allowed_streets(), true)) {
+    $matched_allowed_street = pba_auth_find_allowed_street($street_name);
+    if ($matched_allowed_street === '') {
         pba_registration_redirect('invalid_street');
     }
 
-    $query_args = array(
-        'select'                        => 'household_id,household_admin_email_address,household_admin_first_name,household_admin_last_name,pb_street_number,pb_street_name',
-        'household_admin_email_address' => 'eq.' . $email,
-        'household_admin_first_name'    => 'eq.' . $first_name,
-        'household_admin_last_name'     => 'eq.' . $last_name,
-        'pb_street_number'              => 'eq.' . $house_number,
-        'pb_street_name'                => 'eq.' . $street_name,
-        'limit'                         => 1,
-    );
-
-    $url = rtrim(SUPABASE_URL, '/') . '/rest/v1/Household?' . http_build_query($query_args, '', '&', PHP_QUERY_RFC3986);
-
-    $response = wp_remote_get($url, array(
-        'headers' => pba_supabase_headers(),
-        'timeout' => 15,
+    $household_rows = pba_supabase_get('Household', array(
+        'select'           => 'household_id,household_admin_email_address,household_admin_first_name,household_admin_last_name,pb_street_number,pb_street_name,household_status',
+        'pb_street_number' => 'eq.' . $house_number,
+        'limit'            => 25,
     ));
 
-    if (is_wp_error($response)) {
+    if (is_wp_error($household_rows)) {
         pba_registration_redirect('lookup_failed');
     }
 
-    $status = wp_remote_retrieve_response_code($response);
-    $body   = wp_remote_retrieve_body($response);
-
-    if ($status < 200 || $status >= 300) {
-        pba_registration_redirect('lookup_failed');
-    }
-
-    $rows = json_decode($body, true);
-
-    if (!is_array($rows) || empty($rows)) {
+    if (empty($household_rows) || !is_array($household_rows)) {
         pba_registration_redirect('no_match');
     }
 
-    $household_id = isset($rows[0]['household_id']) ? (int) $rows[0]['household_id'] : 0;
+    $matched_household = null;
+
+    foreach ($household_rows as $row) {
+        $street_matches = pba_auth_values_match(
+            isset($row['pb_street_name']) ? $row['pb_street_name'] : '',
+            $matched_allowed_street
+        );
+
+        $last_name_matches = pba_auth_values_match(
+            isset($row['household_admin_last_name']) ? $row['household_admin_last_name'] : '',
+            $last_name
+        );
+
+        if ($street_matches && $last_name_matches) {
+            $matched_household = $row;
+            break;
+        }
+    }
+
+    if (!$matched_household || empty($matched_household['household_id'])) {
+        pba_registration_redirect('no_match');
+    }
+
+    $household_id = (int) $matched_household['household_id'];
 
     if ($household_id < 1) {
         pba_registration_redirect('lookup_failed');
     }
 
-    $existing_people = pba_supabase_get('Person', array(
-        'select'        => 'person_id,household_id,email_address,status,wp_user_id',
-        'household_id'  => 'eq.' . $household_id,
-        'email_address' => 'eq.' . $email,
-        'limit'         => 1,
+    $people_rows = pba_supabase_get('Person', array(
+        'select'       => 'person_id,household_id,first_name,last_name,email_address,status,wp_user_id',
+        'household_id' => 'eq.' . $household_id,
+        'limit'        => 100,
     ));
 
-    if (is_wp_error($existing_people)) {
+    if (is_wp_error($people_rows)) {
         pba_registration_redirect('lookup_failed');
     }
 
-    if (!empty($existing_people)) {
-        pba_registration_redirect('person_exists');
+    $existing_person = null;
+
+    if (!empty($people_rows) && is_array($people_rows)) {
+        foreach ($people_rows as $person_row) {
+            $email_matches = pba_auth_values_match(
+                isset($person_row['email_address']) ? $person_row['email_address'] : '',
+                $email
+            );
+
+            $last_name_matches = pba_auth_values_match(
+                isset($person_row['last_name']) ? $person_row['last_name'] : '',
+                $last_name
+            );
+
+            if ($email_matches && $last_name_matches) {
+                $existing_person = $person_row;
+                break;
+            }
+        }
+    }
+
+    $household_admin_email_matches = pba_auth_values_match(
+        isset($matched_household['household_admin_email_address']) ? $matched_household['household_admin_email_address'] : '',
+        $email
+    );
+
+    $verification_passed = false;
+
+    if ($existing_person) {
+        $verification_passed = true;
+    } elseif ($household_admin_email_matches) {
+        $verification_passed = true;
+    }
+
+    if (!$verification_passed) {
+        pba_registration_redirect('no_match');
+    }
+
+    $existing_person_id = 0;
+    $existing_wp_user_id = 0;
+
+    if ($existing_person) {
+        $existing_person_id = isset($existing_person['person_id']) ? (int) $existing_person['person_id'] : 0;
+        $existing_wp_user_id = isset($existing_person['wp_user_id']) ? (int) $existing_person['wp_user_id'] : 0;
+
+        if ($existing_wp_user_id > 0) {
+            pba_registration_redirect('user_exists');
+        }
     }
 
     $token = wp_generate_password(64, false, false);
@@ -165,6 +238,7 @@ function pba_handle_house_admin_verify() {
         'pba_house_admin_email_verify_' . $token,
         array(
             'household_id' => (string) $household_id,
+            'person_id'    => $existing_person_id,
             'email'        => $email,
             'first_name'   => $first_name,
             'last_name'    => $last_name,
@@ -269,11 +343,33 @@ function pba_handle_house_admin_create_user() {
         exit;
     }
 
-    $email = $setup_data['email'];
+    $email        = isset($setup_data['email']) ? (string) $setup_data['email'] : '';
+    $person_id    = isset($setup_data['person_id']) ? (int) $setup_data['person_id'] : 0;
+    $household_id = isset($setup_data['household_id']) ? (int) $setup_data['household_id'] : 0;
+    $first_name   = isset($setup_data['first_name']) ? (string) $setup_data['first_name'] : '';
+    $last_name    = isset($setup_data['last_name']) ? (string) $setup_data['last_name'] : '';
 
     if (username_exists($email) || email_exists($email)) {
         delete_transient('pba_house_admin_email_verify_' . $email_token);
         pba_registration_redirect('user_exists');
+    }
+
+    if ($person_id > 0) {
+        $person_rows = pba_supabase_get('Person', array(
+            'select'    => 'person_id,wp_user_id',
+            'person_id' => 'eq.' . $person_id,
+            'limit'     => 1,
+        ));
+
+        if (is_wp_error($person_rows) || empty($person_rows[0])) {
+            pba_registration_redirect('lookup_failed');
+        }
+
+        $existing_wp_user_id = isset($person_rows[0]['wp_user_id']) ? (int) $person_rows[0]['wp_user_id'] : 0;
+        if ($existing_wp_user_id > 0) {
+            delete_transient('pba_house_admin_email_verify_' . $email_token);
+            pba_registration_redirect('user_exists');
+        }
     }
 
     $user_id = wp_create_user($email, $password, $email);
@@ -284,36 +380,59 @@ function pba_handle_house_admin_create_user() {
 
     wp_update_user(array(
         'ID'           => $user_id,
-        'first_name'   => isset($setup_data['first_name']) ? $setup_data['first_name'] : '',
-        'last_name'    => isset($setup_data['last_name']) ? $setup_data['last_name'] : '',
-        'display_name' => trim(
-            (isset($setup_data['first_name']) ? $setup_data['first_name'] : '') . ' ' .
-            (isset($setup_data['last_name']) ? $setup_data['last_name'] : '')
-        ),
+        'first_name'   => $first_name,
+        'last_name'    => $last_name,
+        'display_name' => trim($first_name . ' ' . $last_name),
     ));
 
-    if (!empty($setup_data['household_id'])) {
-        update_user_meta($user_id, 'pba_household_id', $setup_data['household_id']);
+    if ($household_id > 0) {
+        update_user_meta($user_id, 'pba_household_id', $household_id);
         update_user_meta($user_id, 'pba_is_house_admin', 1);
     }
 
-    $person = pba_create_person_record(array(
-        'household_id'   => isset($setup_data['household_id']) ? (int) $setup_data['household_id'] : 0,
-        'first_name'     => isset($setup_data['first_name']) ? $setup_data['first_name'] : '',
-        'last_name'      => isset($setup_data['last_name']) ? $setup_data['last_name'] : '',
-        'email'          => $email,
-        'status'         => 'Active',
-        'email_verified' => 1,
-        'wp_user_id'     => (string) $user_id,
-    ));
+    if ($person_id > 0) {
+        $updated_person = pba_supabase_update(
+            'Person',
+            array(
+                'household_id'      => $household_id,
+                'first_name'        => $first_name,
+                'last_name'         => $last_name,
+                'email_address'     => $email,
+                'status'            => 'Active',
+                'email_verified'    => 1,
+                'wp_user_id'        => (string) $user_id,
+                'last_modified_at'  => gmdate('c'),
+            ),
+            array(
+                'person_id' => 'eq.' . $person_id,
+            )
+        );
 
-    if (is_wp_error($person) || empty($person['person_id'])) {
-        require_once ABSPATH . 'wp-admin/includes/user.php';
-        wp_delete_user($user_id);
-        pba_registration_redirect('person_create_failed');
+        if (is_wp_error($updated_person)) {
+            require_once ABSPATH . 'wp-admin/includes/user.php';
+            wp_delete_user($user_id);
+            pba_registration_redirect('person_create_failed');
+        }
+    } else {
+        $person = pba_create_person_record(array(
+            'household_id'   => $household_id,
+            'first_name'     => $first_name,
+            'last_name'      => $last_name,
+            'email'          => $email,
+            'status'         => 'Active',
+            'email_verified' => 1,
+            'wp_user_id'     => (string) $user_id,
+        ));
+
+        if (is_wp_error($person) || empty($person['person_id'])) {
+            require_once ABSPATH . 'wp-admin/includes/user.php';
+            wp_delete_user($user_id);
+            pba_registration_redirect('person_create_failed');
+        }
+
+        $person_id = (int) $person['person_id'];
     }
 
-    $person_id = (int) $person['person_id'];
     update_user_meta($user_id, 'pba_person_id', $person_id);
 
     $house_admin_role_id = pba_supabase_find_role_id_by_name('PBAHouseholdAdmin');
@@ -324,15 +443,30 @@ function pba_handle_house_admin_create_user() {
         pba_registration_redirect('role_lookup_failed');
     }
 
-    $person_role = pba_create_person_to_role_record($person_id, $house_admin_role_id);
+    $existing_role_links = pba_supabase_get('Person_to_Role', array(
+        'select'    => 'person_to_role_id',
+        'person_id' => 'eq.' . $person_id,
+        'role_id'   => 'eq.' . (int) $house_admin_role_id,
+        'limit'     => 1,
+    ));
 
-    if (is_wp_error($person_role)) {
+    if (is_wp_error($existing_role_links)) {
         require_once ABSPATH . 'wp-admin/includes/user.php';
         wp_delete_user($user_id);
         pba_registration_redirect('person_role_create_failed');
     }
 
-    pba_sync_wp_role_for_person($user_id, $person_id);
+    if (empty($existing_role_links)) {
+        $person_role = pba_create_person_to_role_record($person_id, $house_admin_role_id);
+
+        if (is_wp_error($person_role)) {
+            require_once ABSPATH . 'wp-admin/includes/user.php';
+            wp_delete_user($user_id);
+            pba_registration_redirect('person_role_create_failed');
+        }
+    }
+
+    pba_sync_wp_role_for_person($person_id);
 
     delete_transient('pba_house_admin_email_verify_' . $email_token);
 

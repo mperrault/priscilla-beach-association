@@ -1,0 +1,82 @@
+.pba-member-directory-wrap {
+    max-width: 1480px;
+    margin: 0 auto;
+    color: #17324a;
+}
+
+.pba-member-directory-search {
+    display: grid;
+    grid-template-columns: minmax(240px, 2.4fr) minmax(120px, 140px) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.pba-member-directory-table {
+    min-width: 980px;
+}
+
+.pba-member-directory-mobile-cards {
+    display: none;
+    padding: 16px;
+    gap: 12px;
+}
+
+.pba-member-directory-mobile-card {
+    border: 1px solid #dde7f0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(14, 46, 76, 0.05);
+    padding: 16px;
+}
+
+.pba-member-directory-mobile-card h3 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    color: #17324a;
+}
+
+.pba-member-directory-mobile-row {
+    margin: 0 0 10px;
+    color: #3d5367;
+    line-height: 1.5;
+}
+
+.pba-member-directory-mobile-row:last-child {
+    margin-bottom: 0;
+}
+
+.pba-member-directory-mobile-label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #607487;
+}
+
+@media (max-width: 1080px) {
+    .pba-member-directory-search {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+
+    .pba-member-directory-search .pba-admin-list-btn,
+    .pba-member-directory-search a.pba-admin-list-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 760px) {
+    .pba-member-directory-search {
+        grid-template-columns: 1fr;
+    }
+
+    .pba-admin-list-grid-wrap,
+    .pba-admin-list-pagination {
+        display: none;
+    }
+
+    .pba-member-directory-mobile-cards {
+        display: grid;
+    }
+}
