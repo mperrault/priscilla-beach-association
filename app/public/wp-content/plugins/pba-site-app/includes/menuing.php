@@ -12,6 +12,7 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
     $board_docs_url = trailingslashit(home_url('/board-documents/'));
     $committee_docs_url = trailingslashit(home_url('/committee-documents/'));
     $governing_docs_url = trailingslashit(home_url('/governing-documents/'));
+    $member_resources_url = trailingslashit(home_url('/member-resources/'));
     $members_url = trailingslashit(home_url('/members/'));
     $committees_url = trailingslashit(home_url('/committees/'));
     $profile_url = trailingslashit(home_url('/profile/'));
@@ -20,6 +21,9 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
     $can_see_board = is_user_logged_in() && current_user_can('pba_view_board_docs');
     $can_see_committee = is_user_logged_in() && current_user_can('pba_view_committee_docs');
     $can_see_governing = is_user_logged_in() && current_user_can('pba_view_governing_documents');
+    $can_see_member_resources = function_exists('pba_current_person_can_view_member_resources')
+        ? pba_current_person_can_view_member_resources()
+        : is_user_logged_in();
     $is_admin = is_user_logged_in() && current_user_can('pba_manage_roles');
 
     foreach ($items as $index => $item) {
@@ -28,6 +32,13 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
 
         if ($item_url === $profile_url || strcasecmp($title, 'Profile') === 0) {
             if (!is_user_logged_in()) {
+                unset($items[$index]);
+            }
+            continue;
+        }
+
+        if ($item_url === $member_resources_url || strcasecmp($title, 'Member Resources') === 0) {
+            if (!$can_see_member_resources) {
                 unset($items[$index]);
             }
             continue;
@@ -102,6 +113,9 @@ function pba_get_logged_in_menu_items() {
     $can_see_board = is_user_logged_in() && current_user_can('pba_view_board_docs');
     $can_see_committee = is_user_logged_in() && current_user_can('pba_view_committee_docs');
     $can_see_governing = is_user_logged_in() && current_user_can('pba_view_governing_documents');
+    $can_see_member_resources = function_exists('pba_current_person_can_view_member_resources')
+        ? pba_current_person_can_view_member_resources()
+        : is_user_logged_in();
     $is_admin = is_user_logged_in() && current_user_can('pba_manage_roles');
 
     if (is_user_logged_in()) {
@@ -115,6 +129,13 @@ function pba_get_logged_in_menu_items() {
         $items[] = array(
             'label' => 'Governing Documents',
             'url'   => home_url('/governing-documents/'),
+        );
+    }
+
+    if ($can_see_member_resources) {
+        $items[] = array(
+            'label' => 'Member Resources',
+            'url'   => home_url('/member-resources/'),
         );
     }
 
@@ -186,8 +207,6 @@ function pba_render_logged_in_menu() {
         $html .= '<a href="' . esc_url($item['url']) . '">' . esc_html($item['label']) . '</a>';
         $html .= '</li>';
     }
-
     $html .= '</ul>';
-
     return $html;
 }

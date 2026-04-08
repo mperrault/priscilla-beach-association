@@ -16,7 +16,6 @@ function pba_render_member_home_shortcode() {
     }
 
     $person = pba_get_current_person_record();
-    $role_names = pba_get_current_person_role_names();
 
     $first_name = '';
     if (is_array($person) && !empty($person['first_name'])) {
@@ -39,6 +38,14 @@ function pba_render_member_home_shortcode() {
         'url' => home_url('/member-directory/'),
     );
 
+    if (function_exists('pba_current_person_can_view_member_resources') && pba_current_person_can_view_member_resources()) {
+        $cards[] = array(
+            'title' => 'Member Resources',
+            'description' => 'View documents and resources shared with all members by the Board and committees.',
+            'url' => home_url('/member-resources/'),
+        );
+    }
+
     if (pba_current_user_has_house_admin_access()) {
         $cards[] = array(
             'title' => 'My Household',
@@ -47,7 +54,10 @@ function pba_render_member_home_shortcode() {
         );
     }
 
-    if (in_array('PBABoardMember', $role_names, true) || in_array('PBAAdmin', $role_names, true)) {
+    if (
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_board_member')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))
+    ) {
         $cards[] = array(
             'title' => 'Board Documents',
             'description' => 'Access agendas, minutes, and board working documents.',
@@ -55,7 +65,10 @@ function pba_render_member_home_shortcode() {
         );
     }
 
-    if (in_array('PBACommitteeMember', $role_names, true) || in_array('PBAAdmin', $role_names, true)) {
+    if (
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_committee_member')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))
+    ) {
         $cards[] = array(
             'title' => 'Committee Documents',
             'description' => 'Access folders and documents for your committee work.',
@@ -63,7 +76,7 @@ function pba_render_member_home_shortcode() {
         );
     }
 
-    if (pba_current_user_has_pba_admin_access() || in_array('PBAAdmin', $role_names, true)) {
+    if (pba_current_user_has_pba_admin_access() || (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))) {
         $cards[] = array(
             'title' => 'Members',
             'description' => 'Manage member records, roles, and committee assignments.',

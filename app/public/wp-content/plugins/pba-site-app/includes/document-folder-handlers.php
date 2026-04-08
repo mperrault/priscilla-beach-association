@@ -52,9 +52,12 @@ function pba_handle_create_document_folder() {
         wp_die('Invalid nonce', 403);
     }
 
-    $page_slug    = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
-    $folder_name  = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
-    $folder_scope = sanitize_text_field(wp_unslash($_POST['folder_scope'] ?? ''));
+    $page_slug = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $folder_name = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
+
+    // Accept the field name actually posted by the forms.
+    $folder_scope = sanitize_text_field(wp_unslash($_POST['folder_scope_type'] ?? ''));
+
     $committee_id = absint($_POST['committee_id'] ?? 0);
     $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
@@ -71,16 +74,16 @@ function pba_handle_create_document_folder() {
     }
 
     $inserted = pba_supabase_insert('Document_Folder', array(
-        'folder_name'               => $folder_name,
-        'folder_scope'              => $folder_scope,
-        'committee_id'              => $committee_id > 0 ? $committee_id : null,
-        'parent_folder_id'          => null,
-        'display_order'             => null,
-        'is_active'                 => true,
-        'created_by_person_id'      => $current_person_id > 0 ? $current_person_id : null,
-        'last_modified_by_person_id'=> $current_person_id > 0 ? $current_person_id : null,
-        'notes'                     => null,
-        'last_modified_at'          => gmdate('c'),
+        'folder_name'                => $folder_name,
+        'folder_scope'               => $folder_scope,
+        'committee_id'               => $committee_id > 0 ? $committee_id : null,
+        'parent_folder_id'           => null,
+        'display_order'              => null,
+        'is_active'                  => true,
+        'created_by_person_id'       => $current_person_id > 0 ? $current_person_id : null,
+        'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
+        'notes'                      => null,
+        'last_modified_at'           => gmdate('c'),
     ));
 
     if (is_wp_error($inserted)) {
@@ -102,9 +105,9 @@ function pba_handle_rename_document_folder() {
         wp_die('Invalid nonce', 403);
     }
 
-    $page_slug    = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
-    $folder_id    = absint($_POST['folder_id'] ?? 0);
-    $folder_name  = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
+    $page_slug = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $folder_id = absint($_POST['folder_id'] ?? 0);
+    $folder_name = sanitize_text_field(wp_unslash($_POST['folder_name'] ?? ''));
     $committee_id = absint($_POST['committee_id'] ?? 0);
     $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
@@ -119,9 +122,9 @@ function pba_handle_rename_document_folder() {
     $updated = pba_supabase_update(
         'Document_Folder',
         array(
-            'folder_name'               => $folder_name,
-            'last_modified_at'          => gmdate('c'),
-            'last_modified_by_person_id'=> $current_person_id > 0 ? $current_person_id : null,
+            'folder_name'                => $folder_name,
+            'last_modified_at'           => gmdate('c'),
+            'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_folder_id' => 'eq.' . $folder_id,
@@ -147,8 +150,8 @@ function pba_handle_deactivate_document_folder() {
         wp_die('Invalid nonce', 403);
     }
 
-    $page_slug    = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
-    $folder_id    = absint($_POST['folder_id'] ?? 0);
+    $page_slug = pba_normalize_document_page_slug(wp_unslash($_POST['page_slug'] ?? ''));
+    $folder_id = absint($_POST['folder_id'] ?? 0);
     $committee_id = absint($_POST['committee_id'] ?? 0);
     $current_person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
 
@@ -163,9 +166,9 @@ function pba_handle_deactivate_document_folder() {
     $updated = pba_supabase_update(
         'Document_Folder',
         array(
-            'is_active'                 => false,
-            'last_modified_at'          => gmdate('c'),
-            'last_modified_by_person_id'=> $current_person_id > 0 ? $current_person_id : null,
+            'is_active'                  => false,
+            'last_modified_at'           => gmdate('c'),
+            'last_modified_by_person_id' => $current_person_id > 0 ? $current_person_id : null,
         ),
         array(
             'document_folder_id' => 'eq.' . $folder_id,

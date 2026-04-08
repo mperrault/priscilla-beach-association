@@ -27,6 +27,11 @@ function pba_render_documents_status_message() {
         'folder_created'                => 'Folder created successfully.',
         'folder_renamed'                => 'Folder renamed successfully.',
         'folder_deleted'                => 'Folder deactivated successfully.',
+        'shared_with_members'           => 'Document is now visible in Member Resources.',
+        'removed_from_member_resources' => 'Document was removed from Member Resources.',
+        'share_failed'                  => 'The document could not be shared with members.',
+        'unshare_failed'                => 'The document could not be removed from Member Resources.',
+        'permission_denied'             => 'You do not have permission to perform that action.',
         'missing_document_file'         => 'Please choose a file to upload.',
         'empty_document_file'           => 'The selected file appears to be empty.',
         'document_file_too_large'       => 'The selected file is too large. Maximum allowed size is ' . pba_get_document_upload_max_size_label() . '.',
@@ -59,6 +64,8 @@ function pba_render_documents_status_message() {
         'folder_created',
         'folder_renamed',
         'folder_deleted',
+        'shared_with_members',
+        'removed_from_member_resources',
     );
     $class = in_array($status, $success_statuses, true) ? 'pba-documents-message' : 'pba-documents-message error';
 
@@ -73,7 +80,7 @@ function pba_get_document_items_for_folder($folder_id, $is_active = true) {
     }
 
     $rows = pba_supabase_get('Document_Item', array(
-        'select'             => 'document_item_id,document_folder_id,file_name,file_url,mime_type,document_title,document_date,document_category,document_version,uploaded_by_person_id,last_modified_by_person_id,is_active,notes,last_modified_at',
+        'select'             => 'document_item_id,document_folder_id,file_name,file_url,mime_type,document_title,document_date,document_category,document_version,uploaded_by_person_id,last_modified_by_person_id,is_active,notes,last_modified_at,visible_to_all_members,shared_with_members_at,shared_with_members_by_person_id,member_summary',
         'document_folder_id' => 'eq.' . $folder_id,
         'is_active'          => 'eq.' . ($is_active ? 'true' : 'false'),
         'order'              => 'document_date.desc,last_modified_at.desc',
@@ -190,6 +197,7 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                         <th>Date</th>
                         <th>Category</th>
                         <th>Type</th>
+                        <th>Member Access</th>
                         <th>Last Modified</th>
                         <th>Last Modified By</th>
                     </tr>
@@ -197,7 +205,7 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                 <tbody>
                     <?php if (empty($items)) : ?>
                         <tr class="pba-documents-empty-row">
-                            <td colspan="6"><?php echo $is_active ? 'No active documents uploaded yet.' : 'No inactive documents.'; ?></td>
+                            <td colspan="7"><?php echo $is_active ? 'No active documents uploaded yet.' : 'No inactive documents.'; ?></td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($items as $item) : ?>
@@ -213,6 +221,7 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                             $modified_display = pba_format_datetime_display($item['last_modified_at'] ?? '');
                             $modified_by_person_id = isset($item['last_modified_by_person_id']) ? (int) $item['last_modified_by_person_id'] : 0;
                             $modified_by_label = $modified_by_person_id > 0 ? pba_get_person_display_name($modified_by_person_id) : '';
+                            $member_summary = trim((string) ($item['member_summary'] ?? ''));
                             if ($modified_by_label === '') {
                                 $modified_by_label = '—';
                             }
@@ -235,6 +244,7 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                                         'document_category'         => (string) ($item['document_category'] ?? ''),
                                         'document_version'          => (string) ($item['document_version'] ?? ''),
                                         'notes'                     => (string) ($item['notes'] ?? ''),
+                                        'member_summary'            => (string) ($item['member_summary'] ?? ''),
                                         'last_modified_display'     => (string) $modified_display,
                                         'last_modified_by_display'  => (string) $modified_by_label,
                                     ))); ?>"
@@ -255,13 +265,16 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                                         <div class="pba-documents-muted"><?php echo esc_html($item['file_name']); ?></div>
                                     <?php endif; ?>
 
-                                    <?php if (!empty($item['document_version']) || !empty($item['notes'])) : ?>
+                                    <?php if (!empty($item['document_version']) || !empty($item['notes']) || $member_summary !== '') : ?>
                                         <div class="pba-documents-title-meta">
                                             <?php if (!empty($item['document_version'])) : ?>
                                                 <span class="pba-documents-inline-chip">Version: <?php echo esc_html($item['document_version']); ?></span>
                                             <?php endif; ?>
                                             <?php if (!empty($item['notes'])) : ?>
                                                 <span class="pba-documents-inline-chip">Notes: <?php echo esc_html($item['notes']); ?></span>
+                                            <?php endif; ?>
+                                            <?php if ($member_summary !== '') : ?>
+                                                <span class="pba-documents-inline-chip">Member Summary: <?php echo esc_html($member_summary); ?></span>
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
@@ -307,6 +320,7 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                                 <td><?php echo esc_html($document_date); ?></td>
                                 <td><?php echo esc_html($item['document_category'] ?? ''); ?></td>
                                 <td><?php echo esc_html($item['mime_type'] ?? ''); ?></td>
+                                <td class="pba-documents-member-access-cell"><?php echo function_exists('pba_render_member_share_toggle_cell') ? pba_render_member_share_toggle_cell((int) ($item['document_item_id'] ?? 0)) : '—'; ?></td>
                                 <td><?php echo esc_html($modified_display); ?></td>
                                 <td><?php echo esc_html($modified_by_label); ?></td>
                             </tr>
@@ -377,6 +391,7 @@ function pba_render_documents_metadata_drawer($page_slug, $committee_id = 0) {
                 <div class="pba-documents-field pba-documents-editor-span">
                     <label class="pba-documents-label">Notes</label>
                     <input type="text" name="notes" value="" class="pba-documents-input">
+                    <div class="pba-documents-muted">Use notes for internal context. Member Resources falls back to notes when no separate member summary is available.</div>
                 </div>
             </div>
 
@@ -557,7 +572,7 @@ function pba_render_committee_documents_committee_cards($committees, $selected_c
                             class="pba-documents-btn<?php echo $is_selected ? ' secondary' : ''; ?>"
                             href="<?php echo esc_url($open_href); ?>"
                         >
-                        Open
+                            Open
                         </a>
                     <?php endif; ?>
                 </div>
@@ -573,637 +588,106 @@ function pba_render_documents_common_styles_and_script() {
     ob_start();
     ?>
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-
-        .pba-documents-wrap {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 0;
-        }
-
-        .pba-documents-page-intro {
-            margin: 0 0 18px;
-            color: #4b5563;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        .pba-documents-message {
-            margin: 0 0 20px;
-            padding: 14px 16px;
-            border: 1px solid #cfe4d2;
-            border-radius: 12px;
-            background: #edf8ef;
-            color: #1f5130;
-        }
-
-        .pba-documents-message.error {
-            border-color: #eccccc;
-            background: #fbefef;
-            color: #8a1f1f;
-        }
-
-        .pba-documents-section {
-            margin: 0 0 22px;
-            padding: 18px 20px;
-            border: 1px solid #d9e2ec;
-            border-radius: 18px;
-            background: #ffffff;
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
-            scroll-margin-top: 24px;
-        }
-
-        .pba-documents-section-title {
-            margin: 0 0 14px;
-            font-size: 1.2rem;
-            line-height: 1.3;
-            color: #0f172a;
-        }
-
-        .pba-documents-subsection-title {
-            margin: 0;
-            font-size: 1rem;
-            line-height: 1.3;
-            color: #0f172a;
-        }
-
-        .pba-documents-action-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .pba-documents-folder-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
-        .pba-documents-folder-card {
-            border: 1px solid #d9e2ec;
-            border-radius: 18px;
-            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-            overflow: hidden;
-        }
-
-        .pba-documents-folder-toggle {
-            width: 100%;
-            border: 0;
-            background: transparent;
-            padding: 18px 20px;
-            display: flex;
-            justify-content: space-between;
-            gap: 18px;
-            align-items: center;
-            cursor: pointer;
-            text-align: left;
-        }
-
-        .pba-documents-folder-toggle:hover,
-        .pba-documents-folder-toggle:focus {
-            background: #f8fbff;
-            outline: none;
-        }
-
-        .pba-documents-folder-toggle-main,
-        .pba-documents-folder-toggle-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .pba-documents-folder-toggle-meta {
-            align-items: flex-end;
-            text-align: right;
-        }
-
-        .pba-documents-folder-title {
-            font-size: 1.08rem;
-            font-weight: 700;
-            color: #0f172a;
-            line-height: 1.3;
-        }
-
-        .pba-documents-folder-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .pba-documents-badge {
-            display: inline-flex;
-            align-items: center;
-            min-height: 28px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: #e8f1fb;
-            color: #0d3b66;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .pba-documents-badge.muted {
-            background: #eef2f7;
-            color: #475569;
-        }
-
-        .pba-documents-folder-toggle-label {
-            color: #0d3b66;
-            font-weight: 700;
-        }
-
-        .pba-documents-folder-card.is-open .pba-documents-folder-toggle-label {
-            color: #0b3154;
-        }
-
-        .pba-documents-folder-panel {
-            padding: 0 20px 20px;
-            border-top: 1px solid #e5edf5;
-        }
-
-        .pba-documents-folder-tabs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            padding: 16px 0 14px;
-        }
-
-        .pba-documents-folder-tab {
-            border: 1px solid #d9e2ec;
-            background: #fff;
-            color: #0d3b66;
-            border-radius: 999px;
-            padding: 8px 14px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-
-        .pba-documents-folder-tab.is-active {
-            background: #0d3b66;
-            border-color: #0d3b66;
-            color: #fff;
-        }
-
-        .pba-documents-settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 14px;
-        }
-
-        .pba-documents-settings-card {
-            border: 1px solid #d9e2ec;
-            border-radius: 14px;
-            background: #fff;
-            padding: 16px;
-        }
-
-        .pba-documents-settings-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 12px;
-            align-items: center;
-        }
-
-        .pba-documents-form-inline {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 0;
-        }
-
-        .pba-documents-inline-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .pba-documents-input,
-        .pba-documents-upload-form input[type="file"] {
-            width: 100%;
-            max-width: 100%;
-            min-height: 40px;
-            padding: 9px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            background: #fff;
-            box-sizing: border-box;
-        }
-
-        .pba-documents-input:focus,
-        .pba-documents-upload-form input[type="file"]:focus {
-            outline: none;
-            border-color: #0d3b66;
-            box-shadow: 0 0 0 3px rgba(13, 59, 102, 0.12);
-        }
-
-        .pba-documents-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 40px;
-            padding: 9px 14px;
-            border: 1px solid #0d3b66;
-            background: #0d3b66;
-            color: #ffffff;
-            border-radius: 10px;
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: 600;
-            line-height: 1.2;
-            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-        }
-
-        .pba-documents-btn:hover,
-        .pba-documents-btn:focus {
-            background: #0b3154;
-            border-color: #0b3154;
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
-
-        .pba-documents-btn.secondary {
-            background: #ffffff;
-            color: #0d3b66;
-        }
-
-        .pba-documents-btn.secondary:hover,
-        .pba-documents-btn.secondary:focus {
-            background: #f7fbff;
-            color: #0b3154;
-            border-color: #0b3154;
-        }
-
-        .pba-documents-btn.secondary.is-expanded {
-            background: #0d3b66;
-            color: #ffffff;
-            border-color: #0d3b66;
-        }
-
-        .pba-documents-btn.secondary.is-expanded:hover,
-        .pba-documents-btn.secondary:focus {
-            background: #0b3154;
-            color: #ffffff;
-            border-color: #0b3154;
-        }
-
-        .pba-documents-muted {
-            color: #64748b;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .pba-documents-title-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .pba-documents-inline-chip {
-            display: inline-flex;
-            align-items: center;
-            min-height: 26px;
-            padding: 3px 8px;
-            border-radius: 999px;
-            background: #f1f5f9;
-            color: #475569;
-            font-size: 12px;
-            line-height: 1.3;
-        }
-
-        .pba-documents-upload-grid,
-        .pba-documents-editor-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .pba-documents-field {
-            min-width: 0;
-        }
-
-        .pba-documents-editor-span {
-            grid-column: 1 / -1;
-        }
-
-        .pba-documents-label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #334155;
-        }
-
-        .pba-documents-upload-help {
-            margin-top: 10px;
-        }
-
-        .pba-documents-toolbar-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .pba-documents-table-shell {
-            margin-top: 10px;
-        }
-
-        .pba-documents-table-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .pba-documents-table-toolbar-left,
-        .pba-documents-table-toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .pba-documents-table-toolbar-right .pba-documents-input {
-            width: auto;
-            min-width: 180px;
-        }
-
-        .pba-documents-table-wrap {
-            overflow-x: auto;
-            border: 1px solid #d9e2ec;
-            border-radius: 14px;
-            background: #ffffff;
-        }
-
-        .pba-documents-table {
-            width: 100%;
-            min-width: 900px;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 0;
-        }
-
-        .pba-documents-table th,
-        .pba-documents-table td {
-            border-bottom: 1px solid #e5edf5;
-            padding: 12px 12px;
-            text-align: left;
-            vertical-align: top;
-            font-size: 14px;
-            line-height: 1.45;
-        }
-
-        .pba-documents-table thead th {
-            position: sticky;
-            top: 0;
-            background: #f8fafc;
-            color: #334155;
-            font-weight: 700;
-            z-index: 1;
-        }
-
-        .pba-documents-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .pba-documents-title-cell a {
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .pba-documents-title-cell a:hover,
-        .pba-documents-title-cell a:focus {
-            text-decoration: underline;
-        }
-
-        .pba-documents-editor-actions {
-            margin-top: 8px;
-        }
-
-        .pba-documents-table-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .pba-documents-table-summary,
-        .pba-documents-page-status {
-            color: #475569;
-            font-size: 14px;
-        }
-
-        .pba-documents-pagination {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .pba-documents-inactive-toggle-wrap {
-            margin-top: 14px;
-        }
-
-        .pba-documents-inactive-panel {
-            margin-top: 12px;
-            padding-top: 4px;
-        }
-
-        .pba-documents-metadata-drawer {
-            margin-top: 14px;
-            border: 1px solid #dbeafe;
-            background: #f7fbff;
-            border-radius: 14px;
-            padding: 16px;
-        }
-
-        .pba-documents-metadata-drawer-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .pba-documents-readonly-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-
-        .pba-documents-readonly-meta-item {
-            border: 1px solid #d9e2ec;
-            border-radius: 12px;
-            background: #ffffff;
-            padding: 12px;
-        }
-
-        .pba-documents-readonly-meta-label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .pba-documents-readonly-meta-value {
-            color: #0f172a;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
-        .pba-documents-committee-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 16px;
-        }
-
-        .pba-documents-committee-card {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-height: 220px;
-            padding: 18px;
-            border: 1px solid #d9e2ec;
-            border-radius: 18px;
-            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-        }
-
-        .pba-documents-committee-card.is-selected {
-            border-color: #0d3b66;
-            box-shadow: 0 10px 24px rgba(13, 59, 102, 0.12);
-        }
-
-        .pba-documents-committee-card.restricted {
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-            border-color: #d7dee7;
-        }
-
-        .pba-documents-committee-card-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .pba-documents-committee-card-title-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 0;
-        }
-
-        .pba-documents-committee-card-title {
-            margin: 0;
-            color: #0f172a;
-            font-size: 1.05rem;
-            line-height: 1.35;
-        }
-
-        .pba-documents-committee-card-text {
-            margin: 0;
-            color: #475569;
-            font-size: 14px;
-            line-height: 1.6;
-            flex: 1 1 auto;
-        }
-
-        .pba-documents-committee-card-actions {
-            margin-top: auto;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-        }
-
-        .pba-documents-restricted-note {
-            display: inline-flex;
-            align-items: center;
-            min-height: 40px;
-            padding: 9px 12px;
-            border: 1px solid #d7dee7;
-            border-radius: 10px;
-            background: #ffffff;
-            color: #64748b;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
+        html { scroll-behavior: smooth; }
+        .pba-documents-wrap { max-width: 1240px; margin: 0 auto; padding: 0; }
+        .pba-documents-page-intro { margin: 0 0 18px; color: #4b5563; font-size: 15px; line-height: 1.6; }
+        .pba-documents-message { margin: 0 0 20px; padding: 14px 16px; border: 1px solid #cfe4d2; border-radius: 12px; background: #edf8ef; color: #1f5130; }
+        .pba-documents-message.error { border-color: #eccccc; background: #fbefef; color: #8a1f1f; }
+        .pba-documents-section { margin: 0 0 22px; padding: 18px 20px; border: 1px solid #d9e2ec; border-radius: 18px; background: #ffffff; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06); scroll-margin-top: 24px; }
+        .pba-documents-section-title { margin: 0 0 14px; font-size: 1.2rem; line-height: 1.3; color: #0f172a; }
+        .pba-documents-subsection-title { margin: 0; font-size: 1rem; line-height: 1.3; color: #0f172a; }
+        .pba-documents-action-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .pba-documents-folder-list { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .pba-documents-folder-card { border: 1px solid #d9e2ec; border-radius: 18px; background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); overflow: hidden; }
+        .pba-documents-folder-toggle { width: 100%; border: 0; background: transparent; padding: 18px 20px; display: flex; justify-content: space-between; gap: 18px; align-items: center; cursor: pointer; text-align: left; }
+        .pba-documents-folder-toggle:hover, .pba-documents-folder-toggle:focus { background: #f8fbff; outline: none; }
+        .pba-documents-folder-toggle-main, .pba-documents-folder-toggle-meta { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+        .pba-documents-folder-toggle-meta { align-items: flex-end; text-align: right; }
+        .pba-documents-folder-title { font-size: 1.08rem; font-weight: 700; color: #0f172a; line-height: 1.3; }
+        .pba-documents-folder-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pba-documents-badge { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border-radius: 999px; background: #e8f1fb; color: #0d3b66; font-size: 13px; font-weight: 700; }
+        .pba-documents-badge.muted { background: #eef2f7; color: #475569; }
+        .pba-documents-folder-toggle-label { color: #0d3b66; font-weight: 700; }
+        .pba-documents-folder-card.is-open .pba-documents-folder-toggle-label { color: #0b3154; }
+        .pba-documents-folder-panel { padding: 0 20px 20px; border-top: 1px solid #e5edf5; }
+        .pba-documents-folder-tabs { display: flex; gap: 10px; flex-wrap: wrap; padding: 16px 0 14px; }
+        .pba-documents-folder-tab { border: 1px solid #d9e2ec; background: #fff; color: #0d3b66; border-radius: 999px; padding: 8px 14px; cursor: pointer; font-weight: 700; }
+        .pba-documents-folder-tab.is-active { background: #0d3b66; border-color: #0d3b66; color: #fff; }
+        .pba-documents-settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+        .pba-documents-settings-card { border: 1px solid #d9e2ec; border-radius: 14px; background: #fff; padding: 16px; }
+        .pba-documents-settings-form { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
+        .pba-documents-form-inline { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; }
+        .pba-documents-inline-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+        .pba-documents-input, .pba-documents-upload-form input[type="file"] { width: 100%; max-width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; box-sizing: border-box; }
+        .pba-documents-input:focus, .pba-documents-upload-form input[type="file"]:focus { outline: none; border-color: #0d3b66; box-shadow: 0 0 0 3px rgba(13, 59, 102, 0.12); }
+        .pba-documents-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 9px 14px; border: 1px solid #0d3b66; background: #0d3b66; color: #ffffff; border-radius: 10px; text-decoration: none; cursor: pointer; font-weight: 600; line-height: 1.2; transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease; }
+        .pba-documents-btn:hover, .pba-documents-btn:focus { background: #0b3154; border-color: #0b3154; color: #ffffff; transform: translateY(-1px); }
+        .pba-documents-btn.secondary { background: #ffffff; color: #0d3b66; }
+        .pba-documents-btn.secondary:hover, .pba-documents-btn.secondary:focus { background: #f7fbff; color: #0b3154; border-color: #0b3154; }
+        .pba-documents-btn.secondary.is-expanded { background: #0d3b66; color: #ffffff; border-color: #0d3b66; }
+        .pba-documents-muted { color: #64748b; font-size: 13px; line-height: 1.5; }
+        .pba-documents-title-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .pba-documents-inline-chip { display: inline-flex; align-items: center; min-height: 26px; padding: 3px 8px; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 12px; line-height: 1.3; }
+        .pba-documents-upload-grid, .pba-documents-editor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .pba-documents-field { min-width: 0; }
+        .pba-documents-editor-span { grid-column: 1 / -1; }
+        .pba-documents-label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 700; color: #334155; }
+        .pba-documents-upload-help { margin-top: 10px; }
+        .pba-documents-toolbar-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .pba-documents-table-shell { margin-top: 10px; }
+        .pba-documents-table-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+        .pba-documents-table-toolbar-left, .pba-documents-table-toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .pba-documents-table-toolbar-right .pba-documents-input { width: auto; min-width: 180px; }
+        .pba-documents-table-wrap { overflow-x: auto; border: 1px solid #d9e2ec; border-radius: 14px; background: #ffffff; }
+        .pba-documents-table { width: 100%; min-width: 1080px; border-collapse: separate; border-spacing: 0; margin: 0; }
+        .pba-documents-table th, .pba-documents-table td { border-bottom: 1px solid #e5edf5; padding: 12px 12px; text-align: left; vertical-align: top; font-size: 14px; line-height: 1.45; }
+        .pba-documents-table thead th { position: sticky; top: 0; background: #f8fafc; color: #334155; font-weight: 700; z-index: 1; }
+        .pba-documents-table tbody tr:last-child td { border-bottom: none; }
+        .pba-documents-title-cell a { font-weight: 700; text-decoration: none; }
+        .pba-documents-title-cell a:hover, .pba-documents-title-cell a:focus { text-decoration: underline; }
+        .pba-documents-editor-actions { margin-top: 8px; }
+        .pba-documents-table-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+        .pba-documents-table-summary, .pba-documents-page-status { color: #475569; font-size: 14px; }
+        .pba-documents-pagination { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .pba-documents-inactive-toggle-wrap { margin-top: 14px; }
+        .pba-documents-inactive-panel { margin-top: 12px; padding-top: 4px; }
+        .pba-documents-metadata-drawer { margin-top: 14px; border: 1px solid #dbeafe; background: #f7fbff; border-radius: 14px; padding: 16px; }
+        .pba-documents-metadata-drawer-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .pba-documents-readonly-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .pba-documents-readonly-meta-item { border: 1px solid #d9e2ec; border-radius: 12px; background: #ffffff; padding: 12px; }
+        .pba-documents-readonly-meta-label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; }
+        .pba-documents-readonly-meta-value { color: #0f172a; font-weight: 600; line-height: 1.4; }
+        .pba-doc-share-cell { display: flex; flex-direction: column; gap: 8px; min-width: 170px; }
+        .pba-doc-share-status { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; line-height: 1; width: fit-content; }
+        .pba-doc-share-status.is-shared { background: #eaf6ec; color: #25613a; }
+        .pba-doc-share-status.is-private { background: #eef2f7; color: #475569; }
+        .pba-doc-share-meta { color: #64748b; font-size: 12px; line-height: 1.4; }
+        .pba-doc-share-form { display: inline-flex; flex-direction: column; gap: 8px; margin: 0; }
+        .pba-doc-share-button { width: 100%; justify-content: center; }
+        .pba-documents-committee-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .pba-documents-committee-card { display: flex; flex-direction: column; gap: 12px; min-height: 220px; padding: 18px; border: 1px solid #d9e2ec; border-radius: 18px; background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); }
+        .pba-documents-committee-card.is-selected { border-color: #0d3b66; box-shadow: 0 10px 24px rgba(13, 59, 102, 0.12); }
+        .pba-documents-committee-card.restricted { background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-color: #d7dee7; }
+        .pba-documents-committee-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .pba-documents-committee-card-title-wrap { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        .pba-documents-committee-card-title { margin: 0; color: #0f172a; font-size: 1.05rem; line-height: 1.35; }
+        .pba-documents-committee-card-text { margin: 0; color: #475569; font-size: 14px; line-height: 1.6; flex: 1 1 auto; }
+        .pba-documents-committee-card-actions { margin-top: auto; display: flex; align-items: flex-end; justify-content: flex-start; }
+        .pba-documents-restricted-note { display: inline-flex; align-items: center; min-height: 40px; padding: 9px 12px; border: 1px solid #d7dee7; border-radius: 10px; background: #ffffff; color: #64748b; font-weight: 600; line-height: 1.4; }
         @media (max-width: 900px) {
-            .pba-documents-section,
-            .pba-documents-folder-toggle,
-            .pba-documents-folder-panel {
-                padding-left: 16px;
-                padding-right: 16px;
-            }
-
-            .pba-documents-folder-toggle {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .pba-documents-folder-toggle-meta {
-                align-items: flex-start;
-                text-align: left;
-            }
-
-            .pba-documents-table-toolbar-right {
-                width: 100%;
-            }
-
-            .pba-documents-table-toolbar-right .pba-documents-input {
-                width: 100%;
-                min-width: 0;
-            }
+            .pba-documents-section, .pba-documents-folder-toggle, .pba-documents-folder-panel { padding-left: 16px; padding-right: 16px; }
+            .pba-documents-folder-toggle { flex-direction: column; align-items: stretch; }
+            .pba-documents-folder-toggle-meta { align-items: flex-start; text-align: left; }
+            .pba-documents-table-toolbar-right { width: 100%; }
+            .pba-documents-table-toolbar-right .pba-documents-input { width: 100%; min-width: 0; }
         }
-
         @media (max-width: 640px) {
-            .pba-documents-action-bar,
-            .pba-documents-settings-form,
-            .pba-documents-toolbar-actions {
-                width: 100%;
-            }
-
-            .pba-documents-btn {
-                width: 100%;
-            }
-
-            .pba-documents-table-footer {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .pba-documents-pagination {
-                justify-content: space-between;
-            }
-
-            .pba-documents-metadata-drawer-head {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .pba-documents-restricted-note {
-                width: 100%;
-            }
+            .pba-documents-action-bar, .pba-documents-settings-form, .pba-documents-toolbar-actions { width: 100%; }
+            .pba-documents-btn { width: 100%; }
+            .pba-documents-table-footer { flex-direction: column; align-items: stretch; }
+            .pba-documents-pagination { justify-content: space-between; }
+            .pba-documents-metadata-drawer-head { flex-direction: column; align-items: stretch; }
+            .pba-documents-restricted-note { width: 100%; }
         }
     </style>
 
@@ -1231,7 +715,6 @@ function pba_render_documents_common_styles_and_script() {
 
                 var tableId = shell.getAttribute('data-table-id');
                 var table = tableId ? document.getElementById(tableId) : null;
-
                 if (!table) {
                     return;
                 }
@@ -1435,34 +918,18 @@ function pba_render_documents_common_styles_and_script() {
                     var versionInput = form.querySelector('input[name="document_version"]');
                     var notesInput = form.querySelector('input[name="notes"]');
 
-                    if (itemIdInput) {
-                        itemIdInput.value = data.document_item_id || '';
-                    }
-                    if (titleInput) {
-                        titleInput.value = data.document_title || '';
-                    }
-                    if (dateInput) {
-                        dateInput.value = data.document_date || '';
-                    }
-                    if (categoryInput) {
-                        categoryInput.value = data.document_category || '';
-                    }
-                    if (versionInput) {
-                        versionInput.value = data.document_version || '';
-                    }
-                    if (notesInput) {
-                        notesInput.value = data.notes || '';
-                    }
+                    if (itemIdInput) { itemIdInput.value = data.document_item_id || ''; }
+                    if (titleInput) { titleInput.value = data.document_title || ''; }
+                    if (dateInput) { dateInput.value = data.document_date || ''; }
+                    if (categoryInput) { categoryInput.value = data.document_category || ''; }
+                    if (versionInput) { versionInput.value = data.document_version || ''; }
+                    if (notesInput) { notesInput.value = data.notes || ''; }
 
                     var modifiedField = drawer.querySelector('[data-meta-field="last_modified_display"]');
                     var modifiedByField = drawer.querySelector('[data-meta-field="last_modified_by_display"]');
 
-                    if (modifiedField) {
-                        modifiedField.textContent = data.last_modified_display || '—';
-                    }
-                    if (modifiedByField) {
-                        modifiedByField.textContent = data.last_modified_by_display || '—';
-                    }
+                    if (modifiedField) { modifiedField.textContent = data.last_modified_display || '—'; }
+                    if (modifiedByField) { modifiedByField.textContent = data.last_modified_by_display || '—'; }
                 }
 
                 panel.addEventListener('click', function (event) {
@@ -1512,15 +979,9 @@ function pba_render_documents_common_styles_and_script() {
                                     var otherToggle = otherCard.querySelector('.pba-documents-folder-toggle');
                                     var otherLabel = otherCard.querySelector('.pba-documents-folder-toggle-label');
 
-                                    if (otherPanel) {
-                                        otherPanel.style.display = 'none';
-                                    }
-                                    if (otherToggle) {
-                                        otherToggle.setAttribute('aria-expanded', 'false');
-                                    }
-                                    if (otherLabel) {
-                                        otherLabel.textContent = 'Open';
-                                    }
+                                    if (otherPanel) { otherPanel.style.display = 'none'; }
+                                    if (otherToggle) { otherToggle.setAttribute('aria-expanded', 'false'); }
+                                    if (otherLabel) { otherLabel.textContent = 'Open'; }
                                 }
                             });
                         }
@@ -1529,16 +990,12 @@ function pba_render_documents_common_styles_and_script() {
                             card.classList.remove('is-open');
                             panel.style.display = 'none';
                             toggle.setAttribute('aria-expanded', 'false');
-                            if (label) {
-                                label.textContent = 'Open';
-                            }
+                            if (label) { label.textContent = 'Open'; }
                         } else {
                             card.classList.add('is-open');
                             panel.style.display = '';
                             toggle.setAttribute('aria-expanded', 'true');
-                            if (label) {
-                                label.textContent = 'Close';
-                            }
+                            if (label) { label.textContent = 'Close'; }
 
                             Array.prototype.forEach.call(card.querySelectorAll('.pba-documents-table-shell'), initDocumentsTable);
                             Array.prototype.forEach.call(card.querySelectorAll('.pba-documents-folder-tab-panel[data-panel="documents"]'), initMetadataDrawer);
@@ -1647,7 +1104,7 @@ function pba_render_board_documents_shortcode() {
                 <?php wp_nonce_field('pba_document_folder_action', 'pba_document_folder_nonce'); ?>
                 <input type="hidden" name="action" value="pba_create_document_folder">
                 <input type="hidden" name="page_slug" value="board-documents">
-                <input type="hidden" name="folder_scope" value="Board">
+                <input type="hidden" name="folder_scope_type" value="Board">
                 <input type="hidden" name="committee_id" value="0">
 
                 <input type="text" name="folder_name" class="pba-documents-input" placeholder="New board folder name" required>
@@ -1768,7 +1225,7 @@ function pba_render_committee_documents_shortcode() {
                     <?php wp_nonce_field('pba_document_folder_action', 'pba_document_folder_nonce'); ?>
                     <input type="hidden" name="action" value="pba_create_document_folder">
                     <input type="hidden" name="page_slug" value="committee-documents">
-                    <input type="hidden" name="folder_scope" value="Committee">
+                    <input type="hidden" name="folder_scope_type" value="Committee">
                     <input type="hidden" name="committee_id" value="<?php echo esc_attr($selected_committee_id); ?>">
 
                     <input type="text" name="folder_name" class="pba-documents-input" placeholder="New committee folder name" required>

@@ -11,6 +11,36 @@ function pba_register_profile_shortcode() {
     add_shortcode('pba_profile', 'pba_render_profile_shortcode');
 }
 
+function pba_get_current_person_role_labels_for_display() {
+    $role_slugs = function_exists('pba_get_current_person_role_names') ? pba_get_current_person_role_names() : array();
+
+    if (empty($role_slugs) || !is_array($role_slugs)) {
+        return array();
+    }
+
+    $role_defs = function_exists('pba_get_role_definitions')
+        ? pba_get_role_definitions()
+        : array();
+
+    $labels = array();
+
+    foreach ($role_slugs as $role_slug) {
+        $role_slug = (string) $role_slug;
+
+        if ($role_slug === '') {
+            continue;
+        }
+
+        if (isset($role_defs[$role_slug]['label']) && $role_defs[$role_slug]['label'] !== '') {
+            $labels[] = (string) $role_defs[$role_slug]['label'];
+        } else {
+            $labels[] = $role_slug;
+        }
+    }
+
+    return array_values(array_unique($labels));
+}
+
 function pba_render_profile_shortcode() {
     if (!is_user_logged_in()) {
         return '<p>Please log in to access this page.</p>';
@@ -28,6 +58,7 @@ function pba_render_profile_shortcode() {
 
     $person_id = (int) $person['person_id'];
     $role_names = function_exists('pba_get_current_person_role_names') ? pba_get_current_person_role_names() : array();
+    $role_labels = pba_get_current_person_role_labels_for_display();
 
     $committee_labels = array();
     if (function_exists('pba_get_committee_labels_for_person_in_app')) {
@@ -483,7 +514,7 @@ function pba_render_profile_shortcode() {
                     <table class="pba-profile-table">
                         <tr>
                             <th>Password</th>
-                            <td>Password changes are managed through your WordPress account profile.</td>
+                            <td>Change your password by selecting the Change Password button below.</td>
                         </tr>
                     </table>
 
@@ -531,10 +562,10 @@ function pba_render_profile_shortcode() {
                     <tr>
                         <th>PBA Roles</th>
                         <td>
-                            <?php if (!empty($role_names)) : ?>
+                            <?php if (!empty($role_labels)) : ?>
                                 <div class="pba-profile-pill-list">
-                                    <?php foreach ($role_names as $role_name) : ?>
-                                        <span class="pba-profile-pill"><?php echo esc_html($role_name); ?></span>
+                                    <?php foreach ($role_labels as $role_label) : ?>
+                                        <span class="pba-profile-pill"><?php echo esc_html($role_label); ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             <?php else : ?>

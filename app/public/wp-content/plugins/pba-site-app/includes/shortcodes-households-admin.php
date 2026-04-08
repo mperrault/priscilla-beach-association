@@ -703,20 +703,25 @@ function pba_render_households_admin_pagination($pagination) {
     ));
 }
 
-function pba_render_household_admin_edit_summary_card($label, $value, $note = '') {
-    if (function_exists('pba_shared_render_summary_card')) {
-        return pba_shared_render_summary_card($label, $value, $note);
-    }
+function pba_render_household_admin_readonly_row($label, $value, $field_id = '') {
+    $field_id = $field_id !== '' ? $field_id : sanitize_title($label);
 
     ob_start();
     ?>
-    <div class="pba-summary-card">
-        <div class="pba-summary-label"><?php echo esc_html($label); ?></div>
-        <div class="pba-summary-value"><?php echo esc_html((string) $value); ?></div>
-        <?php if ($note !== '') : ?>
-            <div class="pba-summary-note"><?php echo esc_html($note); ?></div>
-        <?php endif; ?>
-    </div>
+    <tr>
+        <th><label for="<?php echo esc_attr($field_id); ?>"><?php echo esc_html($label); ?></label></th>
+        <td>
+            <div class="pba-field">
+                <input
+                    class="pba-household-edit-input"
+                    type="text"
+                    id="<?php echo esc_attr($field_id); ?>"
+                    value="<?php echo esc_attr((string) $value); ?>"
+                    readonly
+                >
+            </div>
+        </td>
+    </tr>
     <?php
     return ob_get_clean();
 }
@@ -745,6 +750,15 @@ function pba_render_household_admin_edit_view($household_id) {
     $stored_house_admin = trim(((string) ($household['household_admin_first_name'] ?? '')) . ' ' . ((string) ($household['household_admin_last_name'] ?? '')));
     $display_house_admin = $stored_house_admin !== '' ? $stored_house_admin : $household_stats['house_admin'];
 
+    $owner_name_display = ($household['owner_name_raw'] ?? '') !== '' ? (string) $household['owner_name_raw'] : '—';
+    $household_admin_display = $display_house_admin !== '' ? $display_house_admin : '—';
+    $household_status_display = ($household['household_status'] ?? '') !== '' ? (string) $household['household_status'] : '—';
+    $members_display = (string) $household_stats['active_count'] . ' active / ' . (string) $household_stats['total_count'] . ' total';
+    $owner_occupied_display = array_key_exists('owner_occupied', $household) ? ($household['owner_occupied'] ? 'Yes' : 'No') : '—';
+    $invite_policy_display = isset($household['invite_policy']) && $household['invite_policy'] !== null ? (string) $household['invite_policy'] : '—';
+    $last_modified_display = function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['last_modified_at'] ?? '') : ($household['last_modified_at'] ?? '');
+    $created_display = function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['created_at'] ?? '') : ($household['created_at'] ?? '');
+
     ob_start();
     ?>
     <div class="pba-household-edit-wrap pba-page-wrap">
@@ -757,16 +771,16 @@ function pba_render_household_admin_edit_view($household_id) {
         <div class="pba-section pba-household-summary">
             <h3 style="margin:0 0 18px;"><?php echo esc_html($address !== '' ? $address : ('Household #' . (int) $household['household_id'])); ?></h3>
 
-            <div class="pba-summary-grid">
-                <?php echo pba_render_household_admin_edit_summary_card('Owner Name', ($household['owner_name_raw'] ?? '') !== '' ? $household['owner_name_raw'] : '—'); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Household Admin', $display_house_admin !== '' ? $display_house_admin : '—'); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Household Status', ($household['household_status'] ?? '') !== '' ? $household['household_status'] : '—'); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Members', (string) $household_stats['active_count'] . ' active / ' . (string) $household_stats['total_count'] . ' total'); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Owner Occupied', array_key_exists('owner_occupied', $household) ? ($household['owner_occupied'] ? 'Yes' : 'No') : '—'); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Invite Policy', isset($household['invite_policy']) && $household['invite_policy'] !== null ? (string) $household['invite_policy'] : '—'); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Last Modified', function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['last_modified_at'] ?? '') : ($household['last_modified_at'] ?? '')); ?>
-                <?php echo pba_render_household_admin_edit_summary_card('Created', function_exists('pba_format_datetime_display') ? pba_format_datetime_display($household['created_at'] ?? '') : ($household['created_at'] ?? '')); ?>
-            </div>
+            <table class="pba-table pba-household-display-table">
+                <?php echo pba_render_household_admin_readonly_row('Owner Name', $owner_name_display, 'summary_owner_name'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Household Admin', $household_admin_display, 'summary_household_admin'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Household Status', $household_status_display, 'summary_household_status'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Members', $members_display, 'summary_members'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Owner Occupied', $owner_occupied_display, 'summary_owner_occupied'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Invite Policy', $invite_policy_display, 'summary_invite_policy'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Last Modified', $last_modified_display, 'summary_last_modified'); ?>
+                <?php echo pba_render_household_admin_readonly_row('Created', $created_display, 'summary_created'); ?>
+            </table>
         </div>
 
         <details class="pba-household-detail-section pba-section" open>

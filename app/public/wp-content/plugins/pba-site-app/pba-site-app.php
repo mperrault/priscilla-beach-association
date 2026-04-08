@@ -39,6 +39,7 @@ require_once __DIR__ . '/includes/shortcodes-change-password.php';
 require_once __DIR__ . '/includes/shortcodes-governing-documents.php';
 require_once __DIR__ . '/includes/shortcodes-meeting-info.php';
 require_once __DIR__ . '/includes/shortcodes-households-admin.php';
+require_once __DIR__ . '/includes/shortcodes-member-resources.php';
 require_once __DIR__ . '/includes/pba-admin-list-ui.php';
 require_once __DIR__ . '/includes/pba-admin-list-styles.php';
 require_once __DIR__ . '/includes/user-link-sync.php';

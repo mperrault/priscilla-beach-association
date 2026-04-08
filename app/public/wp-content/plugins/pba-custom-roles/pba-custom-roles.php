@@ -408,21 +408,45 @@ if (!function_exists('pba_get_current_person_role_names')) {
             return array();
         }
 
+        $names = array();
+
+        foreach ($user->roles as $role_slug) {
+            $names[] = (string) $role_slug;
+        }
+
+        return array_values(array_unique($names));
+    }
+}
+
+if (!function_exists('pba_get_current_person_role_labels')) {
+    function pba_get_current_person_role_labels() {
+        $role_slugs = pba_get_current_person_role_names();
+
+        if (empty($role_slugs)) {
+            return array();
+        }
+
         $role_defs = function_exists('pba_get_role_definitions')
             ? pba_get_role_definitions()
             : array();
 
-        $names = array();
+        $labels = array();
 
-        foreach ($user->roles as $role_slug) {
+        foreach ($role_slugs as $role_slug) {
+            $role_slug = (string) $role_slug;
+
+            if ($role_slug === '') {
+                continue;
+            }
+
             if (isset($role_defs[$role_slug]['label']) && $role_defs[$role_slug]['label'] !== '') {
-                $names[] = $role_defs[$role_slug]['label'];
+                $labels[] = (string) $role_defs[$role_slug]['label'];
             } else {
-                $names[] = $role_slug;
+                $labels[] = $role_slug;
             }
         }
 
-        return array_values(array_unique($names));
+        return array_values(array_unique($labels));
     }
 }
 
