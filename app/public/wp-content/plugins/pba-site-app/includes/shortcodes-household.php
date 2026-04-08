@@ -133,6 +133,26 @@ function pba_household_render_summary_card($label, $value, $note) {
     return ob_get_clean();
 }
 
+function pba_household_sort_rows($rows) {
+    $rows = is_array($rows) ? array_values($rows) : array();
+
+    usort($rows, function ($a, $b) {
+        $a_last_modified = isset($a['last_modified_at']) ? strtotime((string) $a['last_modified_at']) : 0;
+        $b_last_modified = isset($b['last_modified_at']) ? strtotime((string) $b['last_modified_at']) : 0;
+
+        if ($a_last_modified !== $b_last_modified) {
+            return $b_last_modified <=> $a_last_modified;
+        }
+
+        $a_id = isset($a['person_id']) ? (int) $a['person_id'] : 0;
+        $b_id = isset($b['person_id']) ? (int) $b['person_id'] : 0;
+
+        return $b_id <=> $a_id;
+    });
+
+    return $rows;
+}
+
 function pba_render_household_previous_invitations_table($rows, $title) {
     ob_start();
     ?>
@@ -291,10 +311,10 @@ function pba_render_household_dashboard() {
 
     pba_update_pending_household_invites_to_expired($household_id, $inviter_person_id);
 
-    $accepted_rows = pba_get_people_for_household_by_status($household_id, $inviter_person_id, 'Active');
-    $pending_rows  = pba_get_people_for_household_by_status($household_id, $inviter_person_id, 'Pending');
-    $expired_rows  = pba_get_people_for_household_by_status($household_id, $inviter_person_id, 'Expired');
-    $disabled_rows = pba_get_people_for_household_by_status($household_id, $inviter_person_id, 'Disabled');
+    $accepted_rows = pba_get_people_for_household_by_status($household_id, 0, 'Active');
+    $pending_rows  = pba_get_people_for_household_by_status($household_id, 0, 'Pending');
+    $expired_rows  = pba_get_people_for_household_by_status($household_id, 0, 'Expired');
+    $disabled_rows = pba_get_people_for_household_by_status($household_id, 0, 'Disabled');
 
     $accepted_rows = is_array($accepted_rows) ? $accepted_rows : array();
     $pending_rows  = is_array($pending_rows) ? $pending_rows : array();
@@ -308,11 +328,7 @@ function pba_render_household_dashboard() {
         $disabled_rows
     );
 
-    usort($previous_rows, function ($a, $b) {
-        $a_id = isset($a['person_id']) ? (int) $a['person_id'] : 0;
-        $b_id = isset($b['person_id']) ? (int) $b['person_id'] : 0;
-        return $b_id <=> $a_id;
-    });
+    $previous_rows = pba_household_sort_rows($previous_rows);
 
     $status = isset($_GET['pba_household_status']) ? sanitize_text_field(wp_unslash($_GET['pba_household_status'])) : '';
     $duplicate_messages = get_transient('pba_household_duplicate_messages_' . get_current_user_id());

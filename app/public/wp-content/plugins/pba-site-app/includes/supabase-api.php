@@ -53,7 +53,7 @@ function pba_supabase_get($table, $query_args = array(), $options = array()) {
 
     $defaults = array(
         'return_meta' => false,
-        'count'       => false,   // false | 'exact' | 'planned' | 'estimated'
+        'count'       => false,
         'timeout'     => 20,
     );
 
@@ -344,17 +344,30 @@ function pba_create_person_to_role_record($person_id, $role_id) {
 }
 
 function pba_get_people_for_household_by_status($household_id, $invited_by_person_id, $status) {
-    if (empty($household_id) || empty($invited_by_person_id) || empty($status)) {
+    $household_id = (int) $household_id;
+    $invited_by_person_id = (int) $invited_by_person_id;
+    $status = (string) $status;
+
+    if ($household_id < 1 || $status === '') {
         return array();
     }
 
-    $rows = pba_supabase_get('Person', array(
-        'select'               => 'person_id,first_name,last_name,email_address,status,last_modified_at,invited_by_person_id,household_id,wp_user_id',
-        'household_id'         => 'eq.' . (int) $household_id,
-        'invited_by_person_id' => 'eq.' . (int) $invited_by_person_id,
-        'status'               => 'eq.' . $status,
-        'order'                => 'person_id.desc',
-    ));
+    $query_args = array(
+        'select'       => 'person_id,first_name,last_name,email_address,status,last_modified_at,invited_by_person_id,household_id,wp_user_id',
+        'household_id' => 'eq.' . $household_id,
+        'status'       => 'eq.' . $status,
+        'order'        => 'person_id.desc',
+    );
+
+    /*
+     * inviter_person_id > 0 means filter to one inviter.
+     * inviter_person_id <= 0 means household-wide.
+     */
+    if ($invited_by_person_id > 0) {
+        $query_args['invited_by_person_id'] = 'eq.' . $invited_by_person_id;
+    }
+
+    $rows = pba_supabase_get('Person', $query_args);
 
     if (is_wp_error($rows) || !is_array($rows)) {
         return array();
