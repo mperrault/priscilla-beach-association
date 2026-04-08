@@ -26,7 +26,7 @@ function pba_members_redirect($status = '', $member_id = 0, $view = 'list') {
 }
 
 function pba_handle_save_member_admin() {
-    if (!is_user_logged_in() || !pba_current_person_has_role('PBAAdmin')) {
+    if (!is_user_logged_in() || !current_user_can('pba_manage_roles')) {
         wp_die('Unauthorized', 403);
     }
 
@@ -37,16 +37,24 @@ function pba_handle_save_member_admin() {
         wp_die('Invalid nonce', 403);
     }
 
-    $member_id      = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
-    $household_id   = isset($_POST['household_id']) ? absint($_POST['household_id']) : 0;
-    $first_name     = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
-    $last_name      = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
-    $email_address  = isset($_POST['email_address']) ? sanitize_email(wp_unslash($_POST['email_address'])) : '';
-    $status         = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : 'Unregistered';
+    $member_id       = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
+    $household_id    = isset($_POST['household_id']) ? absint($_POST['household_id']) : 0;
+    $first_name      = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
+    $last_name       = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
+    $email_address   = isset($_POST['email_address']) ? sanitize_email(wp_unslash($_POST['email_address'])) : '';
+    $status          = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : 'Unregistered';
 
-    $role_ids       = isset($_POST['role_ids']) ? array_map('absint', (array) $_POST['role_ids']) : array();
-    $committee_ids  = isset($_POST['committee_ids']) ? array_map('absint', (array) $_POST['committee_ids']) : array();
+    $role_ids        = isset($_POST['role_ids']) ? array_map('absint', (array) $_POST['role_ids']) : array();
+    $committee_ids   = isset($_POST['committee_ids']) ? array_map('absint', (array) $_POST['committee_ids']) : array();
     $committee_roles = isset($_POST['committee_roles']) ? (array) $_POST['committee_roles'] : array();
+
+    $role_ids = array_values(array_unique(array_filter($role_ids, function ($id) {
+        return (int) $id > 0;
+    })));
+
+    $committee_ids = array_values(array_unique(array_filter($committee_ids, function ($id) {
+        return (int) $id > 0;
+    })));
 
     if ($member_id < 1 || $household_id < 1 || $first_name === '' || $last_name === '') {
         pba_members_redirect('invalid_member_input', $member_id, 'edit');
@@ -59,12 +67,12 @@ function pba_handle_save_member_admin() {
     $updated = pba_supabase_update(
         'Person',
         array(
-            'household_id'      => $household_id,
-            'first_name'        => $first_name,
-            'last_name'         => $last_name,
-            'email_address'     => $email_address !== '' ? $email_address : null,
-            'status'            => $status,
-            'last_modified_at'  => gmdate('c'),
+            'household_id'     => $household_id,
+            'first_name'       => $first_name,
+            'last_name'        => $last_name,
+            'email_address'    => $email_address !== '' ? $email_address : null,
+            'status'           => $status,
+            'last_modified_at' => gmdate('c'),
         ),
         array(
             'person_id' => 'eq.' . $member_id,
@@ -75,14 +83,27 @@ function pba_handle_save_member_admin() {
         pba_members_redirect('member_update_failed', $member_id, 'edit');
     }
 
-    pba_member_admin_replace_roles($member_id, $role_ids);
-    pba_member_admin_replace_committees($member_id, $committee_ids, $committee_roles);
+    if (!pba_member_admin_replace_roles($member_id, $role_ids)) {
+        pba_members_redirect('member_update_failed', $member_id, 'edit');
+    }
+
+    if (!pba_member_admin_replace_committees($member_id, $committee_ids, $committee_roles)) {
+        pba_members_redirect('member_update_failed', $member_id, 'edit');
+    }
+
+    if (function_exists('pba_sync_wp_roles_for_person')) {
+        pba_sync_wp_roles_for_person($member_id);
+    }
 
     pba_members_redirect('member_saved', $member_id, 'edit');
 }
 
 function pba_member_admin_replace_roles($member_id, $role_ids) {
     $member_id = (int) $member_id;
+
+    if ($member_id < 1) {
+        return false;
+    }
 
     $existing = pba_supabase_get('Person_to_Role', array(
         'select'    => 'person_to_role_id',
@@ -92,26 +113,40 @@ function pba_member_admin_replace_roles($member_id, $role_ids) {
     if (!is_wp_error($existing) && !empty($existing)) {
         foreach ($existing as $row) {
             if (!empty($row['person_to_role_id'])) {
-                pba_supabase_delete('Person_to_Role', array(
+                $deleted = pba_supabase_delete('Person_to_Role', array(
                     'person_to_role_id' => 'eq.' . (int) $row['person_to_role_id'],
                 ));
+
+                if (is_wp_error($deleted)) {
+                    return false;
+                }
             }
         }
     }
 
     foreach ($role_ids as $role_id) {
-        pba_supabase_insert('Person_to_Role', array(
+        $inserted = pba_supabase_insert('Person_to_Role', array(
             'person_id'        => $member_id,
             'role_id'          => (int) $role_id,
             'start_date'       => gmdate('Y-m-d'),
             'is_active'        => true,
             'last_modified_at' => gmdate('c'),
         ));
+
+        if (is_wp_error($inserted)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
 function pba_member_admin_replace_committees($member_id, $committee_ids, $committee_roles) {
     $member_id = (int) $member_id;
+
+    if ($member_id < 1) {
+        return false;
+    }
 
     $existing = pba_supabase_get('Person_to_Committee', array(
         'select'    => 'person_to_committee_id',
@@ -121,9 +156,13 @@ function pba_member_admin_replace_committees($member_id, $committee_ids, $commit
     if (!is_wp_error($existing) && !empty($existing)) {
         foreach ($existing as $row) {
             if (!empty($row['person_to_committee_id'])) {
-                pba_supabase_delete('Person_to_Committee', array(
+                $deleted = pba_supabase_delete('Person_to_Committee', array(
                     'person_to_committee_id' => 'eq.' . (int) $row['person_to_committee_id'],
                 ));
+
+                if (is_wp_error($deleted)) {
+                    return false;
+                }
             }
         }
     }
@@ -133,7 +172,7 @@ function pba_member_admin_replace_committees($member_id, $committee_ids, $commit
             ? sanitize_text_field(wp_unslash($committee_roles[$committee_id]))
             : '';
 
-        pba_supabase_insert('Person_to_Committee', array(
+        $inserted = pba_supabase_insert('Person_to_Committee', array(
             'person_id'        => $member_id,
             'committee_id'     => (int) $committee_id,
             'committee_role'   => $committee_role !== '' ? $committee_role : null,
@@ -142,5 +181,11 @@ function pba_member_admin_replace_committees($member_id, $committee_ids, $commit
             'display_order'    => null,
             'last_modified_at' => gmdate('c'),
         ));
+
+        if (is_wp_error($inserted)) {
+            return false;
+        }
     }
+
+    return true;
 }

@@ -481,10 +481,102 @@ function pba_render_documents_folder_card($folder, $page_slug, $committee_id = 0
     return ob_get_clean();
 }
 
+function pba_get_committee_documents_all_active_committees() {
+    $rows = pba_supabase_get('Committee', array(
+        'select' => 'committee_id,committee_name,committee_description,status,last_modified_at',
+        'status' => 'eq.Active',
+        'order'  => 'committee_name.asc',
+    ));
+
+    if (is_wp_error($rows) || !is_array($rows)) {
+        return array();
+    }
+
+    $filtered_rows = array();
+
+    foreach ($rows as $row) {
+        $committee_name = trim((string) ($row['committee_name'] ?? ''));
+
+        if (strcasecmp($committee_name, 'Board of Directors') === 0) {
+            continue;
+        }
+
+        $filtered_rows[] = $row;
+    }
+
+    if (function_exists('pba_sort_committees_for_display')) {
+        $filtered_rows = pba_sort_committees_for_display($filtered_rows);
+    }
+
+    return $filtered_rows;
+}
+
+function pba_render_committee_documents_committee_cards($committees, $selected_committee_id = 0, $restricted = false) {
+    if (empty($committees) || !is_array($committees)) {
+        return '';
+    }
+
+    ob_start();
+    ?>
+    <div class="pba-documents-committee-grid">
+        <?php foreach ($committees as $committee) : ?>
+            <?php
+            $committee_id = isset($committee['committee_id']) ? (int) $committee['committee_id'] : 0;
+            $committee_name = (string) ($committee['committee_name'] ?? '');
+            $committee_description = (string) ($committee['committee_description'] ?? '');
+            $is_selected = $committee_id > 0 && $committee_id === (int) $selected_committee_id;
+            $open_href = add_query_arg('committee_id', $committee_id);
+            $open_href .= '#pba-committee-create-folder';
+            ?>
+            <div class="pba-documents-committee-card<?php echo $restricted ? ' restricted' : ''; ?><?php echo $is_selected ? ' is-selected' : ''; ?>">
+                <div class="pba-documents-committee-card-head">
+                    <div class="pba-documents-committee-card-title-wrap">
+                        <h4 class="pba-documents-committee-card-title"><?php echo esc_html($committee_name); ?></h4>
+
+                        <?php if ($restricted) : ?>
+                            <span class="pba-documents-badge muted">Restricted</span>
+                        <?php elseif ($is_selected) : ?>
+                            <span class="pba-documents-badge">Selected</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if ($committee_description !== '') : ?>
+                    <p class="pba-documents-committee-card-text"><?php echo esc_html($committee_description); ?></p>
+                <?php else : ?>
+                    <p class="pba-documents-committee-card-text pba-documents-muted">
+                        <?php echo $restricted ? 'Documents are limited to assigned committee members and administrators.' : 'Open this committee to browse and manage folders and documents.'; ?>
+                    </p>
+                <?php endif; ?>
+
+                <div class="pba-documents-committee-card-actions">
+                    <?php if ($restricted) : ?>
+                        <span class="pba-documents-restricted-note">You are not currently assigned to this committee.</span>
+                    <?php else : ?>
+                        <a
+                            class="pba-documents-btn<?php echo $is_selected ? ' secondary' : ''; ?>"
+                            href="<?php echo esc_url($open_href); ?>"
+                        >
+                        Open
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php
+
+    return ob_get_clean();
+}
+
 function pba_render_documents_common_styles_and_script() {
     ob_start();
     ?>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
         .pba-documents-wrap {
             max-width: 1240px;
             margin: 0 auto;
@@ -520,6 +612,7 @@ function pba_render_documents_common_styles_and_script() {
             border-radius: 18px;
             background: #ffffff;
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+            scroll-margin-top: 24px;
         }
 
         .pba-documents-section-title {
@@ -756,7 +849,7 @@ function pba_render_documents_common_styles_and_script() {
         }
 
         .pba-documents-btn.secondary.is-expanded:hover,
-        .pba-documents-btn.secondary.is-expanded:focus {
+        .pba-documents-btn.secondary:focus {
             background: #0b3154;
             color: #ffffff;
             border-color: #0b3154;
@@ -785,32 +878,6 @@ function pba_render_documents_common_styles_and_script() {
             color: #475569;
             font-size: 12px;
             line-height: 1.3;
-        }
-
-        .pba-documents-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 0 0 16px;
-        }
-
-        .pba-documents-nav a {
-            display: inline-flex;
-            align-items: center;
-            min-height: 38px;
-            padding: 8px 12px;
-            border: 1px solid #d9e2ec;
-            border-radius: 999px;
-            background: #ffffff;
-            text-decoration: none;
-            color: #0d3b66;
-            font-weight: 600;
-        }
-
-        .pba-documents-nav a:hover,
-        .pba-documents-nav a:focus {
-            background: #f7fbff;
-            border-color: #0d3b66;
         }
 
         .pba-documents-upload-grid,
@@ -1004,6 +1071,83 @@ function pba_render_documents_common_styles_and_script() {
             line-height: 1.4;
         }
 
+        .pba-documents-committee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .pba-documents-committee-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 220px;
+            padding: 18px;
+            border: 1px solid #d9e2ec;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .pba-documents-committee-card.is-selected {
+            border-color: #0d3b66;
+            box-shadow: 0 10px 24px rgba(13, 59, 102, 0.12);
+        }
+
+        .pba-documents-committee-card.restricted {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-color: #d7dee7;
+        }
+
+        .pba-documents-committee-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .pba-documents-committee-card-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .pba-documents-committee-card-title {
+            margin: 0;
+            color: #0f172a;
+            font-size: 1.05rem;
+            line-height: 1.35;
+        }
+
+        .pba-documents-committee-card-text {
+            margin: 0;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.6;
+            flex: 1 1 auto;
+        }
+
+        .pba-documents-committee-card-actions {
+            margin-top: auto;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+        }
+
+        .pba-documents-restricted-note {
+            display: inline-flex;
+            align-items: center;
+            min-height: 40px;
+            padding: 9px 12px;
+            border: 1px solid #d7dee7;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #64748b;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
         @media (max-width: 900px) {
             .pba-documents-section,
             .pba-documents-folder-toggle,
@@ -1055,6 +1199,10 @@ function pba_render_documents_common_styles_and_script() {
             .pba-documents-metadata-drawer-head {
                 flex-direction: column;
                 align-items: stretch;
+            }
+
+            .pba-documents-restricted-note {
+                width: 100%;
             }
         }
     </style>
@@ -1534,73 +1682,123 @@ function pba_render_committee_documents_shortcode() {
         return '<p>You do not have permission to access Committee Documents.</p>';
     }
 
-    $committee_id = isset($_GET['committee_id']) ? absint($_GET['committee_id']) : 0;
-    $committees = pba_get_current_person_committee_rows();
+    $is_admin = pba_current_person_is_admin();
+    $selected_committee_id = isset($_GET['committee_id']) ? absint($_GET['committee_id']) : 0;
 
-    if (!pba_current_person_is_admin()) {
-        if ($committee_id < 1 && !empty($committees)) {
-            $committee_id = (int) $committees[0]['committee_id'];
+    $all_committees = pba_get_committee_documents_all_active_committees();
+    $assigned_committee_ids = $is_admin ? array() : pba_get_current_person_committee_ids();
+
+    if (!is_array($assigned_committee_ids)) {
+        $assigned_committee_ids = array();
+    }
+
+    $assigned_committee_ids = array_map('intval', $assigned_committee_ids);
+
+    $assigned_committees = array();
+    $other_committees = array();
+
+    foreach ($all_committees as $committee) {
+        $committee_id = isset($committee['committee_id']) ? (int) $committee['committee_id'] : 0;
+
+        if ($committee_id < 1) {
+            continue;
         }
 
-        if ($committee_id > 0 && !pba_current_person_has_active_committee_assignment($committee_id)) {
-            return '<p>You do not have permission to manage that committee.</p>';
+        if ($is_admin || in_array($committee_id, $assigned_committee_ids, true)) {
+            $assigned_committees[] = $committee;
+        } else {
+            $other_committees[] = $committee;
         }
     }
 
-    if ($committee_id < 1) {
-        return '<p>No committee selected.</p>';
+    if ($selected_committee_id < 1 && !empty($assigned_committees)) {
+        $selected_committee_id = (int) $assigned_committees[0]['committee_id'];
     }
 
-    $committee_name = pba_get_committee_name($committee_id);
-    $folders = pba_get_active_document_folders('Committee', $committee_id);
+    $valid_committee_ids = array();
+    foreach ($assigned_committees as $committee) {
+        $committee_id = isset($committee['committee_id']) ? (int) $committee['committee_id'] : 0;
+        if ($committee_id > 0) {
+            $valid_committee_ids[] = $committee_id;
+        }
+    }
+
+    if ($selected_committee_id > 0 && !in_array($selected_committee_id, $valid_committee_ids, true)) {
+        $selected_committee_id = !empty($assigned_committees) ? (int) $assigned_committees[0]['committee_id'] : 0;
+    }
+
+    $committee_name = $selected_committee_id > 0 ? pba_get_committee_name($selected_committee_id) : '';
+    $folders = $selected_committee_id > 0 ? pba_get_active_document_folders('Committee', $selected_committee_id) : array();
+    $can_create_folder = $selected_committee_id > 0 && ($is_admin || pba_current_person_has_active_committee_assignment($selected_committee_id));
 
     ob_start();
     echo pba_render_documents_common_styles_and_script();
     ?>
     <div class="pba-documents-wrap">
-        <?php if (!empty($committees)) : ?>
-            <div class="pba-documents-nav">
-                <?php foreach ($committees as $committee) : ?>
-                    <a href="<?php echo esc_url(add_query_arg('committee_id', (int) $committee['committee_id'])); ?>">
-                        <?php echo esc_html($committee['committee_name']); ?>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-
         <p class="pba-documents-page-intro">
-            Browse and manage folders for <strong><?php echo esc_html($committee_name); ?></strong>. Open one folder at a time to keep the page focused.
+            Browse committee folders and documents in a layout consistent with Board Documents. Your assigned committees appear first, while other active committees are shown for awareness with restricted access.
         </p>
 
         <?php echo pba_render_documents_status_message(); ?>
 
         <div class="pba-documents-section">
-            <h3 class="pba-documents-section-title">Create Folder</h3>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-documents-action-bar">
-                <?php wp_nonce_field('pba_document_folder_action', 'pba_document_folder_nonce'); ?>
-                <input type="hidden" name="action" value="pba_create_document_folder">
-                <input type="hidden" name="page_slug" value="committee-documents">
-                <input type="hidden" name="folder_scope" value="Committee">
-                <input type="hidden" name="committee_id" value="<?php echo esc_attr($committee_id); ?>">
+            <h3 class="pba-documents-section-title"><?php echo $is_admin ? 'Committees' : 'My Committees'; ?></h3>
 
-                <input type="text" name="folder_name" class="pba-documents-input" placeholder="New committee folder name" required>
-                <button type="submit" class="pba-documents-btn">Create Folder</button>
-            </form>
-        </div>
-
-        <div class="pba-documents-section">
-            <h3 class="pba-documents-section-title">Folders</h3>
-
-            <?php if (empty($folders)) : ?>
-                <p>No folders found for this committee.</p>
+            <?php if (empty($assigned_committees)) : ?>
+                <p>No assigned committees found.</p>
             <?php else : ?>
-                <div class="pba-documents-folder-list">
-                    <?php foreach ($folders as $folder) : ?>
-                        <?php echo pba_render_documents_folder_card($folder, 'committee-documents', $committee_id); ?>
-                    <?php endforeach; ?>
-                </div>
+                <?php echo pba_render_committee_documents_committee_cards($assigned_committees, $selected_committee_id, false); ?>
             <?php endif; ?>
         </div>
+
+        <?php if (!$is_admin && !empty($other_committees)) : ?>
+            <div class="pba-documents-section">
+                <h3 class="pba-documents-section-title">Other Committees</h3>
+                <p class="pba-documents-page-intro">
+                    These committees are visible for awareness, but documents are limited to assigned committee members and administrators.
+                </p>
+                <?php echo pba_render_committee_documents_committee_cards($other_committees, 0, true); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($selected_committee_id > 0 && $can_create_folder) : ?>
+            <div class="pba-documents-section" id="pba-committee-create-folder">
+                <h3 class="pba-documents-section-title">Create Folder</h3>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-documents-action-bar">
+                    <?php wp_nonce_field('pba_document_folder_action', 'pba_document_folder_nonce'); ?>
+                    <input type="hidden" name="action" value="pba_create_document_folder">
+                    <input type="hidden" name="page_slug" value="committee-documents">
+                    <input type="hidden" name="folder_scope" value="Committee">
+                    <input type="hidden" name="committee_id" value="<?php echo esc_attr($selected_committee_id); ?>">
+
+                    <input type="text" name="folder_name" class="pba-documents-input" placeholder="New committee folder name" required>
+                    <button type="submit" class="pba-documents-btn">Create Folder</button>
+                </form>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($selected_committee_id > 0) : ?>
+            <div class="pba-documents-section">
+                <h3 class="pba-documents-section-title">
+                    Folders<?php echo $committee_name !== '' ? ' — ' . esc_html($committee_name) : ''; ?>
+                </h3>
+
+                <?php if (empty($folders)) : ?>
+                    <p>No folders found for this committee.</p>
+                <?php else : ?>
+                    <div class="pba-documents-folder-list">
+                        <?php foreach ($folders as $folder) : ?>
+                            <?php echo pba_render_documents_folder_card($folder, 'committee-documents', $selected_committee_id); ?>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php else : ?>
+            <div class="pba-documents-section">
+                <h3 class="pba-documents-section-title">Folders</h3>
+                <p>Select a committee above to view its folders and documents.</p>
+            </div>
+        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();

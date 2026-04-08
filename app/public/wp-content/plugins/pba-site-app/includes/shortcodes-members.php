@@ -830,7 +830,7 @@ function pba_render_members_dynamic_content($data, $request_args) {
     <div class="pba-admin-list-hero">
         <div class="pba-admin-list-hero-top">
             <div>
-                <p>View and manage member records, roles, committee assignments, and invite status with a faster, richer table experience.</p>
+                <p>View and manage member records, roles, committee assignments, and invite status.</p>
             </div>
         </div>
 

@@ -9,8 +9,31 @@ add_action('admin_post_pba_admin_enable_member', 'pba_handle_admin_enable_member
 add_action('admin_post_pba_admin_cancel_invite', 'pba_handle_admin_cancel_invite');
 add_action('admin_post_pba_admin_resend_invite', 'pba_handle_admin_resend_invite');
 
+function pba_clear_managed_wp_roles_for_user($wp_user_id) {
+    $wp_user_id = (int) $wp_user_id;
+
+    if ($wp_user_id < 1) {
+        return;
+    }
+
+    $user = get_user_by('id', $wp_user_id);
+    if (!$user) {
+        return;
+    }
+
+    $managed_roles = function_exists('pba_get_managed_wp_role_slugs')
+        ? pba_get_managed_wp_role_slugs()
+        : array('pba_member', 'pba_house_admin', 'pba_board_member', 'pba_committee_member', 'pba_admin');
+
+    foreach ($managed_roles as $role_slug) {
+        if (in_array($role_slug, (array) $user->roles, true)) {
+            $user->remove_role($role_slug);
+        }
+    }
+}
+
 function pba_handle_admin_disable_member() {
-    if (!is_user_logged_in() || !pba_current_person_has_role('PBAAdmin')) {
+    if (!is_user_logged_in() || !current_user_can('pba_manage_roles')) {
         wp_die('Unauthorized', 403);
     }
 
@@ -54,17 +77,26 @@ function pba_handle_admin_disable_member() {
         pba_members_redirect('disable_failed', $person_id, 'edit');
     }
 
+    /*
+     * Disabled users should no longer carry effective mirrored PBA access.
+     * Clear managed WP roles now, then destroy active sessions.
+     */
     $wp_user_id = isset($person['wp_user_id']) ? (int) $person['wp_user_id'] : 0;
-    if ($wp_user_id > 0 && class_exists('WP_Session_Tokens')) {
-        $manager = WP_Session_Tokens::get_instance($wp_user_id);
-        $manager->destroy_all();
+
+    if ($wp_user_id > 0) {
+        pba_clear_managed_wp_roles_for_user($wp_user_id);
+
+        if (class_exists('WP_Session_Tokens')) {
+            $manager = WP_Session_Tokens::get_instance($wp_user_id);
+            $manager->destroy_all();
+        }
     }
 
     pba_members_redirect('member_disabled', $person_id, 'edit');
 }
 
 function pba_handle_admin_enable_member() {
-    if (!is_user_logged_in() || !pba_current_person_has_role('PBAAdmin')) {
+    if (!is_user_logged_in() || !current_user_can('pba_manage_roles')) {
         wp_die('Unauthorized', 403);
     }
 
@@ -96,11 +128,15 @@ function pba_handle_admin_enable_member() {
         pba_members_redirect('enable_failed', $person_id, 'edit');
     }
 
+    if (function_exists('pba_sync_wp_roles_for_person')) {
+        pba_sync_wp_roles_for_person($person_id);
+    }
+
     pba_members_redirect('member_enabled', $person_id, 'edit');
 }
 
 function pba_handle_admin_cancel_invite() {
-    if (!is_user_logged_in() || !pba_current_person_has_role('PBAAdmin')) {
+    if (!is_user_logged_in() || !current_user_can('pba_manage_roles')) {
         wp_die('Unauthorized', 403);
     }
 
@@ -149,6 +185,11 @@ function pba_handle_admin_cancel_invite() {
         pba_members_redirect('cancel_failed', $person_id, 'edit');
     }
 
+    $wp_user_id = isset($person['wp_user_id']) ? (int) $person['wp_user_id'] : 0;
+    if ($wp_user_id > 0) {
+        pba_clear_managed_wp_roles_for_user($wp_user_id);
+    }
+
     $delete_person = pba_supabase_delete('Person', array(
         'person_id' => 'eq.' . $person_id,
     ));
@@ -163,7 +204,7 @@ function pba_handle_admin_cancel_invite() {
 }
 
 function pba_handle_admin_resend_invite() {
-    if (!is_user_logged_in() || !pba_current_person_has_role('PBAAdmin')) {
+    if (!is_user_logged_in() || !current_user_can('pba_manage_roles')) {
         wp_die('Unauthorized', 403);
     }
 
@@ -181,7 +222,7 @@ function pba_handle_admin_resend_invite() {
     }
 
     $rows = pba_supabase_get('Person', array(
-        'select'    => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id',
+        'select'    => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id',
         'person_id' => 'eq.' . $person_id,
         'limit'     => 1,
     ));
@@ -233,6 +274,10 @@ function pba_handle_admin_resend_invite() {
         }
     }
 
+    /*
+     * Since the person is now pending and unlinked from a WP user, no immediate
+     * WP-role sync is needed here. The eventual login/registration path will sync.
+     */
     pba_delete_member_invite_transients($person_id);
 
     $invite_token = pba_store_member_invite_token(
