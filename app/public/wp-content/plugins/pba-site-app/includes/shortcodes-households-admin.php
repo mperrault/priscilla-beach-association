@@ -801,6 +801,14 @@ function pba_render_household_admin_edit_view($household_id) {
                             <td><div class="pba-field"><input class="pba-household-edit-input" type="text" name="pb_street_name" id="pb_street_name" value="<?php echo esc_attr($household['pb_street_name'] ?? ''); ?>" readonly></div></td>
                         </tr>
                         <tr>
+                            <th>Household Admin Registration Note</th>
+                            <td>
+                                <div class="pba-callout">
+                                    <strong>Note:</strong> Household Admin first name, last name, and email address must be entered before this household can be registered on the PBA website and before invitations can be sent to PBA Members.
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
                             <th><label for="household_admin_first_name">Household Admin First Name</label></th>
                             <td><div class="pba-field"><input class="pba-household-edit-input" type="text" name="household_admin_first_name" id="household_admin_first_name" value="<?php echo esc_attr($household['household_admin_first_name'] ?? ''); ?>"></div></td>
                         </tr>
