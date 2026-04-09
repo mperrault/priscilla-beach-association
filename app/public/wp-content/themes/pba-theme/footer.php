@@ -6,18 +6,6 @@
                     <?php bloginfo('name'); ?>
                 </a>
             </div>
-
-            <?php if (is_user_logged_in()) : ?>
-                <div class="pba-footer-user-tools">
-                    <span class="pba-footer-welcome-text">
-                        Welcome, <?php echo esc_html(pba_get_welcome_name()); ?>
-                    </span>
-
-                    <a class="pba-footer-logout-link" href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">
-                        Logout
-                    </a>
-                </div>
-            <?php endif; ?>
         </div>
 
         <div class="site-footer-navigation-wrap">
@@ -92,10 +80,6 @@
         }
 
         if (href.indexOf('javascript:') === 0) {
-            return false;
-        }
-
-        if (link.classList.contains('pba-menu-dropdown-toggle')) {
             return false;
         }
 
