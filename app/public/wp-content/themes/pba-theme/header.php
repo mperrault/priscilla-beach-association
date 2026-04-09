@@ -12,8 +12,13 @@
     <div class="site-header-inner">
 
         <div class="site-branding">
-            <a href="<?php echo esc_url(home_url('/')); ?>">
-                <?php bloginfo('name'); ?>
+            <a class="pba-site-branding-link" href="<?php echo esc_url(home_url('/')); ?>">
+                <img
+                    class="pba-site-logo"
+                    src="<?php echo esc_url(get_stylesheet_directory_uri() . '/assets/images/favicon-pba.png'); ?>"
+                    alt="PBA logo"
+                >
+                <span class="pba-site-title"><?php bloginfo('name'); ?></span>
             </a>
         </div>
 

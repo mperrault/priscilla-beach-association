@@ -15,6 +15,7 @@ require_once __DIR__ . '/includes/supabase-api.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/document-permissions.php';
 require_once __DIR__ . '/includes/auth-handlers.php';
+require_once __DIR__ . '/includes/auth-session-timeout.php';
 require_once __DIR__ . '/includes/invite-handlers.php';
 require_once __DIR__ . '/includes/shortcodes-member-invite.php';
 require_once __DIR__ . '/includes/menuing.php';

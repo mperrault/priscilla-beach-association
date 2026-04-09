@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PBA Custom Roles
  * Description: Registers PBA application roles and capabilities and syncs WordPress roles from Supabase.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: PBA
  */
 
@@ -162,6 +162,17 @@ function pba_register_or_update_roles() {
 
 function pba_get_managed_wp_role_slugs() {
     return array(
+        'subscriber',
+        'pba_member',
+        'pba_house_admin',
+        'pba_board_member',
+        'pba_committee_member',
+        'pba_admin',
+    );
+}
+
+function pba_get_application_wp_role_slugs() {
+    return array(
         'pba_member',
         'pba_house_admin',
         'pba_board_member',
@@ -312,7 +323,7 @@ function pba_get_expected_wp_roles_for_person($person_id) {
         return $role_slug !== '';
     })));
 
-    $managed_roles = pba_get_managed_wp_role_slugs();
+    $managed_roles = pba_get_application_wp_role_slugs();
 
     return array_values(array_intersect($managed_roles, $expected_roles));
 }
@@ -408,10 +419,18 @@ if (!function_exists('pba_get_current_person_role_names')) {
             return array();
         }
 
+        $application_roles = function_exists('pba_get_application_wp_role_slugs')
+            ? pba_get_application_wp_role_slugs()
+            : array('pba_member', 'pba_house_admin', 'pba_board_member', 'pba_committee_member', 'pba_admin');
+
         $names = array();
 
         foreach ($user->roles as $role_slug) {
-            $names[] = (string) $role_slug;
+            $role_slug = (string) $role_slug;
+
+            if (in_array($role_slug, $application_roles, true)) {
+                $names[] = $role_slug;
+            }
         }
 
         return array_values(array_unique($names));
