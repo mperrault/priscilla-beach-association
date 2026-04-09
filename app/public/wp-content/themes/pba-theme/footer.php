@@ -1,18 +1,13 @@
 <footer class="site-footer">
     <div class="site-footer-inner">
+        <div class="site-footer-top">
+            <div class="site-footer-branding">
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="site-footer-brand-link">
+                    <?php bloginfo('name'); ?>
+                </a>
+            </div>
 
-        <div class="site-footer-branding">
-            <a href="<?php echo esc_url(home_url('/')); ?>">
-                <?php bloginfo('name'); ?>
-            </a>
-        </div>
-
-        <div class="site-footer-navigation-wrap">
             <?php if (is_user_logged_in()) : ?>
-                <nav class="site-footer-navigation logged-in-footer-navigation" aria-label="Footer Member Navigation">
-                    <?php echo pba_render_logged_in_menu(); ?>
-                </nav>
-
                 <div class="pba-footer-user-tools">
                     <span class="pba-footer-welcome-text">
                         Welcome, <?php echo esc_html(pba_get_welcome_name()); ?>
@@ -22,6 +17,14 @@
                         Logout
                     </a>
                 </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="site-footer-navigation-wrap">
+            <?php if (is_user_logged_in()) : ?>
+                <nav class="site-footer-navigation logged-in-footer-navigation" aria-label="Footer Member Navigation">
+                    <?php echo pba_render_logged_in_menu('footer'); ?>
+                </nav>
             <?php else : ?>
                 <nav class="site-footer-navigation public-footer-navigation" aria-label="Footer Primary Navigation">
                     <?php
@@ -44,9 +47,87 @@
                 </nav>
             <?php endif; ?>
         </div>
-
     </div>
 </footer>
+
+<div class="pba-top-loader" aria-hidden="true"></div>
+
+<script>
+(function () {
+    if (window.pbaPageLoadingInit) {
+        return;
+    }
+
+    window.pbaPageLoadingInit = true;
+
+    function shouldShowLoadingForClick(link, event) {
+        if (!link) {
+            return false;
+        }
+
+        if (event.defaultPrevented) {
+            return false;
+        }
+
+        if (event.button !== 0) {
+            return false;
+        }
+
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return false;
+        }
+
+        if (link.target && link.target !== '_self') {
+            return false;
+        }
+
+        if (link.hasAttribute('download')) {
+            return false;
+        }
+
+        var href = link.getAttribute('href') || '';
+
+        if (href === '' || href === '#') {
+            return false;
+        }
+
+        if (href.indexOf('javascript:') === 0) {
+            return false;
+        }
+
+        if (link.classList.contains('pba-menu-dropdown-toggle')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    document.addEventListener('click', function (event) {
+        var link = event.target.closest('a');
+
+        if (!shouldShowLoadingForClick(link, event)) {
+            return;
+        }
+
+        if (document.body) {
+            document.body.classList.add('pba-page-loading');
+        }
+    }, true);
+
+    window.addEventListener('pageshow', function () {
+        if (document.body) {
+            document.body.classList.remove('pba-page-loading');
+        }
+    });
+
+    window.addEventListener('beforeunload', function () {
+        if (document.body) {
+            document.body.classList.add('pba-page-loading');
+        }
+    });
+})();
+</script>
+
 <?php wp_footer(); ?>
 </body>
 </html>
