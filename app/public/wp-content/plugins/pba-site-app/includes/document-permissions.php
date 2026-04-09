@@ -170,6 +170,16 @@ function pba_get_document_item($document_item_id) {
     return $item_cache[$document_item_id];
 }
 
+function pba_get_active_document_item($document_item_id) {
+    $document_item = pba_get_document_item($document_item_id);
+
+    if (!$document_item || empty($document_item['is_active'])) {
+        return false;
+    }
+
+    return $document_item;
+}
+
 function pba_current_person_can_manage_board_folders() {
     return
         (function_exists('pba_current_person_is_admin') && pba_current_person_is_admin()) ||
@@ -288,7 +298,7 @@ function pba_get_document_origin_context($document_item_id) {
     $folder_id = (int) $document_item['document_folder_id'];
     $folder = pba_get_document_folder($folder_id);
 
-    if (!$folder) {
+    if (!$folder || empty($folder['is_active'])) {
         return false;
     }
 
@@ -303,6 +313,7 @@ function pba_get_document_origin_context($document_item_id) {
         'folder_scope_type'                => isset($folder['folder_scope']) ? (string) $folder['folder_scope'] : '',
         'committee_id'                     => $committee_id,
         'committee_name'                   => $committee_name,
+        'is_active'                        => !empty($document_item['is_active']),
         'visible_to_all_members'           => !empty($document_item['visible_to_all_members']),
         'member_summary'                   => isset($document_item['member_summary']) ? (string) $document_item['member_summary'] : '',
         'shared_with_members_at'           => isset($document_item['shared_with_members_at']) ? (string) $document_item['shared_with_members_at'] : '',
@@ -341,13 +352,19 @@ function pba_current_person_can_share_document_with_members($document_item_id) {
         return false;
     }
 
+    $document_item = pba_get_active_document_item($document_item_id);
+
+    if (!$document_item) {
+        return false;
+    }
+
     if (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin')) {
         return true;
     }
 
     $context = pba_get_document_origin_context($document_item_id);
 
-    if (!$context) {
+    if (!$context || empty($context['is_active'])) {
         return false;
     }
 
@@ -405,7 +422,7 @@ function pba_get_member_resource_rows() {
 
     if (!empty($folder_ids)) {
         $folder_rows = pba_supabase_get('Document_Folder', array(
-            'select'             => 'document_folder_id,folder_name,folder_scope,committee_id',
+            'select'             => 'document_folder_id,folder_name,folder_scope,committee_id,is_active',
             'document_folder_id' => 'in.(' . implode(',', array_map('intval', $folder_ids)) . ')',
             'limit'              => count($folder_ids),
         ));
@@ -423,6 +440,10 @@ function pba_get_member_resource_rows() {
     $committee_ids = array();
 
     foreach ($folders_by_id as $folder_row) {
+        if (empty($folder_row['is_active'])) {
+            continue;
+        }
+
         $scope = isset($folder_row['folder_scope']) ? (string) $folder_row['folder_scope'] : '';
         $committee_id = isset($folder_row['committee_id']) ? (int) $folder_row['committee_id'] : 0;
         if ($scope === 'Committee' && $committee_id > 0) {
@@ -460,6 +481,10 @@ function pba_get_member_resource_rows() {
         }
 
         $folder_row = $folders_by_id[$folder_id];
+        if (empty($folder_row['is_active'])) {
+            continue;
+        }
+
         $scope = isset($folder_row['folder_scope']) ? (string) $folder_row['folder_scope'] : '';
         $committee_id = isset($folder_row['committee_id']) ? (int) $folder_row['committee_id'] : 0;
 
@@ -503,6 +528,10 @@ function pba_render_member_share_toggle_cell($document_item_id) {
 
     if (!$context) {
         return '<span class="pba-doc-share-status">Unavailable</span>';
+    }
+
+    if (empty($context['is_active'])) {
+        return '<span class="pba-doc-share-status">Inactive document</span>';
     }
 
     $can_manage = pba_current_person_can_share_document_with_members($document_item_id);
@@ -566,6 +595,16 @@ function pba_handle_member_share_update($share_with_members) {
 
     if (empty($_POST['pba_doc_share_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['pba_doc_share_nonce'])), $nonce_action)) {
         pba_member_share_redirect($redirect_to, 'invalid_nonce');
+    }
+
+    $document_item = pba_get_document_item($document_item_id);
+
+    if (!$document_item) {
+        pba_member_share_redirect($redirect_to, 'invalid_document');
+    }
+
+    if (empty($document_item['is_active'])) {
+        pba_member_share_redirect($redirect_to, 'inactive_document');
     }
 
     if (!pba_current_person_can_share_document_with_members($document_item_id)) {
