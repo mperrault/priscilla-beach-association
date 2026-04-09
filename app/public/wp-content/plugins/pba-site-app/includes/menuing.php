@@ -98,17 +98,6 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
 }
 
 function pba_get_logged_in_menu_items() {
-    $items = array(
-        array(
-            'label' => 'Home',
-            'url'   => home_url('/member-home/'),
-        ),
-        array(
-            'label' => 'Calendar',
-            'url'   => home_url('/calendar/'),
-        ),
-    );
-
     $can_see_household = function_exists('pba_current_user_has_house_admin_access') && pba_current_user_has_house_admin_access();
     $can_see_board = is_user_logged_in() && current_user_can('pba_view_board_docs');
     $can_see_committee = is_user_logged_in() && current_user_can('pba_view_committee_docs');
@@ -118,26 +107,20 @@ function pba_get_logged_in_menu_items() {
         : is_user_logged_in();
     $is_admin = is_user_logged_in() && current_user_can('pba_manage_roles');
 
-    if (is_user_logged_in()) {
-        $items[] = array(
-            'label' => 'Member Directory',
+    $items = array(
+        array(
+            'label' => 'Home',
+            'url'   => home_url('/member-home/'),
+        ),
+        array(
+            'label' => 'Calendar',
+            'url'   => home_url('/calendar/'),
+        ),
+        array(
+            'label' => 'Directory',
             'url'   => home_url('/member-directory/'),
-        );
-    }
-
-    if ($can_see_governing) {
-        $items[] = array(
-            'label' => 'Governing Documents',
-            'url'   => home_url('/governing-documents/'),
-        );
-    }
-
-    if ($can_see_member_resources) {
-        $items[] = array(
-            'label' => 'Member Resources',
-            'url'   => home_url('/member-resources/'),
-        );
-    }
+        ),
+    );
 
     if ($can_see_household) {
         $items[] = array(
@@ -146,41 +129,73 @@ function pba_get_logged_in_menu_items() {
         );
     }
 
+    $documents_children = array();
+
+    if ($can_see_governing) {
+        $documents_children[] = array(
+            'label' => 'Governing Documents',
+            'url'   => home_url('/governing-documents/'),
+        );
+    }
+
     if ($can_see_board) {
-        $items[] = array(
+        $documents_children[] = array(
             'label' => 'Board Documents',
             'url'   => home_url('/board-documents/'),
         );
     }
 
     if ($can_see_committee) {
-        $items[] = array(
+        $documents_children[] = array(
             'label' => 'Committee Documents',
             'url'   => home_url('/committee-documents/'),
         );
     }
 
-    if ($is_admin) {
+    if ($can_see_member_resources) {
+        $documents_children[] = array(
+            'label' => 'Member Resources',
+            'url'   => home_url('/member-resources/'),
+        );
+    }
+
+    if (!empty($documents_children)) {
         $items[] = array(
+            'label'    => 'Documents',
+            'url'      => '#',
+            'children' => $documents_children,
+        );
+    }
+
+    $admin_children = array();
+
+    if ($is_admin) {
+        $admin_children[] = array(
             'label' => 'Members',
             'url'   => home_url('/members/'),
         );
-
-        $items[] = array(
+        $admin_children[] = array(
             'label' => 'Households',
             'url'   => home_url('/households/'),
         );
-
-        $items[] = array(
+        $admin_children[] = array(
             'label' => 'Committees',
             'url'   => home_url('/committees/'),
         );
     }
 
     if (is_user_logged_in()) {
-        $items[] = array(
+        $admin_children[] = array(
             'label' => 'Profile',
             'url'   => home_url('/profile/'),
+        );
+    }
+
+    if (!empty($admin_children)) {
+        $items[] = array(
+            'label'    => 'Admin',
+            'url'      => '#',
+            'children' => $admin_children,
         );
     }
 
@@ -194,19 +209,134 @@ function pba_render_logged_in_menu() {
         return '';
     }
 
-    $request_path = isset($GLOBALS['wp']->request) ? $GLOBALS['wp']->request : '';
-    $current_url = trailingslashit(home_url(add_query_arg(array(), $request_path)));
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $current_url = $request_uri !== ''
+        ? trailingslashit(home_url($request_uri))
+        : trailingslashit(home_url('/'));
 
-    $html = '<ul class="pba-custom-menu">';
+    $html = '<ul class="pba-custom-menu pba-portal-menu">';
 
     foreach ($items as $item) {
-        $item_url = trailingslashit($item['url']);
-        $active_class = ($item_url === $current_url) ? ' class="current-menu-item"' : '';
+        $has_children = !empty($item['children']) && is_array($item['children']);
+        $item_url = isset($item['url']) ? $item['url'] : '#';
+        $item_url_compare = $has_children ? '' : trailingslashit($item_url);
+        $is_active = (!$has_children && $item_url_compare === $current_url);
+        $child_active = false;
 
-        $html .= '<li' . $active_class . '>';
-        $html .= '<a href="' . esc_url($item['url']) . '">' . esc_html($item['label']) . '</a>';
+        if ($has_children) {
+            foreach ($item['children'] as $child) {
+                $child_url_compare = trailingslashit($child['url']);
+                if ($child_url_compare === $current_url) {
+                    $child_active = true;
+                    break;
+                }
+            }
+        }
+
+        $classes = array();
+
+        if ($is_active || $child_active) {
+            $classes[] = 'current-menu-item';
+        }
+
+        if ($has_children) {
+            $classes[] = 'menu-item-has-children';
+        }
+
+        $class_attr = empty($classes) ? '' : ' class="' . esc_attr(implode(' ', $classes)) . '"';
+
+        $html .= '<li' . $class_attr . '>';
+
+        if ($has_children) {
+            $dropdown_id = 'pba-submenu-' . sanitize_title($item['label']);
+
+            $html .= '<button class="pba-menu-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true" aria-controls="' . esc_attr($dropdown_id) . '">';
+            $html .= '<span>' . esc_html($item['label']) . '</span>';
+            $html .= '<span class="pba-menu-caret" aria-hidden="true">▾</span>';
+            $html .= '</button>';
+
+            $html .= '<ul class="sub-menu" id="' . esc_attr($dropdown_id) . '">';
+
+            foreach ($item['children'] as $child) {
+                $child_url_compare = trailingslashit($child['url']);
+                $child_class = ($child_url_compare === $current_url) ? ' class="current-menu-item"' : '';
+
+                $html .= '<li' . $child_class . '>';
+                $html .= '<a href="' . esc_url($child['url']) . '">' . esc_html($child['label']) . '</a>';
+                $html .= '</li>';
+            }
+
+            $html .= '</ul>';
+        } else {
+            $html .= '<a href="' . esc_url($item_url) . '">' . esc_html($item['label']) . '</a>';
+        }
+
         $html .= '</li>';
     }
+
     $html .= '</ul>';
+
+    $html .= "<script>
+(function () {
+    function closeAllMenus(menu) {
+        menu.querySelectorAll('li.menu-item-has-children.is-open').forEach(function (item) {
+            item.classList.remove('is-open');
+            var toggle = item.querySelector('.pba-menu-dropdown-toggle');
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    function initPortalMenu() {
+        var menu = document.querySelector('.pba-portal-menu');
+
+        if (!menu || menu.dataset.pbaMenuInit === '1') {
+            return;
+        }
+
+        menu.dataset.pbaMenuInit = '1';
+
+        menu.addEventListener('click', function (event) {
+            var toggle = event.target.closest('.pba-menu-dropdown-toggle');
+
+            if (!toggle || !menu.contains(toggle)) {
+                return;
+            }
+
+            event.preventDefault();
+
+            var parent = toggle.closest('li.menu-item-has-children');
+            var isOpen = parent.classList.contains('is-open');
+
+            closeAllMenus(menu);
+
+            if (!isOpen) {
+                parent.classList.add('is-open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!menu.contains(event.target)) {
+                closeAllMenus(menu);
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeAllMenus(menu);
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPortalMenu);
+    } else {
+        initPortalMenu();
+    }
+})();
+</script>";
+
     return $html;
 }
