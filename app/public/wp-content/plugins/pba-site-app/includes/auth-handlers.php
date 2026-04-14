@@ -13,6 +13,12 @@ add_action('admin_post_pba_house_admin_verify', 'pba_handle_house_admin_verify')
 add_action('admin_post_nopriv_pba_house_admin_create_user', 'pba_handle_house_admin_create_user');
 add_action('admin_post_pba_house_admin_create_user', 'pba_handle_house_admin_create_user');
 
+add_action('admin_post_nopriv_pba_reset_password_request', 'pba_handle_reset_password_request');
+add_action('admin_post_pba_reset_password_request', 'pba_handle_reset_password_request');
+
+add_action('admin_post_nopriv_pba_reset_password_confirm', 'pba_handle_reset_password_confirm');
+add_action('admin_post_pba_reset_password_confirm', 'pba_handle_reset_password_confirm');
+
 function pba_auth_normalize_compare_value($value) {
     $value = is_string($value) ? $value : (string) $value;
     $value = trim(wp_strip_all_tags($value));
@@ -34,6 +40,18 @@ function pba_auth_find_allowed_street($street_name) {
 
 function pba_auth_values_match($left, $right) {
     return pba_auth_normalize_compare_value($left) === pba_auth_normalize_compare_value($right);
+}
+
+function pba_reset_password_redirect($status, $args = array()) {
+    $query_args = array_merge(
+        array(
+            'pba_reset_status' => $status,
+        ),
+        $args
+    );
+
+    wp_safe_redirect(add_query_arg($query_args, home_url('/reset-password/')));
+    exit;
 }
 
 function pba_handle_member_login() {
@@ -59,8 +77,6 @@ function pba_handle_member_login() {
         exit;
     }
 
-    // Ensure any stale auth/session state from a timed-out session is cleared
-    // before attempting a fresh sign-in.
     wp_clear_auth_cookie();
     wp_set_current_user(0);
 
@@ -104,6 +120,241 @@ function pba_handle_member_login() {
     }
 
     wp_safe_redirect(home_url('/member-home/'));
+    exit;
+}
+
+function pba_handle_reset_password_request() {
+    if (
+        !isset($_POST['pba_reset_password_request_nonce']) ||
+        !wp_verify_nonce($_POST['pba_reset_password_request_nonce'], 'pba_reset_password_request_action')
+    ) {
+        pba_reset_password_redirect('invalid_nonce');
+    }
+
+    $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+
+    if ($email === '') {
+        pba_reset_password_redirect('missing_email');
+    }
+
+    if (!is_email($email)) {
+        pba_reset_password_redirect(
+            'invalid_email',
+            array(
+                'email' => rawurlencode($email),
+            )
+        );
+    }
+
+    $user = get_user_by('email', $email);
+
+    if (!$user instanceof WP_User) {
+        pba_reset_password_redirect(
+            'check_email',
+            array(
+                'email' => rawurlencode($email),
+            )
+        );
+    }
+
+    $person_id = (int) get_user_meta($user->ID, 'pba_person_id', true);
+
+    if ($person_id < 1) {
+        pba_reset_password_redirect(
+            'check_email',
+            array(
+                'email' => rawurlencode($email),
+            )
+        );
+    }
+
+    $person_rows = pba_supabase_get('Person', array(
+        'select'    => 'person_id,status,email_address,wp_user_id',
+        'person_id' => 'eq.' . $person_id,
+        'limit'     => 1,
+    ));
+
+    if (
+        is_wp_error($person_rows) ||
+        empty($person_rows) ||
+        !isset($person_rows[0]) ||
+        !is_array($person_rows[0])
+    ) {
+        pba_reset_password_redirect(
+            'check_email',
+            array(
+                'email' => rawurlencode($email),
+            )
+        );
+    }
+
+    $person_row = $person_rows[0];
+    $person_status = isset($person_row['status']) ? pba_auth_normalize_compare_value($person_row['status']) : '';
+    $person_email = isset($person_row['email_address']) ? (string) $person_row['email_address'] : '';
+    $person_wp_user_id = isset($person_row['wp_user_id']) ? (int) $person_row['wp_user_id'] : 0;
+
+    if (
+        $person_status !== 'active' ||
+        !pba_auth_values_match($person_email, $user->user_email) ||
+        $person_wp_user_id !== (int) $user->ID
+    ) {
+        pba_reset_password_redirect(
+            'check_email',
+            array(
+                'email' => rawurlencode($email),
+            )
+        );
+    }
+
+    $token = wp_generate_password(64, false, false);
+
+    update_user_meta($user->ID, 'pba_active_reset_token', $token);
+
+    set_transient(
+        'pba_password_reset_' . $token,
+        array(
+            'user_id' => (int) $user->ID,
+            'email'   => $user->user_email,
+        ),
+        30 * MINUTE_IN_SECONDS
+    );
+
+    $link = add_query_arg(
+        array(
+            'pba_reset_status' => 'reset_link',
+            'email_token'      => rawurlencode($token),
+        ),
+        home_url('/reset-password/')
+    );
+
+    $subject = 'Reset Your Priscilla Beach Association (PBA) Password';
+
+    $display_name = trim((string) $user->display_name);
+    if ($display_name === '') {
+        $display_name = $user->user_email;
+    }
+
+    $message = "
+    <html>
+    <head>
+      <title>Reset Your PBA Password</title>
+    </head>
+    <body>
+      <h2>Hello {$display_name},</h2>
+      <p>We received a request to reset your password for your Priscilla Beach Association (PBA) account.</p>
+      <p>To reset your password, please click the link below:</p>
+      <p><a href='{$link}'>Reset My Password</a></p>
+      <p>This link will expire in 30 minutes.</p>
+      <p>If you did not request a password reset, you can safely ignore this email.</p>
+      <p>Best regards,<br>The Priscilla Beach Association Team</p>
+      <p><strong>Contact us:</strong> info@priscillabeachassociation.com</p>
+    </body>
+    </html>
+    ";
+
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    $sent = wp_mail($user->user_email, $subject, $message, $headers);
+
+    if (!$sent) {
+        delete_user_meta($user->ID, 'pba_active_reset_token');
+
+        pba_reset_password_redirect(
+            'email_send_failed',
+            array(
+                'email' => rawurlencode($email),
+            )
+        );
+    }
+
+    pba_reset_password_redirect(
+        'check_email',
+        array(
+            'email' => rawurlencode($email),
+        )
+    );
+}
+
+function pba_handle_reset_password_confirm() {
+    if (
+        !isset($_POST['pba_reset_password_confirm_nonce']) ||
+        !wp_verify_nonce($_POST['pba_reset_password_confirm_nonce'], 'pba_reset_password_confirm_action')
+    ) {
+        pba_reset_password_redirect('invalid_nonce');
+    }
+
+    $email_token     = isset($_POST['email_token']) ? sanitize_text_field(wp_unslash($_POST['email_token'])) : '';
+    $password        = isset($_POST['password']) ? (string) wp_unslash($_POST['password']) : '';
+    $password_verify = isset($_POST['password_verify']) ? (string) wp_unslash($_POST['password_verify']) : '';
+
+    if ($email_token === '') {
+        pba_reset_password_redirect('invalid_token');
+    }
+
+    $reset_data = get_transient('pba_password_reset_' . $email_token);
+
+    if (!is_array($reset_data) || empty($reset_data['email']) || empty($reset_data['user_id'])) {
+        pba_reset_password_redirect('invalid_token');
+    }
+
+    $user_id = (int) $reset_data['user_id'];
+    $active_token = (string) get_user_meta($user_id, 'pba_active_reset_token', true);
+
+    if ($active_token === '' || !hash_equals($active_token, $email_token)) {
+        delete_transient('pba_password_reset_' . $email_token);
+        pba_reset_password_redirect('invalid_token');
+    }
+
+    if ($password === '' || $password_verify === '') {
+        pba_reset_password_redirect(
+            'missing_password',
+            array(
+                'email_token' => rawurlencode($email_token),
+            )
+        );
+    }
+
+    if ($password !== $password_verify) {
+        pba_reset_password_redirect(
+            'password_mismatch',
+            array(
+                'email_token' => rawurlencode($email_token),
+            )
+        );
+    }
+
+    if (strlen($password) < 8) {
+        pba_reset_password_redirect(
+            'password_too_short',
+            array(
+                'email_token' => rawurlencode($email_token),
+            )
+        );
+    }
+
+    $user = get_user_by('id', $user_id);
+
+    if (!$user instanceof WP_User) {
+        delete_transient('pba_password_reset_' . $email_token);
+        delete_user_meta($user_id, 'pba_active_reset_token');
+        pba_reset_password_redirect('invalid_token');
+    }
+
+    wp_set_password($password, $user_id);
+
+    delete_transient('pba_password_reset_' . $email_token);
+    delete_user_meta($user_id, 'pba_active_reset_token');
+
+    wp_clear_auth_cookie();
+    wp_set_current_user(0);
+
+    wp_safe_redirect(add_query_arg(
+        array(
+            'pba_register_status' => 'password_reset',
+            'login_email'         => rawurlencode($user->user_email),
+        ),
+        home_url('/login/')
+    ));
     exit;
 }
 

@@ -9,6 +9,11 @@ $status      = isset($_GET['pba_register_status']) ? sanitize_text_field(wp_unsl
 $email_token = isset($_GET['email_token']) ? sanitize_text_field(wp_unslash($_GET['email_token'])) : '';
 $login_email = isset($_GET['login_email']) ? sanitize_text_field(wp_unslash($_GET['login_email'])) : '';
 
+$session_expired = isset($_GET['session_expired']) && $_GET['session_expired'] === '1';
+if ($session_expired && $status === '') {
+    $status = 'session_expired';
+}
+
 $show_password_setup = false;
 $setup_data = null;
 
@@ -40,10 +45,12 @@ $messages = array(
     'login_failed'          => 'The email address or password you entered is incorrect.',
     'account_disabled'      => 'Your membership has been disabled. Please contact the PBA Admin.',
     'missing_login_fields'  => 'Please enter both email address and password.',
-    'person_exists'         => 'We found an existing registration for this household and email address. Please contact the PBA Admin if you need assistance.'
+    'person_exists'         => 'We found an existing registration for this household and email address. Please contact the PBA Admin if you need assistance.',
+    'session_expired'       => 'Your session expired. Please sign in again.',
+    'password_reset'        => 'Your password was reset successfully. You may now sign in.',
 );
 
-$is_success_message = in_array($status, array('account_created', 'check_email'), true);
+$is_success_message = in_array($status, array('account_created', 'check_email', 'password_reset'), true);
 ?>
 
 <main class="site-main">
@@ -138,6 +145,10 @@ $is_success_message = in_array($status, array('account_created', 'check_email'),
           <div class="pba-form-actions">
             <button type="submit">Submit</button>
             <button type="button" onclick="window.location.href='<?php echo esc_url(home_url('/')); ?>'">Cancel</button>
+          </div>
+
+          <div class="pba-form-help" style="margin-top: 12px;">
+            <a href="<?php echo esc_url(home_url('/reset-password/')); ?>">Forgot your password?</a>
           </div>
         </form>
 
