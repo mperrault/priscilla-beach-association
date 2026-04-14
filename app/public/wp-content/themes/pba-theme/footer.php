@@ -48,6 +48,21 @@
 
     window.pbaPageLoadingInit = true;
 
+    function isLeafletInteraction(target) {
+        if (!target || !target.closest) {
+            return false;
+        }
+
+        return !!(
+            target.closest('.leaflet-container') ||
+            target.closest('.leaflet-popup') ||
+            target.closest('.leaflet-popup-close-button') ||
+            target.closest('.leaflet-control') ||
+            target.closest('.leaflet-bar') ||
+            target.closest('.leaflet-interactive')
+        );
+    }
+
     function shouldShowLoadingForClick(link, event) {
         if (!link) {
             return false;
@@ -70,6 +85,10 @@
         }
 
         if (link.hasAttribute('download')) {
+            return false;
+        }
+
+        if (isLeafletInteraction(event.target)) {
             return false;
         }
 

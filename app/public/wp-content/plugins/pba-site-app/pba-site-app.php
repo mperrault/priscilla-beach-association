@@ -44,3 +44,4 @@ require_once __DIR__ . '/includes/shortcodes-member-resources.php';
 require_once __DIR__ . '/includes/pba-admin-list-ui.php';
 require_once __DIR__ . '/includes/pba-admin-list-styles.php';
 require_once __DIR__ . '/includes/user-link-sync.php';
+require_once __DIR__ . '/includes/shortcodes-household-map.php';

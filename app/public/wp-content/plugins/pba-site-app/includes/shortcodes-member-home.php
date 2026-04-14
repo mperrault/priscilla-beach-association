@@ -38,6 +38,12 @@ function pba_render_member_home_shortcode() {
         'url' => home_url('/member-directory/'),
     );
 
+    $cards[] = array(
+        'title' => 'Household Map',
+        'description' => 'Browse PBA households on a neighborhood map.',
+        'url' => home_url('/household-map/'),
+    );
+
     if (function_exists('pba_current_person_can_view_member_resources') && pba_current_person_can_view_member_resources()) {
         $cards[] = array(
             'title' => 'Member Resources',

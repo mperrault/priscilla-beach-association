@@ -22,6 +22,7 @@ if (!function_exists('pba_admin_list_render_ajax_script')) {
         <script>
             (function () {
                 var root = document.getElementById(<?php echo wp_json_encode($root_id); ?>);
+                var activeRequest = 0;
 
                 if (!root || !window.fetch || !window.URL) {
                     return;
@@ -33,6 +34,45 @@ if (!function_exists('pba_admin_list_render_ajax_script')) {
 
                 function getShell() {
                     return root.querySelector(<?php echo wp_json_encode($shell_selector); ?>);
+                }
+
+                function setBusyCursor(isBusy) {
+                    var shell = getShell();
+
+                    document.documentElement.style.cursor = '';
+                    document.body.style.cursor = '';
+
+                    if (!shell) {
+                        return;
+                    }
+
+                    if (isBusy) {
+                        shell.style.cursor = 'wait';
+                    } else {
+                        shell.style.cursor = '';
+                    }
+                }
+
+                function clearBusyState() {
+                    setBusyCursor(false);
+                    document.documentElement.style.cursor = '';
+                    document.body.style.cursor = '';
+                    document.documentElement.classList.remove('pba-loading');
+                    document.body.classList.remove('pba-loading');
+                    document.documentElement.classList.remove('pba-submitting');
+                    document.body.classList.remove('pba-submitting');
+                    document.documentElement.classList.remove('pba-household-submitting');
+                    document.body.classList.remove('pba-household-submitting');
+
+                    var shell = getShell();
+                    if (!shell) {
+                        return;
+                    }
+
+                    var wrap = shell.querySelector(<?php echo wp_json_encode($loading_selector); ?>);
+                    if (wrap) {
+                        wrap.classList.remove('is-loading');
+                    }
                 }
 
                 function bindInteractiveElements() {
@@ -70,20 +110,23 @@ if (!function_exists('pba_admin_list_render_ajax_script')) {
                     var shell = getShell();
 
                     if (!shell) {
+                        if (!isLoading) {
+                            setBusyCursor(false);
+                        }
                         return;
                     }
 
                     var wrap = shell.querySelector(<?php echo wp_json_encode($loading_selector); ?>);
 
-                    if (!wrap) {
-                        return;
+                    if (wrap) {
+                        if (isLoading) {
+                            wrap.classList.add('is-loading');
+                        } else {
+                            wrap.classList.remove('is-loading');
+                        }
                     }
 
-                    if (isLoading) {
-                        wrap.classList.add('is-loading');
-                    } else {
-                        wrap.classList.remove('is-loading');
-                    }
+                    setBusyCursor(isLoading);
                 }
 
                 function buildFormUrl(form) {
@@ -95,6 +138,8 @@ if (!function_exists('pba_admin_list_render_ajax_script')) {
                 }
 
                 function fetchIntoRoot(url) {
+                    var requestId = ++activeRequest;
+
                     setLoading(true);
 
                     var parsed = new URL(url, window.location.origin);
@@ -113,14 +158,23 @@ if (!function_exists('pba_admin_list_render_ajax_script')) {
                         return response.text();
                     })
                     .then(function (html) {
+                        if (requestId !== activeRequest) {
+                            return;
+                        }
+
+                        clearBusyState();
                         root.innerHTML = html;
                         bindInteractiveElements();
+                        clearBusyState();
                     })
                     .catch(function () {
+                        clearBusyState();
                         window.location.href = url;
                     })
                     .finally(function () {
-                        setLoading(false);
+                        if (requestId === activeRequest) {
+                            clearBusyState();
+                        }
                     });
                 }
 
@@ -128,7 +182,16 @@ if (!function_exists('pba_admin_list_render_ajax_script')) {
                     fetchIntoRoot(window.location.href);
                 });
 
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', clearBusyState);
+                } else {
+                    clearBusyState();
+                }
+
+                window.addEventListener('pageshow', clearBusyState);
+
                 bindInteractiveElements();
+                clearBusyState();
             })();
         </script>
         <?php

@@ -188,6 +188,22 @@ function pba_render_households_admin_list_view() {
 
     ob_start();
     ?>
+    <style>
+        html.pba-households-cursor-reset,
+        html.pba-households-cursor-reset *,
+        body.pba-households-cursor-reset,
+        body.pba-households-cursor-reset *,
+        #pba-households-admin-root,
+        #pba-households-admin-root * {
+            cursor: auto !important;
+        }
+
+        #pba-households-admin-root.is-busy,
+        #pba-households-admin-root.is-busy * {
+            cursor: wait !important;
+        }
+    </style>
+
     <div class="pba-households-wrap pba-page-wrap">
         <?php echo pba_render_households_admin_status_message(); ?>
 
@@ -205,6 +221,80 @@ function pba_render_households_admin_list_view() {
         'ajax_link_attr' => 'data-households-ajax-link',
         'partial_param' => 'pba_households_partial',
     ));
+    ?>
+    <script>
+    (function () {
+        var root = document.getElementById('pba-households-admin-root');
+
+        function clearCursorEverywhere() {
+            var nodes;
+            var i;
+
+            document.documentElement.classList.add('pba-households-cursor-reset');
+            document.body.classList.add('pba-households-cursor-reset');
+
+            document.documentElement.style.cursor = '';
+            document.body.style.cursor = '';
+
+            document.documentElement.classList.remove('pba-loading', 'pba-submitting', 'pba-household-submitting');
+            document.body.classList.remove('pba-loading', 'pba-submitting', 'pba-household-submitting');
+
+            if (root) {
+                root.classList.remove('is-busy');
+            }
+
+            nodes = document.querySelectorAll('[style*="cursor"]');
+            for (i = 0; i < nodes.length; i++) {
+                nodes[i].style.cursor = '';
+            }
+        }
+
+        function setBusy() {
+            if (root) {
+                root.classList.add('is-busy');
+            }
+        }
+
+        function scheduleClear() {
+            clearCursorEverywhere();
+            window.requestAnimationFrame(clearCursorEverywhere);
+            window.setTimeout(clearCursorEverywhere, 0);
+            window.setTimeout(clearCursorEverywhere, 150);
+            window.setTimeout(clearCursorEverywhere, 500);
+        }
+
+        document.addEventListener('click', function (event) {
+            var link = event.target.closest('[data-households-ajax-link="1"]');
+            if (link) {
+                setBusy();
+            }
+        }, true);
+
+        document.addEventListener('submit', function (event) {
+            var form = event.target.closest('#pba-households-search-form');
+            if (form) {
+                setBusy();
+            }
+        }, true);
+
+        if (window.MutationObserver && root) {
+            new MutationObserver(function () {
+                scheduleClear();
+            }).observe(root, { childList: true, subtree: true });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', scheduleClear);
+        } else {
+            scheduleClear();
+        }
+
+        window.addEventListener('load', scheduleClear);
+        window.addEventListener('pageshow', scheduleClear);
+        window.addEventListener('focus', scheduleClear);
+    })();
+    </script>
+    <?php
 
     return ob_get_clean();
 }

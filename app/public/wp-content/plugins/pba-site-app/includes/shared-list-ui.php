@@ -417,10 +417,6 @@ function pba_shared_list_ui_render_styles() {
             cursor: wait !important;
         }
 
-        body.pba-submitting * {
-            cursor: wait !important;
-        }
-
         @media (max-width: 980px) {
             .pba-summary-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
