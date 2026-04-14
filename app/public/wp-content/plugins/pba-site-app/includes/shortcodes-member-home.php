@@ -38,11 +38,16 @@ function pba_render_member_home_shortcode() {
         'url' => home_url('/member-directory/'),
     );
 
-    $cards[] = array(
-        'title' => 'Household Map',
-        'description' => 'Browse PBA households on a neighborhood map.',
-        'url' => home_url('/household-map/'),
-    );
+    if (
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBABoardMember')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBAAdmin'))
+    ) {
+        $cards[] = array(
+            'title' => 'Household Map',
+            'description' => 'Browse PBA households on a neighborhood map.',
+            'url' => home_url('/household-map/'),
+        );
+    }
 
     if (function_exists('pba_current_person_can_view_member_resources') && pba_current_person_can_view_member_resources()) {
         $cards[] = array(
@@ -62,7 +67,9 @@ function pba_render_member_home_shortcode() {
 
     if (
         (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_board_member')) ||
-        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBABoardMember')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBAAdmin'))
     ) {
         $cards[] = array(
             'title' => 'Board Documents',
@@ -73,7 +80,9 @@ function pba_render_member_home_shortcode() {
 
     if (
         (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_committee_member')) ||
-        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBACommitteeMember')) ||
+        (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBAAdmin'))
     ) {
         $cards[] = array(
             'title' => 'Committee Documents',
@@ -82,7 +91,11 @@ function pba_render_member_home_shortcode() {
         );
     }
 
-    if (pba_current_user_has_pba_admin_access() || (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))) {
+    if (
+        pba_current_user_has_pba_admin_access()
+        || (function_exists('pba_current_person_has_role') && pba_current_person_has_role('pba_admin'))
+        || (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBAAdmin'))
+    ) {
         $cards[] = array(
             'title' => 'Members',
             'description' => 'Manage member records, roles, and committee assignments.',

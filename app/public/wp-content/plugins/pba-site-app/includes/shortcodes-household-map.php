@@ -43,10 +43,7 @@ function pba_render_household_map_shortcode() {
     }
 
     if (
-        !pba_current_person_has_role('PBAMember')
-        && !pba_current_person_has_role('PBAHouseholdAdmin')
-        && !pba_current_person_has_role('PBABoardMember')
-        && !pba_current_person_has_role('PBACommitteeMember')
+        !pba_current_person_has_role('PBABoardMember')
         && !pba_current_person_has_role('PBAAdmin')
     ) {
         return '<p>You do not have permission to access this page.</p>';
@@ -262,7 +259,7 @@ function pba_render_household_map_shortcode() {
 
     <div class="pba-household-map-wrap">
         <div class="pba-household-map-card">
-            <h2>PBA Household Map</h2>
+            <!-- h2>PBA Household Map</h2 -->
             <p class="pba-household-map-note">
                 Browse PBA households on a neighborhood map. Search by address, owner, or household admin.
             </p>
@@ -328,10 +325,7 @@ function pba_get_household_map_data_ajax() {
         ), 401);
     }
 
-    $allowed = pba_current_person_has_role('PBAMember')
-        || pba_current_person_has_role('PBAHouseholdAdmin')
-        || pba_current_person_has_role('PBABoardMember')
-        || pba_current_person_has_role('PBACommitteeMember')
+    $allowed = pba_current_person_has_role('PBABoardMember')
         || pba_current_person_has_role('PBAAdmin');
 
     if (!$allowed) {
