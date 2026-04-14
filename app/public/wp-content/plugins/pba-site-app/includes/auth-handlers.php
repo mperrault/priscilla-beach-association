@@ -59,13 +59,18 @@ function pba_handle_member_login() {
         exit;
     }
 
+    // Ensure any stale auth/session state from a timed-out session is cleared
+    // before attempting a fresh sign-in.
+    wp_clear_auth_cookie();
+    wp_set_current_user(0);
+
     $creds = array(
         'user_login'    => $email,
         'user_password' => $password,
         'remember'      => false,
     );
 
-    $user = wp_signon($creds, false);
+    $user = wp_signon($creds, is_ssl());
 
     if (is_wp_error($user)) {
         $status = 'login_failed';
@@ -83,6 +88,10 @@ function pba_handle_member_login() {
         );
         wp_safe_redirect($redirect_url);
         exit;
+    }
+
+    if ($user instanceof WP_User) {
+        wp_set_current_user($user->ID);
     }
 
     $roles = (array) $user->roles;
