@@ -232,7 +232,7 @@ function pba_render_member_resources_shortcode() {
     </style>
 
     <div class="pba-member-resources-wrap">
-        <h2>Member Resources</h2>
+        <!-- h2>Member Resources</h2-->
         <p>Documents and resources shared with all members by the Board and committees.</p>
 
         <form method="get" class="pba-member-resources-search">
