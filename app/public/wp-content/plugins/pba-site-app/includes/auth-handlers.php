@@ -108,6 +108,11 @@ function pba_handle_member_login() {
 
     if ($user instanceof WP_User) {
         wp_set_current_user($user->ID);
+
+        delete_user_meta($user->ID, 'pba_last_activity');
+        update_user_meta($user->ID, 'pba_last_activity', time());
+
+        do_action('wp_login', $user->user_login, $user);
     }
 
     $roles = (array) $user->roles;
@@ -122,7 +127,6 @@ function pba_handle_member_login() {
     wp_safe_redirect(home_url('/member-home/'));
     exit;
 }
-
 function pba_handle_reset_password_request() {
     if (
         !isset($_POST['pba_reset_password_request_nonce']) ||

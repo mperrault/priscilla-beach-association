@@ -5,7 +5,8 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('PBA_SESSION_IDLE_TIMEOUT')) {
-    define('PBA_SESSION_IDLE_TIMEOUT', 30 * MINUTE_IN_SECONDS);
+    //define('PBA_SESSION_IDLE_TIMEOUT', 30 * MINUTE_IN_SECONDS);
+    define('PBA_SESSION_IDLE_TIMEOUT', 1 * MINUTE_IN_SECONDS);
 }
 
 if (!defined('PBA_SESSION_NON_REMEMBER_TIMEOUT')) {
@@ -15,6 +16,12 @@ if (!defined('PBA_SESSION_NON_REMEMBER_TIMEOUT')) {
 if (!defined('PBA_SESSION_REMEMBER_TIMEOUT')) {
     define('PBA_SESSION_REMEMBER_TIMEOUT', 12 * HOUR_IN_SECONDS);
 }
+
+add_action('wp_login', function ($user_login, $user) {
+    if ($user instanceof WP_User) {
+        update_user_meta($user->ID, 'pba_last_activity', time());
+    }
+}, 10, 2);
 
 if (!function_exists('pba_get_login_page_url')) {
     function pba_get_login_page_url() {
