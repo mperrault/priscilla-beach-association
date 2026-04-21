@@ -114,16 +114,26 @@ function pba_render_members_status_message() {
     }
 
     $success_messages = array(
-        'member_saved'     => 'Member saved successfully.',
-        'member_disabled'  => 'Member disabled successfully.',
-        'member_enabled'   => 'Member enabled successfully.',
-        'invite_cancelled' => 'Invitation cancelled successfully.',
-        'invite_resent'    => 'Invitation resent successfully.',
+        'member_saved'                  => 'Member saved successfully.',
+        'member_disabled'               => 'Member disabled successfully.',
+        'member_enabled'                => 'Member enabled successfully.',
+        'invite_cancelled'              => 'Invitation cancelled successfully.',
+        'invite_resent'                 => 'Invitation resent successfully.',
+        'member_removed_from_household' => 'Member was removed from the household successfully.',
+        'member_deleted'                => 'Person record deleted successfully.',
     );
 
     $error_messages = array(
-        'invalid_request' => 'We could not process that request.',
-        'save_failed'     => 'We could not save that member.',
+        'invalid_request'                            => 'We could not process that request.',
+        'save_failed'                                => 'We could not save that member.',
+        'remove_from_household_failed'               => 'We could not remove that member from the household.',
+        'remove_from_household_blocked_house_admin' => 'Household Admins cannot be removed from a household here.',
+        'remove_from_household_blocked_last_admin'  => 'The last active Household Admin cannot be removed from the household.',
+        'delete_person_failed'                      => 'We could not delete that person record.',
+        'delete_person_blocked_house_admin'         => 'Household Admins cannot be hard deleted here.',
+        'delete_person_blocked_wp_user'             => 'This person is linked to a WordPress user and cannot be hard deleted.',
+        'delete_person_blocked_committees'          => 'This person has active committee assignments and cannot be hard deleted.',
+        'delete_person_blocked_household'           => 'Remove this person from their household before hard deleting.',
     );
 
     if (isset($success_messages[$status])) {
@@ -262,6 +272,31 @@ function pba_render_members_list_view() {
         .pba-members-table td:nth-child(5),
         .pba-members-table td:nth-child(6) {
             min-width: 220px;
+        }
+
+        .pba-maintenance-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .pba-maintenance-note {
+            margin: 0 0 14px;
+            color: #666;
+        }
+
+        .pba-btn.danger {
+            background: #8b1e2d;
+            border-color: #8b1e2d;
+            color: #fff;
+        }
+
+        .pba-btn.danger:hover,
+        .pba-btn.danger:focus {
+            background: #721826;
+            border-color: #721826;
+            color: #fff;
         }
     </style>
     <div class="pba-members-wrap pba-page-wrap">
@@ -825,7 +860,99 @@ function pba_render_members_summary_card($label, $value, $note = '') {
     return ob_get_clean();
 }
 
+function pba_get_removed_members_data($limit = 10) {
+    $limit = max(1, (int) $limit);
+
+    $rows = pba_supabase_get('Person', array(
+        'select'      => 'person_id,first_name,last_name,email_address,status,last_modified_at,household_id',
+        'household_id'=> 'is.null',
+        'order'       => 'last_modified_at.desc,last_name.asc,first_name.asc',
+        'limit'       => $limit,
+    ));
+
+    if (is_wp_error($rows) || !is_array($rows)) {
+        return array(
+            'count' => 0,
+            'rows'  => array(),
+        );
+    }
+
+    $count_rows = pba_supabase_get('Person', array(
+        'select'      => 'person_id',
+        'household_id'=> 'is.null',
+    ));
+
+    $count = (!is_wp_error($count_rows) && is_array($count_rows)) ? count($count_rows) : count($rows);
+
+    return array(
+        'count' => (int) $count,
+        'rows'  => array_values($rows),
+    );
+}
+
+function pba_render_removed_members_section($removed_data) {
+    $removed_count = isset($removed_data['count']) ? (int) $removed_data['count'] : 0;
+    $removed_rows = isset($removed_data['rows']) && is_array($removed_data['rows']) ? $removed_data['rows'] : array();
+
+    ob_start();
+    ?>
+    <div class="pba-section">
+        <div class="pba-section-heading">
+            <h3>Removed from Household</h3>
+            <p class="pba-section-subtitle">People who are currently not assigned to any household. Use Manage to review, reassign, disable, or delete as needed.</p>
+        </div>
+
+        <?php if ($removed_count < 1) : ?>
+            <p class="pba-admin-list-muted" style="margin:0;">No people are currently removed from household.</p>
+        <?php else : ?>
+            <p class="pba-admin-list-muted" style="margin:0 0 14px;">Showing up to <?php echo esc_html((string) count($removed_rows)); ?> of <?php echo esc_html(number_format_i18n($removed_count)); ?> removed member<?php echo $removed_count === 1 ? '' : 's'; ?>.</p>
+
+            <div class="pba-table-wrap">
+                <table class="pba-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Last Modified</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($removed_rows as $row) : ?>
+                            <?php
+                            $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+                            $display_name = trim(((string) ($row['first_name'] ?? '')) . ' ' . ((string) ($row['last_name'] ?? '')));
+                            ?>
+                            <tr>
+                                <td>
+                                    <strong><?php echo esc_html($display_name !== '' ? $display_name : ('Member #' . $person_id)); ?></strong>
+                                    <div class="pba-admin-list-muted">Member ID <?php echo esc_html((string) $person_id); ?></div>
+                                </td>
+                                <td><?php echo esc_html((string) ($row['email_address'] ?? '')); ?></td>
+                                <td><?php echo pba_render_members_status_badge((string) ($row['status'] ?? '')); ?></td>
+                                <td><?php echo esc_html(pba_format_datetime_display((string) ($row['last_modified_at'] ?? ''))); ?></td>
+                                <td>
+                                    <a class="pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
+                                        'member_view' => 'edit',
+                                        'member_id'   => $person_id,
+                                    ), pba_get_members_base_url())); ?>">Manage &rarr;</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php
+
+    return ob_get_clean();
+}
+
 function pba_render_members_dynamic_content($data, $request_args) {
+    $removed_data = pba_get_removed_members_data(10);
+
     ob_start();
     ?>
     <div class="pba-admin-list-hero">
@@ -840,8 +967,11 @@ function pba_render_members_dynamic_content($data, $request_args) {
             <?php echo pba_render_members_summary_card('On This Page', number_format_i18n(count($data['page_rows']))); ?>
             <?php echo pba_render_members_summary_card('Page', number_format_i18n($data['pagination']['current_page']) . ' / ' . number_format_i18n($data['pagination']['total_pages'])); ?>
             <?php echo pba_render_members_summary_card('Page Size', number_format_i18n($request_args['per_page'])); ?>
+            <?php echo pba_render_members_summary_card('Removed from Household', number_format_i18n($removed_data['count'])); ?>
         </div>
     </div>
+
+    <?php echo pba_render_removed_members_section($removed_data); ?>
 
     <div class="pba-section">
         <div class="pba-admin-list-toolbar">
@@ -1092,6 +1222,7 @@ function pba_render_member_edit_view($member_id) {
     $email_verified = !empty($member['email_verified']) ? 'Yes' : 'No';
     $status = (string) ($member['status'] ?? '');
     $display_name = trim(((string) ($member['first_name'] ?? '')) . ' ' . ((string) ($member['last_name'] ?? '')));
+    $can_hard_delete = function_exists('pba_admin_can_hard_delete_person') ? pba_admin_can_hard_delete_person((int) $member['person_id']) : false;
 
     ob_start();
     echo pba_members_render_shared_styles_if_available();
@@ -1176,7 +1307,7 @@ function pba_render_member_edit_view($member_id) {
                         <th><label for="household_id">Household</label></th>
                         <td>
                             <div class="pba-field">
-                                <select name="household_id" id="household_id" required>
+                                <select name="household_id" id="household_id">
                                     <option value="">Select household</option>
                                     <?php if (!is_wp_error($households)) : ?>
                                         <?php foreach ($households as $household) : ?>
@@ -1283,6 +1414,38 @@ function pba_render_member_edit_view($member_id) {
                     <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Cancel</a>
                 </p>
             </form>
+        </div>
+
+        <div class="pba-section">
+            <div class="pba-section-heading">
+                <h3>Administrative Maintenance</h3>
+                <p class="pba-maintenance-note">Use these actions carefully. Removing from household is reversible. Hard delete permanently removes the person record and related assignments.</p>
+            </div>
+
+            <div class="pba-maintenance-actions">
+                <?php if ((int) ($member['household_id'] ?? 0) > 0) : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" onsubmit="return confirm('Remove this person from their household?');">
+                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_admin_remove_member_from_household">
+                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                        <button type="submit" class="pba-btn secondary">Remove from Household</button>
+                    </form>
+                <?php else : ?>
+                    <span class="pba-admin-list-muted">This person is not currently assigned to a household.</span>
+                <?php endif; ?>
+
+                <?php if ($can_hard_delete) : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" onsubmit="return confirm('Hard delete this person record permanently? This cannot be undone.');">
+                        <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_admin_hard_delete_person">
+                        <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
+                        <button type="submit" class="pba-btn danger">Hard Delete Person</button>
+                    </form>
+                <?php else : ?>
+                    <span class="pba-admin-list-muted">Hard delete is blocked when the person is still linked to a household, has active committee assignments, or is a Household Admin.
+                    </span>                
+                <?php endif; ?>
+            </div>
         </div>
     </div>
     <?php

@@ -56,7 +56,7 @@ function pba_handle_save_member_admin() {
         return (int) $id > 0;
     })));
 
-    if ($member_id < 1 || $household_id < 1 || $first_name === '' || $last_name === '') {
+    if ($member_id < 1 || $first_name === '' || $last_name === '') {
         pba_members_redirect('invalid_member_input', $member_id, 'edit');
     }
 
@@ -73,12 +73,12 @@ function pba_handle_save_member_admin() {
     $updated = pba_supabase_update(
         'Person',
         array(
-            'household_id'     => $household_id,
             'first_name'       => $first_name,
             'last_name'        => $last_name,
             'email_address'    => $email_address !== '' ? $email_address : null,
             'directory_visibility_level' => $directory_visibility_level,
             'status'           => $status,
+            'household_id' => $household_id > 0 ? $household_id : null,
             'last_modified_at' => gmdate('c'),
         ),
         array(

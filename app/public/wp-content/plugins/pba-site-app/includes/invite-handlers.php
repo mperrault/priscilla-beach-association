@@ -12,6 +12,7 @@ add_action('admin_post_pba_household_disable_member', 'pba_handle_household_disa
 add_action('admin_post_pba_household_enable_member', 'pba_handle_household_enable_member');
 add_action('admin_post_pba_household_cancel_invite', 'pba_handle_household_cancel_invite');
 add_action('admin_post_pba_household_resend_invite', 'pba_handle_household_resend_invite');
+add_action('admin_post_pba_household_remove_member', 'pba_handle_household_remove_member');
 
 function pba_handle_household_send_invites() {
     if (!is_user_logged_in() || !pba_current_user_has_house_admin_access()) {
@@ -289,7 +290,7 @@ function pba_handle_member_invite_accept() {
     $invite_token    = isset($_POST['invite_token']) ? sanitize_text_field(wp_unslash($_POST['invite_token'])) : '';
     $password        = isset($_POST['password']) ? (string) wp_unslash($_POST['password']) : '';
     $password_verify = isset($_POST['password_verify']) ? (string) wp_unslash($_POST['password_verify']) : '';
-
+    
     if ($invite_token === '') {
         pba_member_invite_redirect('invalid_token');
     }
@@ -338,6 +339,7 @@ function pba_handle_member_invite_accept() {
         ), home_url('/member-invite-accept/')));
         exit;
     }
+
     $person_rows = pba_supabase_get('Person', array(
         'select'    => 'person_id,household_id,first_name,last_name,email_address,status',
         'person_id' => 'eq.' . $person_id,
@@ -385,11 +387,11 @@ function pba_handle_member_invite_accept() {
     $updated = pba_supabase_update(
         'Person',
         array(
-            'status'           => 'Active',
-            'email_verified'   => 1,
+            'status'                     => 'Active',
+            'email_verified'             => 1,
             'directory_visibility_level' => $directory_visibility_level,
-            'wp_user_id'       => (string) $user_id,
-            'last_modified_at' => gmdate('c'),
+            'wp_user_id'                 => (string) $user_id,
+            'last_modified_at'           => gmdate('c'),
         ),
         array(
             'person_id' => 'eq.' . $person_id,
@@ -429,11 +431,10 @@ function pba_household_get_action_person() {
     }
 
     $rows = pba_supabase_get('Person', array(
-        'select'               => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id,last_modified_at',
-        'person_id'            => 'eq.' . $person_id,
-        'household_id'         => 'eq.' . $household_id,
-        'invited_by_person_id' => 'eq.' . $inviter_person_id,
-        'limit'                => 1,
+        'select'       => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id,last_modified_at',
+        'person_id'    => 'eq.' . $person_id,
+        'household_id' => 'eq.' . $household_id,
+        'limit'        => 1,
     ));
 
     if (is_wp_error($rows) || empty($rows[0])) {
@@ -444,6 +445,102 @@ function pba_household_get_action_person() {
         'household_id'      => $household_id,
         'inviter_person_id' => $inviter_person_id,
     ));
+}
+
+if (!function_exists('pba_household_person_has_role_name')) {
+    function pba_household_person_has_role_name($person_id, $role_name) {
+        $person_id = (int) $person_id;
+        $role_name = trim((string) $role_name);
+
+        if ($person_id < 1 || $role_name === '') {
+            return false;
+        }
+
+        $rows = pba_supabase_get('Person_to_Role', array(
+            'select'    => 'role_id',
+            'person_id' => 'eq.' . $person_id,
+            'is_active' => 'eq.true',
+            'limit'     => 20,
+        ));
+
+        if (is_wp_error($rows) || empty($rows)) {
+            return false;
+        }
+
+        $role_ids = array();
+
+        foreach ($rows as $row) {
+            $role_id = isset($row['role_id']) ? (int) $row['role_id'] : 0;
+            if ($role_id > 0) {
+                $role_ids[] = $role_id;
+            }
+        }
+
+        $role_ids = array_values(array_unique($role_ids));
+
+        if (empty($role_ids)) {
+            return false;
+        }
+
+        $role_rows = pba_supabase_get('Role', array(
+            'select'  => 'role_id,role_name',
+            'role_id' => 'in.(' . implode(',', $role_ids) . ')',
+            'limit'   => count($role_ids),
+        ));
+
+        if (is_wp_error($role_rows) || empty($role_rows)) {
+            return false;
+        }
+
+        foreach ($role_rows as $role_row) {
+            if (isset($role_row['role_name']) && (string) $role_row['role_name'] === $role_name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('pba_household_count_active_house_admins')) {
+    function pba_household_count_active_house_admins($household_id) {
+        $household_id = (int) $household_id;
+
+        if ($household_id < 1) {
+            return 0;
+        }
+
+        $rows = pba_supabase_get('Person', array(
+            'select'       => 'person_id,status',
+            'household_id' => 'eq.' . $household_id,
+            'limit'        => 200,
+        ));
+
+        if (is_wp_error($rows) || empty($rows)) {
+            return 0;
+        }
+
+        $count = 0;
+
+        foreach ($rows as $row) {
+            $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+            $status = isset($row['status']) ? (string) $row['status'] : '';
+
+            if ($person_id < 1) {
+                continue;
+            }
+
+            if (!in_array($status, array('Active', 'Pending', 'Disabled', 'Expired', 'Unregistered'), true)) {
+                continue;
+            }
+
+            if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
 }
 
 function pba_handle_household_disable_member() {
@@ -470,6 +567,14 @@ function pba_handle_household_disable_member() {
 
     $person_id = (int) $person['person_id'];
     $wp_user_id = isset($person['wp_user_id']) ? (int) $person['wp_user_id'] : 0;
+
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        if (pba_household_count_active_house_admins((int) $context['household_id']) <= 1) {
+            pba_household_redirect('remove_blocked_last_admin');
+        }
+
+        pba_household_redirect('remove_blocked_house_admin');
+    }
 
     $updated = pba_supabase_update(
         'Person',
@@ -518,6 +623,10 @@ function pba_handle_household_enable_member() {
 
     $person_id = (int) $person['person_id'];
 
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        pba_household_redirect('remove_blocked_house_admin');
+    }
+
     $updated = pba_supabase_update(
         'Person',
         array(
@@ -559,6 +668,10 @@ function pba_handle_household_cancel_invite() {
     }
 
     $person_id = (int) $person['person_id'];
+
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        pba_household_redirect('remove_blocked_house_admin');
+    }
 
     $delete_links = pba_supabase_delete('Person_to_Role', array(
         'person_id' => 'eq.' . $person_id,
@@ -609,6 +722,10 @@ function pba_handle_household_resend_invite() {
     $email = isset($person['email_address']) ? (string) $person['email_address'] : '';
     $first_name = isset($person['first_name']) ? (string) $person['first_name'] : '';
     $last_name = isset($person['last_name']) ? (string) $person['last_name'] : '';
+
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        pba_household_redirect('remove_blocked_house_admin');
+    }
 
     $member_role_id = pba_supabase_find_role_id_by_name('PBAMember');
 
@@ -671,4 +788,55 @@ function pba_handle_household_resend_invite() {
     }
 
     pba_household_redirect('invite_resent');
+}
+
+function pba_handle_household_remove_member() {
+    if (!is_user_logged_in() || !pba_current_user_has_house_admin_access()) {
+        wp_die('Unauthorized', 403);
+    }
+
+    if (
+        !isset($_POST['pba_household_remove_nonce']) ||
+        !wp_verify_nonce($_POST['pba_household_remove_nonce'], 'pba_household_remove_action')
+    ) {
+        pba_household_redirect('invalid_nonce');
+    }
+
+    list($person, $context) = pba_household_get_action_person();
+
+    if (!$person) {
+        pba_household_redirect('remove_failed');
+    }
+
+    $person_id = (int) $person['person_id'];
+    $household_id = (int) $context['household_id'];
+
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        if (pba_household_count_active_house_admins($household_id) <= 1) {
+            pba_household_redirect('remove_blocked_last_admin');
+        }
+
+        pba_household_redirect('remove_blocked_house_admin');
+    }
+
+    $updated = pba_supabase_update(
+        'Person',
+        array(
+            'household_id'     => null,
+            'last_modified_at' => gmdate('c'),
+        ),
+        array(
+            'person_id' => 'eq.' . $person_id,
+        )
+    );
+
+    if (is_wp_error($updated)) {
+        pba_household_redirect('remove_failed');
+    }
+
+    if (function_exists('pba_sync_wp_roles_for_person')) {
+        pba_sync_wp_roles_for_person($person_id);
+    }
+
+    pba_household_redirect('member_removed');
 }

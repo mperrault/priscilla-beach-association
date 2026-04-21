@@ -77,10 +77,14 @@ function pba_household_render_message($status, $duplicate_messages) {
         'member_enabled'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The member was enabled successfully.'),
         'invite_cancelled'                             => array('type' => 'success', 'title' => 'Success', 'text' => 'The pending invitation was cancelled successfully.'),
         'invite_resent'                                => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was resent successfully.'),
+        'member_removed'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The household member was removed successfully.'),
         'disable_failed'                               => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not disable that member.'),
         'enable_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not enable that member.'),
         'cancel_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not cancel that invitation.'),
         'resend_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not resend that invitation.'),
+        'remove_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not remove that household member.'),
+        'remove_blocked_house_admin'                   => array('type' => 'error',   'title' => 'Please review', 'text' => 'Household Admins are protected and cannot be managed from this page.'),
+        'remove_blocked_last_admin'                    => array('type' => 'error',   'title' => 'Please review', 'text' => 'The last active Household Admin cannot be removed or disabled.'),
     );
 
     $message = isset($messages[$status])
@@ -153,13 +157,68 @@ function pba_household_sort_rows($rows) {
     return $rows;
 }
 
+if (!function_exists('pba_household_person_has_role_name')) {
+    function pba_household_person_has_role_name($person_id, $role_name) {
+        $person_id = (int) $person_id;
+        $role_name = trim((string) $role_name);
+
+        if ($person_id < 1 || $role_name === '') {
+            return false;
+        }
+
+        $rows = pba_supabase_get('Person_to_Role', array(
+            'select'    => 'role_id',
+            'person_id' => 'eq.' . $person_id,
+            'is_active' => 'eq.true',
+            'limit'     => 20,
+        ));
+
+        if (is_wp_error($rows) || empty($rows)) {
+            return false;
+        }
+
+        $role_ids = array();
+
+        foreach ($rows as $row) {
+            $role_id = isset($row['role_id']) ? (int) $row['role_id'] : 0;
+            if ($role_id > 0) {
+                $role_ids[] = $role_id;
+            }
+        }
+
+        $role_ids = array_values(array_unique($role_ids));
+
+        if (empty($role_ids)) {
+            return false;
+        }
+
+        $role_rows = pba_supabase_get('Role', array(
+            'select'  => 'role_id,role_name',
+            'role_id' => 'in.(' . implode(',', $role_ids) . ')',
+            'limit'   => count($role_ids),
+        ));
+
+        if (is_wp_error($role_rows) || empty($role_rows)) {
+            return false;
+        }
+
+        foreach ($role_rows as $role_row) {
+            if (isset($role_row['role_name']) && (string) $role_row['role_name'] === $role_name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 function pba_render_household_previous_invitations_table($rows, $title) {
     ob_start();
     ?>
     <div class="pba-section">
         <div class="pba-section-heading">
             <h3><?php echo esc_html($title); ?></h3>
-            <p class="pba-section-subtitle">View accepted members, pending invitations, expired invitations, and disabled members for your household.</p>
+            <p class="pba-section-subtitle">Any Household Admin for this household can manage invites and non-admin members below. Household Admins are protected and cannot be removed or disabled from this page.</p>
         </div>
 
         <div class="pba-table-wrap">
@@ -170,7 +229,7 @@ function pba_render_household_previous_invitations_table($rows, $title) {
                     <col>
                     <col style="width: 140px;">
                     <col style="width: 180px;">
-                    <col style="width: 170px;">
+                    <col style="width: 220px;">
                 </colgroup>
                 <thead>
                     <tr>
@@ -192,6 +251,7 @@ function pba_render_household_previous_invitations_table($rows, $title) {
                             <?php
                             $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
                             $status = isset($row['status']) ? (string) $row['status'] : '';
+                            $is_house_admin = pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin');
                             ?>
                             <tr>
                                 <td><?php echo esc_html(isset($row['first_name']) ? $row['first_name'] : ''); ?></td>
@@ -200,15 +260,26 @@ function pba_render_household_previous_invitations_table($rows, $title) {
                                 <td><?php echo pba_household_render_status_badge($status); ?></td>
                                 <td><?php echo esc_html(pba_format_datetime_display(isset($row['last_modified_at']) ? $row['last_modified_at'] : '')); ?></td>
                                 <td class="pba-action-col">
-                                    <?php if ($status === 'Active') : ?>
-                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
-                                            <?php wp_nonce_field('pba_household_disable_action', 'pba_household_disable_nonce'); ?>
-                                            <input type="hidden" name="action" value="pba_household_disable_member">
-                                            <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
-                                            <button type="submit" class="pba-btn secondary pba-action-btn" data-processing-text="Disabling...">Disable</button>
-                                        </form>
+                                    <?php if ($is_house_admin) : ?>
+                                        <span class="pba-admin-list-muted">House Admin</span>
+                                    <?php elseif ($status === 'Active') : ?>
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
+                                                <?php wp_nonce_field('pba_household_disable_action', 'pba_household_disable_nonce'); ?>
+                                                <input type="hidden" name="action" value="pba_household_disable_member">
+                                                <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                                <button type="submit" class="pba-btn secondary pba-action-btn" data-processing-text="Disabling...">Disable</button>
+                                            </form>
+
+                                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form" onsubmit="return confirm('Remove this household member?');">
+                                                <?php wp_nonce_field('pba_household_remove_action', 'pba_household_remove_nonce'); ?>
+                                                <input type="hidden" name="action" value="pba_household_remove_member">
+                                                <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                                <button type="submit" class="pba-btn secondary pba-action-btn" data-processing-text="Removing...">Remove</button>
+                                            </form>
+                                        </div>
                                     <?php elseif ($status === 'Pending') : ?>
-                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
+                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form" onsubmit="return confirm('Cancel this invite?');">
                                             <?php wp_nonce_field('pba_household_cancel_action', 'pba_household_cancel_nonce'); ?>
                                             <input type="hidden" name="action" value="pba_household_cancel_invite">
                                             <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
@@ -222,12 +293,21 @@ function pba_render_household_previous_invitations_table($rows, $title) {
                                             <button type="submit" class="pba-btn pba-action-btn" data-processing-text="Resending...">Resend</button>
                                         </form>
                                     <?php elseif ($status === 'Disabled') : ?>
-                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
-                                            <?php wp_nonce_field('pba_household_enable_action', 'pba_household_enable_nonce'); ?>
-                                            <input type="hidden" name="action" value="pba_household_enable_member">
-                                            <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
-                                            <button type="submit" class="pba-btn pba-action-btn" data-processing-text="Enabling...">Enable</button>
-                                        </form>
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
+                                                <?php wp_nonce_field('pba_household_enable_action', 'pba_household_enable_nonce'); ?>
+                                                <input type="hidden" name="action" value="pba_household_enable_member">
+                                                <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                                <button type="submit" class="pba-btn pba-action-btn" data-processing-text="Enabling...">Enable</button>
+                                            </form>
+
+                                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form" onsubmit="return confirm('Remove this household member?');">
+                                                <?php wp_nonce_field('pba_household_remove_action', 'pba_household_remove_nonce'); ?>
+                                                <input type="hidden" name="action" value="pba_household_remove_member">
+                                                <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                                <button type="submit" class="pba-btn secondary pba-action-btn" data-processing-text="Removing...">Remove</button>
+                                            </form>
+                                        </div>
                                     <?php else : ?>
                                         —
                                     <?php endif; ?>
@@ -253,7 +333,7 @@ function pba_render_household_invite_section() {
         </div>
 
         <div class="pba-callout">
-            <strong>Tip:</strong> Add one row for each person you want to invite. Each person should have a unique email address.
+            <strong>Tip:</strong> Any Household Admin for this household can manage invitations and member access. Each person should have a unique email address.
         </div>
 
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="pba-household-invite-form" class="pba-auth-form" novalidate>
@@ -355,7 +435,7 @@ function pba_render_household_dashboard() {
             <div class="pba-page-eyebrow">Household Access</div>
             <h2 class="pba-page-title">Manage Household Members</h2>
             <p class="pba-page-intro">
-                Invite members of your household to join the site, review invitation status, and manage access for people already associated with your household.
+                Invite members of your household, review invitation status, and manage household access. Any Household Admin for this household can manage these records.
             </p>
         </div>
 
