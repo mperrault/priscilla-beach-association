@@ -96,7 +96,7 @@ function pba_render_member_directory_hero($data, $request_args) {
     <div class="pba-admin-list-hero">
         <div class="pba-admin-list-hero-top">
             <div>
-                <p>Find contact and household information for active PBA members, and use the search and sorting tools below to quickly locate the person you need.</p>
+                <p>Find contact and household information for active PBA members who have chosen to appear in the member directory.</p>
             </div>
         </div>
         <div class="pba-admin-list-kpis">
@@ -223,7 +223,7 @@ function pba_get_member_directory_list_url($overrides = array()) {
 
 function pba_get_member_directory_list_data($request_args) {
     $rows = pba_supabase_get('Person', array(
-        'select' => 'person_id,household_id,first_name,last_name,email_address,status',
+        'select' => 'person_id,household_id,first_name,last_name,email_address,status,directory_visibility_level',
         'status' => 'eq.Active',
         'order'  => 'last_name.asc,first_name.asc',
     ));
@@ -231,6 +231,15 @@ function pba_get_member_directory_list_data($request_args) {
     if (is_wp_error($rows) || !is_array($rows)) {
         return is_wp_error($rows) ? $rows : new WP_Error('pba_member_directory_load_failed', 'Unable to load member directory.');
     }
+
+    $rows = array_values(array_filter($rows, function ($row) {
+        $visibility = isset($row['directory_visibility_level']) ? trim((string) $row['directory_visibility_level']) : 'hidden';
+        if ($visibility === '') {
+            $visibility = 'hidden';
+        }
+
+        return $visibility !== 'hidden';
+    }));
 
     $household_labels = pba_member_directory_get_household_labels($rows);
     $committee_labels = pba_member_directory_get_committee_labels($rows);
@@ -258,7 +267,13 @@ function pba_prepare_member_directory_row($row, $household_labels, $committee_la
     $first_name = trim((string) ($row['first_name'] ?? ''));
     $last_name = trim((string) ($row['last_name'] ?? ''));
     $name = trim($first_name . ' ' . $last_name);
-    $email = trim((string) ($row['email_address'] ?? ''));
+    $visibility = isset($row['directory_visibility_level']) ? trim((string) $row['directory_visibility_level']) : 'hidden';
+    if ($visibility === '') {
+        $visibility = 'hidden';
+    }
+
+    $raw_email = trim((string) ($row['email_address'] ?? ''));
+    $email = $visibility === 'name_email' ? $raw_email : '';
     $household = isset($household_labels[$person_id]) ? trim((string) $household_labels[$person_id]) : '';
     $committees = isset($committee_labels[$person_id]) && is_array($committee_labels[$person_id]) ? $committee_labels[$person_id] : array();
     $committee_text = !empty($committees) ? implode(', ', $committees) : '';
@@ -274,6 +289,7 @@ function pba_prepare_member_directory_row($row, $household_labels, $committee_la
         'committees' => $committees,
         'committee_text' => $committee_text,
         'committee_sort' => strtolower($committee_text),
+        'directory_visibility_level' => $visibility,
     );
 }
 
@@ -402,7 +418,7 @@ function pba_render_member_directory_list_shell($data, $request_args) {
                                 <?php if ($row['email'] !== '') : ?>
                                     <a href="mailto:<?php echo esc_attr($row['email']); ?>"><?php echo esc_html($row['email']); ?></a>
                                 <?php else : ?>
-                                    <span class="pba-admin-list-muted">No email listed</span>
+                                    <span class="pba-admin-list-muted">Hidden</span>
                                 <?php endif; ?>
                             </td>
                             <td><?php echo esc_html($row['household'] !== '' ? $row['household'] : '—'); ?></td>
@@ -435,7 +451,7 @@ function pba_render_member_directory_list_shell($data, $request_args) {
                         <?php if ($row['email'] !== '') : ?>
                             <a href="mailto:<?php echo esc_attr($row['email']); ?>"><?php echo esc_html($row['email']); ?></a>
                         <?php else : ?>
-                            <span class="pba-admin-list-muted">No email listed</span>
+                            <span class="pba-admin-list-muted">Hidden</span>
                         <?php endif; ?>
                     </div>
 

@@ -237,6 +237,7 @@ function pba_render_members_list_view() {
         .pba-members-table th a.pba-admin-list-sort-link:focus {
             color: #607487 !important;
         }
+
         .pba-members-table {
             min-width: 1400px;
         }
@@ -1057,7 +1058,7 @@ function pba_render_members_pagination($pagination) {
 
 function pba_render_member_edit_view($member_id) {
     $member_rows = pba_supabase_get('Person', array(
-        'select'    => 'person_id,household_id,first_name,last_name,email_address,status,wp_user_id,email_verified,last_modified_at',
+        'select'    => 'person_id,household_id,first_name,last_name,email_address,status,wp_user_id,email_verified,last_modified_at,directory_visibility_level',
         'person_id' => 'eq.' . (int) $member_id,
         'limit'     => 1,
     ));
@@ -1096,17 +1097,17 @@ function pba_render_member_edit_view($member_id) {
     echo pba_members_render_shared_styles_if_available();
     ?>
     <style>
-    .pba-member-edit-wrap .pba-summary-value {
-        font-size: 18px;
-        line-height: 1.35;
-        font-weight: 600;
-    }
+        .pba-member-edit-wrap .pba-summary-value {
+            font-size: 18px;
+            line-height: 1.35;
+            font-weight: 600;
+        }
 
-    .pba-member-edit-wrap .pba-summary-label {
-        font-size: 12px;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-    }
+        .pba-member-edit-wrap .pba-summary-label {
+            font-size: 12px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
     </style>
     <div class="pba-member-edit-wrap pba-page-wrap">
         <p>
@@ -1127,6 +1128,7 @@ function pba_render_member_edit_view($member_id) {
                 <?php endif; ?>
             </div>
         </div>
+
         <?php if (in_array($status, array('Active', 'Disabled', 'Pending', 'Expired'), true)) : ?>
             <div class="pba-section">
                 <div class="pba-actions">
@@ -1202,6 +1204,19 @@ function pba_render_member_edit_view($member_id) {
                     <tr>
                         <th><label for="email_address">Email Address</label></th>
                         <td><div class="pba-field"><input type="email" name="email_address" id="email_address" value="<?php echo esc_attr($member['email_address'] ?? ''); ?>"></div></td>
+                    </tr>
+
+                    <tr>
+                        <th><label for="directory_visibility_level">Directory Listing</label></th>
+                        <td>
+                            <div class="pba-field">
+                                <select name="directory_visibility_level" id="directory_visibility_level">
+                                    <option value="hidden" <?php selected(($member['directory_visibility_level'] ?? 'hidden'), 'hidden'); ?>>Hide from directory</option>
+                                    <option value="name_only" <?php selected(($member['directory_visibility_level'] ?? ''), 'name_only'); ?>>Show name only</option>
+                                    <option value="name_email" <?php selected(($member['directory_visibility_level'] ?? ''), 'name_email'); ?>>Show name and email</option>
+                                </select>
+                            </div>
+                        </td>
                     </tr>
 
                     <tr>

@@ -199,7 +199,7 @@ function pba_get_supabase_role_name_to_wp_role_map() {
 }
 
 function pba_get_person_select_fields() {
-    return 'person_id,wp_user_id,first_name,last_name,email_address,status,email_verified,household_id,last_modified_at';
+    return 'person_id,wp_user_id,first_name,last_name,email_address,status,email_verified,household_id,last_modified_at,directory_visibility_level';
 }
 
 function pba_get_person_record_by_id($person_id) {

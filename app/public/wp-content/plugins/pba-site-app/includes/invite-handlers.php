@@ -317,7 +317,27 @@ function pba_handle_member_invite_accept() {
     $email        = $invite_data['email'];
     $first_name   = isset($invite_data['first_name']) ? $invite_data['first_name'] : '';
     $last_name    = isset($invite_data['last_name']) ? $invite_data['last_name'] : '';
+    $directory_visibility_level = isset($_POST['directory_visibility_level'])
+        ? sanitize_text_field(wp_unslash($_POST['directory_visibility_level']))
+        : '';
 
+    if ($directory_visibility_level === '') {
+        wp_safe_redirect(add_query_arg(array(
+            'invite_token' => rawurlencode($invite_token),
+            'pba_invite_status' => 'missing_directory_visibility',
+            'directory_visibility_level' => 'hidden',
+        ), home_url('/member-invite-accept/')));
+        exit;
+    }
+
+    if (!in_array($directory_visibility_level, array('hidden', 'name_only', 'name_email'), true)) {
+        wp_safe_redirect(add_query_arg(array(
+            'invite_token' => rawurlencode($invite_token),
+            'pba_invite_status' => 'invalid_directory_visibility',
+            'directory_visibility_level' => 'hidden',
+        ), home_url('/member-invite-accept/')));
+        exit;
+    }
     $person_rows = pba_supabase_get('Person', array(
         'select'    => 'person_id,household_id,first_name,last_name,email_address,status',
         'person_id' => 'eq.' . $person_id,
@@ -367,6 +387,7 @@ function pba_handle_member_invite_accept() {
         array(
             'status'           => 'Active',
             'email_verified'   => 1,
+            'directory_visibility_level' => $directory_visibility_level,
             'wp_user_id'       => (string) $user_id,
             'last_modified_at' => gmdate('c'),
         ),

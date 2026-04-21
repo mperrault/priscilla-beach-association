@@ -93,6 +93,20 @@ function pba_render_profile_shortcode() {
     $email_verified_label = !empty($person['email_verified']) ? 'Yes' : 'No';
     $role_count = count($role_names);
     $committee_count = count($committee_labels);
+    $directory_visibility_level = isset($person['directory_visibility_level'])
+        ? trim((string) $person['directory_visibility_level'])
+        : 'hidden';
+
+    if (!in_array($directory_visibility_level, array('hidden', 'name_only', 'name_email'), true)) {
+        $directory_visibility_level = 'hidden';
+    }
+
+    $directory_visibility_label = 'Hidden';
+    if ($directory_visibility_level === 'name_only') {
+        $directory_visibility_label = 'Name only';
+    } elseif ($directory_visibility_level === 'name_email') {
+        $directory_visibility_label = 'Name and email';
+    }
 
     ob_start();
     ?>
@@ -419,7 +433,6 @@ function pba_render_profile_shortcode() {
         <div class="pba-profile-hero">
             <div class="pba-profile-hero-top">
                 <div>
-                    <!-- div class="pba-profile-hero-title">My Profile</div -->
                     <p>Review and update your account details, and see your association information in one place.</p>
                 </div>
             </div>
@@ -495,6 +508,23 @@ function pba_render_profile_shortcode() {
                                     >
                                 </td>
                             </tr>
+                            <tr>
+                                <th><label for="directory_visibility_level">Member Directory Visibility</label></th>
+                                <td>
+                                    <select
+                                        class="pba-profile-input"
+                                        name="directory_visibility_level"
+                                        id="directory_visibility_level"
+                                    >
+                                        <option value="hidden" <?php selected($directory_visibility_level, 'hidden'); ?>>Hide from directory</option>
+                                        <option value="name_only" <?php selected($directory_visibility_level, 'name_only'); ?>>Show name only</option>
+                                        <option value="name_email" <?php selected($directory_visibility_level, 'name_email'); ?>>Show name and email</option>
+                                    </select>
+                                    <div class="pba-profile-muted" style="margin-top:8px;">
+                                        Choose what other PBA members can see in the member directory.
+                                    </div>
+                                </td>
+                            </tr>
                         </table>
 
                         <div class="pba-profile-actions">
@@ -554,6 +584,10 @@ function pba_render_profile_shortcode() {
                                 <?php echo esc_html($email_verified_label); ?>
                             </span>
                         </td>
+                    </tr>
+                    <tr>
+                        <th>Member Directory Visibility</th>
+                        <td><?php echo esc_html($directory_visibility_label); ?></td>
                     </tr>
                     <tr>
                         <th>Household</th>
@@ -666,15 +700,24 @@ function pba_handle_save_profile() {
     $first_name = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
     $last_name = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
     $email_address = isset($_POST['email_address']) ? sanitize_email(wp_unslash($_POST['email_address'])) : '';
+    $directory_visibility_level = isset($_POST['directory_visibility_level'])
+        ? sanitize_text_field(wp_unslash($_POST['directory_visibility_level']))
+        : 'hidden';
 
     if ($first_name === '' || $last_name === '') {
         wp_safe_redirect(add_query_arg('pba_profile_status', 'invalid_request', home_url('/profile/')));
         exit;
     }
 
+    if (!in_array($directory_visibility_level, array('hidden', 'name_only', 'name_email'), true)) {
+        wp_safe_redirect(add_query_arg('pba_profile_status', 'invalid_request', home_url('/profile/')));
+        exit;
+    }
+
     $update_data = array(
-        'first_name' => $first_name,
-        'last_name'  => $last_name,
+        'first_name'                 => $first_name,
+        'last_name'                  => $last_name,
+        'directory_visibility_level' => $directory_visibility_level,
     );
 
     if ($email_address !== '') {

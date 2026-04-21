@@ -63,7 +63,13 @@ function pba_handle_save_member_admin() {
     if ($email_address !== '' && !is_email($email_address)) {
         pba_members_redirect('invalid_member_email', $member_id, 'edit');
     }
+    $directory_visibility_level = isset($_POST['directory_visibility_level'])
+        ? sanitize_text_field(wp_unslash($_POST['directory_visibility_level']))
+        : 'hidden';
 
+    if (!in_array($directory_visibility_level, array('hidden', 'name_only', 'name_email'), true)) {
+        $directory_visibility_level = 'hidden';
+    }
     $updated = pba_supabase_update(
         'Person',
         array(
@@ -71,6 +77,7 @@ function pba_handle_save_member_admin() {
             'first_name'       => $first_name,
             'last_name'        => $last_name,
             'email_address'    => $email_address !== '' ? $email_address : null,
+            'directory_visibility_level' => $directory_visibility_level,
             'status'           => $status,
             'last_modified_at' => gmdate('c'),
         ),
