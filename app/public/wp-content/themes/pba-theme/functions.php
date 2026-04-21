@@ -8,6 +8,22 @@ add_action('wp_enqueue_scripts', 'pba_theme_scripts');
 add_action('after_setup_theme', 'pba_theme_setup');
 add_action('wp_head', 'pba_add_favicon_tags');
 
+set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+    if (in_array($errno, array(E_DEPRECATED, E_USER_DEPRECATED), true)) {
+        error_log('PHP DEPRECATED: ' . $errstr . ' in ' . $errfile . ':' . $errline);
+        error_log(print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true));
+    }
+    return false;
+});
+
+add_action('deprecated_function_run', function () {
+    error_log("=== deprecated_function_run ===");
+    error_log(print_r(wp_debug_backtrace_summary(), true));
+});
+
+error_log('PBA TEST DEBUG LOG ENTRY');
+error_log('ACTIVE SITE URL: ' . home_url());
+
 function pba_theme_setup() {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');

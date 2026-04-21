@@ -235,11 +235,7 @@ function pba_handle_reset_password_request() {
     }
 
     $message = "
-    <html>
-    <head>
-      <title>Reset Your PBA Password</title>
-    </head>
-    <body>
+      <h1>Reset Your PBA Password</h1>
       <h2>Hello {$display_name},</h2>
       <p>We received a request to reset your password for your Priscilla Beach Association (PBA) account.</p>
       <p>To reset your password, please click the link below:</p>
@@ -248,8 +244,6 @@ function pba_handle_reset_password_request() {
       <p>If you did not request a password reset, you can safely ignore this email.</p>
       <p>Best regards,<br>The Priscilla Beach Association Team</p>
       <p><strong>Contact us:</strong> info@priscillabeachassociation.com</p>
-    </body>
-    </html>
     ";
 
     $headers = array('Content-Type: text/html; charset=UTF-8');
@@ -517,11 +511,7 @@ function pba_handle_house_admin_verify() {
     $subject = 'Welcome to the Priscilla Beach Association (PBA)!';
 
     $message = "
-    <html>
-    <head>
-      <title>Complete Your PBA House Admin Account Setup</title>
-    </head>
-    <body>
+      <h1>Complete Your PBA House Admin Account Setup</h1>
       <h2>Hello {$first_name} {$last_name},</h2>
       <p>Thank you for registering as a <strong>House Admin</strong> for the Priscilla Beach Association (PBA)!</p>
       <p>To complete your account setup, please click the link below to set your password:</p>
@@ -530,8 +520,6 @@ function pba_handle_house_admin_verify() {
       <p>If you did not request this registration or need assistance, please contact the PBA Admin.</p>
       <p>Best regards,<br>The Priscilla Beach Association Team</p>
       <p><strong>Contact us:</strong> info@priscillabeachassociation.com</p>
-    </body>
-    </html>
     ";
 
     $headers = array('Content-Type: text/html; charset=UTF-8');
