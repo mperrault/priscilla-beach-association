@@ -5,8 +5,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('PBA_SESSION_IDLE_TIMEOUT')) {
-    //define('PBA_SESSION_IDLE_TIMEOUT', 30 * MINUTE_IN_SECONDS);
-    define('PBA_SESSION_IDLE_TIMEOUT', 1 * MINUTE_IN_SECONDS);
+    define('PBA_SESSION_IDLE_TIMEOUT', 30 * MINUTE_IN_SECONDS);
 }
 
 if (!defined('PBA_SESSION_NON_REMEMBER_TIMEOUT')) {
