@@ -32,17 +32,52 @@ function pba_render_audit_log_shortcode() {
     echo function_exists('pba_admin_list_render_shared_styles') ? pba_admin_list_render_shared_styles() : '';
     ?>
     <style>
+        .pba-audit-log-wrap {
+            width: 100%;
+            max-width: none;
+        }
+
+        .pba-audit-log-wrap.pba-page-wrap {
+            width: 100%;
+            max-width: none;
+        }
+
+        .pba-audit-log-wrap .pba-admin-list-card,
+        .pba-audit-log-wrap .pba-admin-list-hero,
+        .pba-audit-log-wrap .pba-section {
+            width: 100%;
+            max-width: none;
+            box-sizing: border-box;
+        }
+
+        .pba-audit-log-wrap .pba-admin-list-grid-wrap {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .pba-audit-log-table {
             min-width: 1400px;
+            width: 100%;
+            table-layout: fixed;
         }
 
         .pba-audit-log-table th,
         .pba-audit-log-table td {
             vertical-align: top;
+            box-sizing: border-box;
         }
 
         .pba-audit-log-table td {
             font-size: 14px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .pba-audit-log-table th {
+            position: relative;
         }
 
         .pba-audit-log-summary {
@@ -55,7 +90,9 @@ function pba_render_audit_log_shortcode() {
         .pba-audit-log-entity,
         .pba-audit-log-actor,
         .pba-audit-log-request {
-            white-space: nowrap;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
         .pba-audit-log-toggle {
@@ -175,6 +212,42 @@ function pba_render_audit_log_shortcode() {
             flex-wrap: wrap;
             align-items: end;
             margin-top: 14px;
+        }
+
+        .pba-audit-log-col-resizer {
+            position: absolute;
+            top: 0;
+            right: -5px;
+            width: 10px;
+            height: 100%;
+            cursor: col-resize;
+            user-select: none;
+            z-index: 5;
+        }
+
+        .pba-audit-log-col-resizer::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            bottom: 8px;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background: #d6e0ea;
+            border-radius: 999px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .pba-audit-log-table th:hover .pba-audit-log-col-resizer::before,
+        .pba-audit-log-col-resizer.is-active::before {
+            opacity: 1;
+        }
+
+        body.pba-audit-log-resizing,
+        body.pba-audit-log-resizing * {
+            cursor: col-resize !important;
+            user-select: none !important;
         }
     </style>
 
@@ -304,7 +377,7 @@ function pba_render_audit_log_shortcode() {
             </div>
 
             <div class="pba-admin-list-grid-wrap">
-                <table class="pba-admin-list-table pba-audit-log-table">
+                <table class="pba-admin-list-table pba-audit-log-table" id="pba-audit-log-table">
                     <thead>
                         <tr>
                             <?php echo pba_admin_list_render_sortable_th(array(
@@ -497,6 +570,118 @@ function pba_render_audit_log_shortcode() {
 
                 row.classList.toggle('is-open');
                 button.textContent = row.classList.contains('is-open') ? 'Hide' : 'View';
+            });
+        });
+
+        var table = document.getElementById('pba-audit-log-table');
+        if (!table) {
+            return;
+        }
+
+        var headRow = table.querySelector('thead tr');
+        if (!headRow) {
+            return;
+        }
+
+        var ths = Array.prototype.slice.call(headRow.children);
+        if (!ths.length) {
+            return;
+        }
+
+        var storageKey = 'pbaAuditLogColumnWidthsV3';
+        var minWidth = 90;
+        var colgroup = document.createElement('colgroup');
+        var cols = [];
+
+        ths.forEach(function (th) {
+            var col = document.createElement('col');
+            colgroup.appendChild(col);
+            cols.push(col);
+        });
+
+        table.insertBefore(colgroup, table.firstChild);
+
+        function setDefaultWidths() {
+            ths.forEach(function (th, index) {
+                var width = Math.max(minWidth, Math.round(th.getBoundingClientRect().width));
+                cols[index].style.width = width + 'px';
+            });
+        }
+
+        function loadWidths() {
+            try {
+                var raw = window.localStorage.getItem(storageKey);
+                if (!raw) {
+                    setDefaultWidths();
+                    return;
+                }
+
+                var widths = JSON.parse(raw);
+                if (!Array.isArray(widths) || widths.length !== cols.length) {
+                    setDefaultWidths();
+                    return;
+                }
+
+                widths.forEach(function (width, index) {
+                    if (typeof width === 'number' && width >= minWidth) {
+                        cols[index].style.width = width + 'px';
+                    } else {
+                        cols[index].style.width = Math.max(minWidth, Math.round(ths[index].getBoundingClientRect().width)) + 'px';
+                    }
+                });
+            } catch (e) {
+                setDefaultWidths();
+            }
+        }
+
+        function saveWidths() {
+            try {
+                var widths = cols.map(function (col, index) {
+                    var parsed = parseInt(col.style.width, 10);
+                    if (!parsed || parsed < minWidth) {
+                        parsed = Math.max(minWidth, Math.round(ths[index].getBoundingClientRect().width));
+                    }
+                    return parsed;
+                });
+                window.localStorage.setItem(storageKey, JSON.stringify(widths));
+            } catch (e) {
+            }
+        }
+
+        loadWidths();
+
+        ths.forEach(function (th, index) {
+            var handle = document.createElement('span');
+            handle.className = 'pba-audit-log-col-resizer';
+            handle.setAttribute('aria-hidden', 'true');
+            th.appendChild(handle);
+
+            handle.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                var startX = event.clientX;
+                var startWidth = Math.max(minWidth, Math.round(th.getBoundingClientRect().width));
+
+                document.body.classList.add('pba-audit-log-resizing');
+                handle.classList.add('is-active');
+
+                function onMouseMove(moveEvent) {
+                    var delta = moveEvent.clientX - startX;
+                    var newWidth = Math.max(minWidth, startWidth + delta);
+                    cols[index].style.width = newWidth + 'px';
+                }
+
+                function onMouseUp() {
+                    document.body.classList.remove('pba-audit-log-resizing');
+                    handle.classList.remove('is-active');
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    saveWidths();
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
             });
         });
     })();
