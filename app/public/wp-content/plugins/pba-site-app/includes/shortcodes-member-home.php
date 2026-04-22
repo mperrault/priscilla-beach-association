@@ -107,6 +107,12 @@ function pba_render_member_home_shortcode() {
             'description' => 'Manage committees and committee rosters.',
             'url' => home_url('/committees/'),
         );
+
+        $cards[] = array(
+            'title' => 'Audit Log',
+            'description' => 'Review audited user actions and investigate changes across the application.',
+            'url' => home_url('/audit-log/'),
+        );
     }
 
     $welcome_title = 'Welcome' . ($first_name !== '' ? ', ' . $first_name : '');

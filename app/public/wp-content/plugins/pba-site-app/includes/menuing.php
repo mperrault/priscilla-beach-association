@@ -39,6 +39,7 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
     $member_resources_url = trailingslashit(home_url('/member-resources/'));
     $members_url = trailingslashit(home_url('/members/'));
     $committees_url = trailingslashit(home_url('/committees/'));
+    $audit_log_url = trailingslashit(home_url('/audit-log/'));
     $profile_url = trailingslashit(home_url('/profile/'));
 
     $state = pba_get_menu_visibility_state();
@@ -104,6 +105,13 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
         }
 
         if ($item_url === $committees_url || strcasecmp($title, 'Committees') === 0) {
+            if (!$state['is_admin']) {
+                unset($items[$index]);
+            }
+            continue;
+        }
+
+        if ($item_url === $audit_log_url || strcasecmp($title, 'Audit Log') === 0) {
             if (!$state['is_admin']) {
                 unset($items[$index]);
             }
@@ -191,6 +199,10 @@ function pba_get_logged_in_menu_items() {
         $admin_children[] = array(
             'label' => 'Committees',
             'url'   => home_url('/committees/'),
+        );
+        $admin_children[] = array(
+            'label' => 'Audit Log',
+            'url'   => home_url('/audit-log/'),
         );
     }
 

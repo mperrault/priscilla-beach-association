@@ -19,6 +19,66 @@ add_action('admin_post_pba_reset_password_request', 'pba_handle_reset_password_r
 add_action('admin_post_nopriv_pba_reset_password_confirm', 'pba_handle_reset_password_confirm');
 add_action('admin_post_pba_reset_password_confirm', 'pba_handle_reset_password_confirm');
 
+if (!function_exists('pba_auth_audit_log')) {
+    function pba_auth_audit_log($action_type, $entity_type, $entity_id = null, $args = array()) {
+        if (!function_exists('pba_audit_log')) {
+            return;
+        }
+
+        pba_audit_log($action_type, $entity_type, $entity_id, $args);
+    }
+}
+
+if (!function_exists('pba_auth_get_person_snapshot')) {
+    function pba_auth_get_person_snapshot($person_id) {
+        $person_id = (int) $person_id;
+
+        if ($person_id < 1) {
+            return null;
+        }
+
+        $rows = pba_supabase_get('Person', array(
+            'select'    => 'person_id,household_id,first_name,last_name,email_address,status,email_verified,wp_user_id,invited_by_person_id,directory_visibility_level,last_modified_at',
+            'person_id' => 'eq.' . $person_id,
+            'limit'     => 1,
+        ));
+
+        if (is_wp_error($rows) || empty($rows[0]) || !is_array($rows[0])) {
+            return null;
+        }
+
+        return $rows[0];
+    }
+}
+
+if (!function_exists('pba_auth_get_person_label')) {
+    function pba_auth_get_person_label($person_row, $fallback_email = '') {
+        if (is_array($person_row)) {
+            $first_name = trim((string) ($person_row['first_name'] ?? ''));
+            $last_name = trim((string) ($person_row['last_name'] ?? ''));
+            $label = trim($first_name . ' ' . $last_name);
+
+            if ($label !== '') {
+                return $label;
+            }
+
+            $email = trim((string) ($person_row['email_address'] ?? ''));
+            if ($email !== '') {
+                return $email;
+            }
+
+            $person_id = isset($person_row['person_id']) ? (int) $person_row['person_id'] : 0;
+            if ($person_id > 0) {
+                return 'Person #' . $person_id;
+            }
+        }
+
+        $fallback_email = trim((string) $fallback_email);
+
+        return $fallback_email;
+    }
+}
+
 function pba_auth_normalize_compare_value($value) {
     $value = is_string($value) ? $value : (string) $value;
     $value = trim(wp_strip_all_tags($value));
@@ -95,6 +155,23 @@ function pba_handle_member_login() {
             $status = 'account_disabled';
         }
 
+        pba_auth_audit_log(
+            'auth.login.failure',
+            'Auth',
+            null,
+            array(
+                'entity_label'  => $email,
+                'result_status' => 'failure',
+                'summary'       => 'Login failed.',
+                'details'       => array(
+                    'email'        => $email,
+                    'error_code'   => $user->get_error_code(),
+                    'error_message'=> $user->get_error_message(),
+                    'status'       => $status,
+                ),
+            )
+        );
+
         $redirect_url = add_query_arg(
             array(
                 'pba_register_status' => $status,
@@ -106,6 +183,9 @@ function pba_handle_member_login() {
         exit;
     }
 
+    $person_id = 0;
+    $person_snapshot = null;
+
     if ($user instanceof WP_User) {
         wp_set_current_user($user->ID);
 
@@ -113,7 +193,27 @@ function pba_handle_member_login() {
         update_user_meta($user->ID, 'pba_last_activity', time());
 
         do_action('wp_login', $user->user_login, $user);
+
+        $person_id = (int) get_user_meta($user->ID, 'pba_person_id', true);
+        $person_snapshot = pba_auth_get_person_snapshot($person_id);
     }
+
+    pba_auth_audit_log(
+        'auth.login.success',
+        'Person',
+        $person_id > 0 ? $person_id : null,
+        array(
+            'entity_label'     => pba_auth_get_person_label($person_snapshot, $email),
+            'target_person_id' => $person_id > 0 ? $person_id : null,
+            'target_household_id' => is_array($person_snapshot) && isset($person_snapshot['household_id']) ? (int) $person_snapshot['household_id'] : null,
+            'summary'          => 'Login succeeded.',
+            'details'          => array(
+                'email'      => $email,
+                'wp_user_id' => ($user instanceof WP_User) ? (int) $user->ID : null,
+                'roles'      => ($user instanceof WP_User) ? array_values((array) $user->roles) : array(),
+            ),
+        )
+    );
 
     $roles = (array) $user->roles;
     if (
@@ -127,6 +227,7 @@ function pba_handle_member_login() {
     wp_safe_redirect(home_url('/member-home/'));
     exit;
 }
+
 function pba_handle_reset_password_request() {
     if (
         !isset($_POST['pba_reset_password_request_nonce']) ||
@@ -257,6 +358,24 @@ function pba_handle_reset_password_request() {
     if (!$sent) {
         delete_user_meta($user->ID, 'pba_active_reset_token');
 
+        pba_auth_audit_log(
+            'auth.password_reset.requested',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_auth_get_person_label($person_row, $email),
+                'target_person_id'    => $person_id,
+                'result_status'       => 'failure',
+                'summary'             => 'Password reset requested, but reset email failed to send.',
+                'before'              => $person_row,
+                'details'             => array(
+                    'email' => $email,
+                    'wp_user_id' => (int) $user->ID,
+                    'email_sent' => false,
+                ),
+            )
+        );
+
         pba_reset_password_redirect(
             'email_send_failed',
             array(
@@ -264,6 +383,23 @@ function pba_handle_reset_password_request() {
             )
         );
     }
+
+    pba_auth_audit_log(
+        'auth.password_reset.requested',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'        => pba_auth_get_person_label($person_row, $email),
+            'target_person_id'    => $person_id,
+            'summary'             => 'Password reset requested; reset email sent.',
+            'before'              => $person_row,
+            'details'             => array(
+                'email' => $email,
+                'wp_user_id' => (int) $user->ID,
+                'email_sent' => true,
+            ),
+        )
+    );
 
     pba_reset_password_redirect(
         'check_email',
@@ -338,6 +474,9 @@ function pba_handle_reset_password_confirm() {
         pba_reset_password_redirect('invalid_token');
     }
 
+    $person_id = (int) get_user_meta($user_id, 'pba_person_id', true);
+    $before = pba_auth_get_person_snapshot($person_id);
+
     wp_set_password($password, $user_id);
 
     delete_transient('pba_password_reset_' . $email_token);
@@ -345,6 +484,26 @@ function pba_handle_reset_password_confirm() {
 
     wp_clear_auth_cookie();
     wp_set_current_user(0);
+
+    $after = pba_auth_get_person_snapshot($person_id);
+
+    pba_auth_audit_log(
+        'auth.password_reset.completed',
+        'Person',
+        $person_id > 0 ? $person_id : null,
+        array(
+            'entity_label'        => pba_auth_get_person_label($after ?: $before, $user->user_email),
+            'target_person_id'    => $person_id > 0 ? $person_id : null,
+            'target_household_id' => is_array($after) && isset($after['household_id']) ? (int) $after['household_id'] : (is_array($before) && isset($before['household_id']) ? (int) $before['household_id'] : null),
+            'summary'             => 'Password reset completed.',
+            'before'              => $before,
+            'after'               => $after,
+            'details'             => array(
+                'wp_user_id' => $user_id,
+                'email'      => $user->user_email,
+            ),
+        )
+    );
 
     wp_safe_redirect(add_query_arg(
         array(
@@ -531,8 +690,44 @@ function pba_handle_house_admin_verify() {
     $sent = wp_mail($email, $subject, $message, $headers);
 
     if (!$sent) {
+        pba_auth_audit_log(
+            'auth.house_admin.verification_requested',
+            'Household',
+            $household_id,
+            array(
+                'entity_label'        => $email,
+                'target_household_id' => $household_id,
+                'target_person_id'    => $existing_person_id > 0 ? $existing_person_id : null,
+                'result_status'       => 'failure',
+                'summary'             => 'House Admin verification passed, but setup email failed to send.',
+                'details'             => array(
+                    'email' => $email,
+                    'first_name' => $first_name,
+                    'last_name' => $last_name,
+                ),
+            )
+        );
+
         pba_registration_redirect('email_send_failed');
     }
+
+    pba_auth_audit_log(
+        'auth.house_admin.verification_requested',
+        'Household',
+        $household_id,
+        array(
+            'entity_label'        => $email,
+            'target_household_id' => $household_id,
+            'target_person_id'    => $existing_person_id > 0 ? $existing_person_id : null,
+            'summary'             => 'House Admin verification succeeded; setup email sent.',
+            'details'             => array(
+                'email' => $email,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'existing_person_id' => $existing_person_id > 0 ? $existing_person_id : null,
+            ),
+        )
+    );
 
     pba_registration_redirect('check_email');
 }
@@ -600,6 +795,8 @@ function pba_handle_house_admin_create_user() {
     $household_id = isset($setup_data['household_id']) ? (int) $setup_data['household_id'] : 0;
     $first_name   = isset($setup_data['first_name']) ? (string) $setup_data['first_name'] : '';
     $last_name    = isset($setup_data['last_name']) ? (string) $setup_data['last_name'] : '';
+
+    $before = $person_id > 0 ? pba_auth_get_person_snapshot($person_id) : null;
 
     if (username_exists($email) || email_exists($email)) {
         delete_transient('pba_house_admin_email_verify_' . $email_token);
@@ -730,6 +927,26 @@ function pba_handle_house_admin_create_user() {
     if ($user instanceof WP_User) {
         do_action('wp_login', $user->user_login, $user);
     }
+
+    $after = pba_auth_get_person_snapshot($person_id);
+
+    pba_auth_audit_log(
+        'auth.house_admin.account_created',
+        'Person',
+        $person_id > 0 ? $person_id : null,
+        array(
+            'entity_label'        => pba_auth_get_person_label($after ?: $before, $email),
+            'target_person_id'    => $person_id > 0 ? $person_id : null,
+            'target_household_id' => $household_id > 0 ? $household_id : null,
+            'summary'             => 'House Admin account created and signed in.',
+            'before'              => $before,
+            'after'               => $after,
+            'details'             => array(
+                'email'      => $email,
+                'wp_user_id' => $user_id,
+            ),
+        )
+    );
 
     pba_household_redirect('account_created');
 }

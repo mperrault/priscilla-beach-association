@@ -11,6 +11,62 @@ add_action('admin_post_pba_admin_resend_invite', 'pba_handle_admin_resend_invite
 add_action('admin_post_pba_admin_remove_member_from_household', 'pba_handle_admin_remove_member_from_household');
 add_action('admin_post_pba_admin_hard_delete_person', 'pba_handle_admin_hard_delete_person');
 
+if (!function_exists('pba_admin_member_get_person_snapshot')) {
+    function pba_admin_member_get_person_snapshot($person_id) {
+        $person_id = (int) $person_id;
+
+        if ($person_id < 1) {
+            return null;
+        }
+
+        $rows = pba_supabase_get('Person', array(
+            'select'    => 'person_id,household_id,first_name,last_name,email_address,status,email_verified,wp_user_id,invited_by_person_id,directory_visibility_level,last_modified_at',
+            'person_id' => 'eq.' . $person_id,
+            'limit'     => 1,
+        ));
+
+        if (is_wp_error($rows) || empty($rows[0]) || !is_array($rows[0])) {
+            return null;
+        }
+
+        return $rows[0];
+    }
+}
+
+if (!function_exists('pba_admin_member_get_person_label')) {
+    function pba_admin_member_get_person_label($person_row) {
+        if (!is_array($person_row)) {
+            return '';
+        }
+
+        $first_name = trim((string) ($person_row['first_name'] ?? ''));
+        $last_name = trim((string) ($person_row['last_name'] ?? ''));
+        $label = trim($first_name . ' ' . $last_name);
+
+        if ($label !== '') {
+            return $label;
+        }
+
+        $email = trim((string) ($person_row['email_address'] ?? ''));
+        if ($email !== '') {
+            return $email;
+        }
+
+        $person_id = isset($person_row['person_id']) ? (int) $person_row['person_id'] : 0;
+        return $person_id > 0 ? 'Person #' . $person_id : '';
+    }
+}
+
+if (!function_exists('pba_admin_member_audit_log')) {
+    function pba_admin_member_audit_log($action_type, $entity_type, $entity_id = null, $args = array()) {
+        if (!function_exists('pba_audit_log')) {
+            return;
+        }
+
+        pba_audit_log($action_type, $entity_type, $entity_id, $args);
+    }
+}
+
 function pba_clear_managed_wp_roles_for_user($wp_user_id) {
     $wp_user_id = (int) $wp_user_id;
 
@@ -52,8 +108,10 @@ function pba_handle_admin_disable_member() {
         pba_members_redirect('disable_failed', 0, 'list');
     }
 
+    $before = pba_admin_member_get_person_snapshot($person_id);
+
     $rows = pba_supabase_get('Person', array(
-        'select'    => 'person_id,status,wp_user_id',
+        'select'    => 'person_id,status,wp_user_id,first_name,last_name,email_address,household_id',
         'person_id' => 'eq.' . $person_id,
         'limit'     => 1,
     ));
@@ -76,6 +134,24 @@ function pba_handle_admin_disable_member() {
     );
 
     if (is_wp_error($updated)) {
+        pba_admin_member_audit_log(
+            'member.disabled',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to disable member.',
+                'before'              => $before,
+                'details'             => array(
+                    'error_code' => $updated->get_error_code(),
+                    'error_message' => $updated->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('disable_failed', $person_id, 'edit');
     }
 
@@ -89,6 +165,26 @@ function pba_handle_admin_disable_member() {
             $manager->destroy_all();
         }
     }
+
+    $after = pba_admin_member_get_person_snapshot($person_id);
+
+    pba_admin_member_audit_log(
+        'member.disabled',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'        => pba_admin_member_get_person_label($after ?: $before ?: $person),
+            'target_person_id'    => $person_id,
+            'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+            'summary'             => 'Member disabled by admin.',
+            'before'              => $before,
+            'after'               => $after,
+            'details'             => array(
+                'cleared_wp_roles' => ($wp_user_id > 0),
+                'destroyed_sessions' => ($wp_user_id > 0),
+            ),
+        )
+    );
 
     pba_members_redirect('member_disabled', $person_id, 'edit');
 }
@@ -111,6 +207,8 @@ function pba_handle_admin_enable_member() {
         pba_members_redirect('enable_failed', 0, 'list');
     }
 
+    $before = pba_admin_member_get_person_snapshot($person_id);
+
     $updated = pba_supabase_update(
         'Person',
         array(
@@ -123,12 +221,49 @@ function pba_handle_admin_enable_member() {
     );
 
     if (is_wp_error($updated)) {
+        pba_admin_member_audit_log(
+            'member.enabled',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($before['household_id']) ? (int) $before['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to enable member.',
+                'before'              => $before,
+                'details'             => array(
+                    'error_code' => $updated->get_error_code(),
+                    'error_message' => $updated->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('enable_failed', $person_id, 'edit');
     }
 
     if (function_exists('pba_sync_wp_roles_for_person')) {
         pba_sync_wp_roles_for_person($person_id);
     }
+
+    $after = pba_admin_member_get_person_snapshot($person_id);
+
+    pba_admin_member_audit_log(
+        'member.enabled',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'        => pba_admin_member_get_person_label($after ?: $before),
+            'target_person_id'    => $person_id,
+            'target_household_id' => isset($after['household_id']) ? (int) $after['household_id'] : (isset($before['household_id']) ? (int) $before['household_id'] : null),
+            'summary'             => 'Member enabled by admin.',
+            'before'              => $before,
+            'after'               => $after,
+            'details'             => array(
+                'synced_wp_roles' => function_exists('pba_sync_wp_roles_for_person'),
+            ),
+        )
+    );
 
     pba_members_redirect('member_enabled', $person_id, 'edit');
 }
@@ -151,8 +286,10 @@ function pba_handle_admin_cancel_invite() {
         pba_members_redirect('cancel_failed', 0, 'list');
     }
 
+    $before = pba_admin_member_get_person_snapshot($person_id);
+
     $rows = pba_supabase_get('Person', array(
-        'select'    => 'person_id,status,wp_user_id',
+        'select'    => 'person_id,status,wp_user_id,first_name,last_name,email_address,household_id',
         'person_id' => 'eq.' . $person_id,
         'limit'     => 1,
     ));
@@ -172,6 +309,25 @@ function pba_handle_admin_cancel_invite() {
     ));
 
     if (is_wp_error($delete_links)) {
+        pba_admin_member_audit_log(
+            'household.invite.cancelled',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to cancel pending invitation while removing roles.',
+                'before'              => $before,
+                'details'             => array(
+                    'stage' => 'delete_person_to_role',
+                    'error_code' => $delete_links->get_error_code(),
+                    'error_message' => $delete_links->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('cancel_failed', $person_id, 'edit');
     }
 
@@ -180,6 +336,25 @@ function pba_handle_admin_cancel_invite() {
     ));
 
     if (is_wp_error($delete_committees)) {
+        pba_admin_member_audit_log(
+            'household.invite.cancelled',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to cancel pending invitation while removing committee assignments.',
+                'before'              => $before,
+                'details'             => array(
+                    'stage' => 'delete_person_to_committee',
+                    'error_code' => $delete_committees->get_error_code(),
+                    'error_message' => $delete_committees->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('cancel_failed', $person_id, 'edit');
     }
 
@@ -196,6 +371,24 @@ function pba_handle_admin_cancel_invite() {
         $deleted_wp_user = wp_delete_user($wp_user_id);
 
         if (!$deleted_wp_user) {
+            pba_admin_member_audit_log(
+                'household.invite.cancelled',
+                'Person',
+                $person_id,
+                array(
+                    'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                    'target_person_id'    => $person_id,
+                    'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                    'result_status'       => 'failure',
+                    'summary'             => 'Failed to cancel pending invitation because linked WordPress user could not be deleted.',
+                    'before'              => $before,
+                    'details'             => array(
+                        'stage' => 'delete_wp_user',
+                        'wp_user_id' => $wp_user_id,
+                    ),
+                )
+            );
+
             pba_members_redirect('cancel_failed', $person_id, 'edit');
         }
     }
@@ -205,10 +398,49 @@ function pba_handle_admin_cancel_invite() {
     ));
 
     if (is_wp_error($delete_person)) {
+        pba_admin_member_audit_log(
+            'household.invite.cancelled',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to cancel pending invitation while deleting person record.',
+                'before'              => $before,
+                'details'             => array(
+                    'stage' => 'delete_person',
+                    'error_code' => $delete_person->get_error_code(),
+                    'error_message' => $delete_person->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('cancel_failed', $person_id, 'edit');
     }
 
     pba_delete_member_invite_transients($person_id);
+
+    pba_admin_member_audit_log(
+        'household.invite.cancelled',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+            'target_person_id'    => $person_id,
+            'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+            'summary'             => 'Pending invitation cancelled by admin; person record removed.',
+            'before'              => $before,
+            'after'               => null,
+            'details'             => array(
+                'deleted_wp_user' => ($wp_user_id > 0),
+                'deleted_person_to_role_links' => true,
+                'deleted_person_to_committee_links' => true,
+                'deleted_person_record' => true,
+            ),
+        )
+    );
 
     pba_members_redirect('invite_cancelled', 0, 'list');
 }
@@ -231,6 +463,8 @@ function pba_handle_admin_resend_invite() {
         pba_members_redirect('resend_failed', 0, 'list');
     }
 
+    $before = pba_admin_member_get_person_snapshot($person_id);
+
     $rows = pba_supabase_get('Person', array(
         'select'    => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id',
         'person_id' => 'eq.' . $person_id,
@@ -250,6 +484,20 @@ function pba_handle_admin_resend_invite() {
     $member_role_id = pba_supabase_find_role_id_by_name('PBAMember');
 
     if (!$member_role_id) {
+        pba_admin_member_audit_log(
+            'household.invite.resent',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to resend invitation because PBAMember role id could not be found.',
+                'before'              => $before,
+            )
+        );
+
         pba_members_redirect('resend_failed', $person_id, 'edit');
     }
 
@@ -267,6 +515,24 @@ function pba_handle_admin_resend_invite() {
     );
 
     if (is_wp_error($updated)) {
+        pba_admin_member_audit_log(
+            'household.invite.resent',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to resend invitation while updating person status back to Pending.',
+                'before'              => $before,
+                'details'             => array(
+                    'error_code' => $updated->get_error_code(),
+                    'error_message' => $updated->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('resend_failed', $person_id, 'edit');
     }
 
@@ -280,6 +546,26 @@ function pba_handle_admin_resend_invite() {
     if (!is_wp_error($existing_role_links) && empty($existing_role_links)) {
         $ptr = pba_create_person_to_role_record($person_id, $member_role_id);
         if (is_wp_error($ptr)) {
+            pba_admin_member_audit_log(
+                'household.invite.resent',
+                'Person',
+                $person_id,
+                array(
+                    'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                    'target_person_id'    => $person_id,
+                    'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                    'result_status'       => 'failure',
+                    'summary'             => 'Failed to resend invitation while restoring PBAMember role link.',
+                    'before'              => $before,
+                    'details'             => array(
+                        'stage' => 'create_person_to_role',
+                        'role_id' => (int) $member_role_id,
+                        'error_code' => $ptr->get_error_code(),
+                        'error_message' => $ptr->get_error_message(),
+                    ),
+                )
+            );
+
             pba_members_redirect('resend_failed', $person_id, 'edit');
         }
     }
@@ -302,8 +588,47 @@ function pba_handle_admin_resend_invite() {
     ), $invite_token);
 
     if (!$sent) {
+        pba_admin_member_audit_log(
+            'household.invite.resent',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Invitation token was regenerated but resend email failed.',
+                'before'              => $before,
+                'details'             => array(
+                    'invite_token_created' => true,
+                    'email_sent' => false,
+                ),
+            )
+        );
+
         pba_members_redirect('resend_failed', $person_id, 'edit');
     }
+
+    $after = pba_admin_member_get_person_snapshot($person_id);
+
+    pba_admin_member_audit_log(
+        'household.invite.resent',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'        => pba_admin_member_get_person_label($after ?: $before ?: $person),
+            'target_person_id'    => $person_id,
+            'target_household_id' => isset($person['household_id']) ? (int) $person['household_id'] : null,
+            'summary'             => 'Expired invitation was resent by admin.',
+            'before'              => $before,
+            'after'               => $after,
+            'details'             => array(
+                'invite_token_created' => true,
+                'email_sent' => true,
+                'role_id_ensured' => (int) $member_role_id,
+            ),
+        )
+    );
 
     pba_members_redirect('invite_resent', $person_id, 'edit');
 }
@@ -326,8 +651,10 @@ function pba_handle_admin_remove_member_from_household() {
         pba_members_redirect('remove_from_household_failed', 0, 'list');
     }
 
+    $before = pba_admin_member_get_person_snapshot($person_id);
+
     $rows = pba_supabase_get('Person', array(
-        'select'    => 'person_id,household_id,status,wp_user_id',
+        'select'    => 'person_id,household_id,status,wp_user_id,first_name,last_name,email_address',
         'person_id' => 'eq.' . $person_id,
         'limit'     => 1,
     ));
@@ -363,12 +690,49 @@ function pba_handle_admin_remove_member_from_household() {
     );
 
     if (is_wp_error($updated)) {
+        pba_admin_member_audit_log(
+            'member.removed_from_household',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'        => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id'    => $person_id,
+                'target_household_id' => $household_id,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to remove member from household.',
+                'before'              => $before,
+                'details'             => array(
+                    'error_code' => $updated->get_error_code(),
+                    'error_message' => $updated->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('remove_from_household_failed', $person_id, 'edit');
     }
 
     if (function_exists('pba_sync_wp_roles_for_person')) {
         pba_sync_wp_roles_for_person($person_id);
     }
+
+    $after = pba_admin_member_get_person_snapshot($person_id);
+
+    pba_admin_member_audit_log(
+        'member.removed_from_household',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'        => pba_admin_member_get_person_label($after ?: $before ?: $person),
+            'target_person_id'    => $person_id,
+            'target_household_id' => $household_id,
+            'summary'             => 'Member removed from household by admin.',
+            'before'              => $before,
+            'after'               => $after,
+            'details'             => array(
+                'synced_wp_roles' => function_exists('pba_sync_wp_roles_for_person'),
+            ),
+        )
+    );
 
     pba_members_redirect('member_removed_from_household', $person_id, 'edit');
 }
@@ -391,8 +755,10 @@ function pba_handle_admin_hard_delete_person() {
         pba_members_redirect('delete_person_failed', 0, 'list');
     }
 
+    $before = pba_admin_member_get_person_snapshot($person_id);
+
     $rows = pba_supabase_get('Person', array(
-        'select'    => 'person_id,household_id,wp_user_id',
+        'select'    => 'person_id,household_id,wp_user_id,first_name,last_name,email_address',
         'person_id' => 'eq.' . $person_id,
         'limit'     => 1,
     ));
@@ -429,6 +795,23 @@ function pba_handle_admin_hard_delete_person() {
         $deleted_wp_user = wp_delete_user($wp_user_id);
 
         if (!$deleted_wp_user) {
+            pba_admin_member_audit_log(
+                'member.hard_deleted',
+                'Person',
+                $person_id,
+                array(
+                    'entity_label'     => pba_admin_member_get_person_label($before ?: $person),
+                    'target_person_id' => $person_id,
+                    'result_status'    => 'failure',
+                    'summary'          => 'Failed to hard delete person because linked WordPress user could not be deleted.',
+                    'before'           => $before,
+                    'details'          => array(
+                        'stage' => 'delete_wp_user',
+                        'wp_user_id' => $wp_user_id,
+                    ),
+                )
+            );
+
             pba_members_redirect('delete_person_failed', $person_id, 'edit');
         }
     }
@@ -438,6 +821,24 @@ function pba_handle_admin_hard_delete_person() {
     ));
 
     if (is_wp_error($delete_roles)) {
+        pba_admin_member_audit_log(
+            'member.hard_deleted',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'     => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id' => $person_id,
+                'result_status'    => 'failure',
+                'summary'          => 'Failed to hard delete person while deleting role links.',
+                'before'           => $before,
+                'details'          => array(
+                    'stage' => 'delete_person_to_role',
+                    'error_code' => $delete_roles->get_error_code(),
+                    'error_message' => $delete_roles->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('delete_person_failed', $person_id, 'edit');
     }
 
@@ -446,6 +847,24 @@ function pba_handle_admin_hard_delete_person() {
     ));
 
     if (is_wp_error($delete_committees)) {
+        pba_admin_member_audit_log(
+            'member.hard_deleted',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'     => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id' => $person_id,
+                'result_status'    => 'failure',
+                'summary'          => 'Failed to hard delete person while deleting committee links.',
+                'before'           => $before,
+                'details'          => array(
+                    'stage' => 'delete_person_to_committee',
+                    'error_code' => $delete_committees->get_error_code(),
+                    'error_message' => $delete_committees->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('delete_person_failed', $person_id, 'edit');
     }
 
@@ -454,12 +873,49 @@ function pba_handle_admin_hard_delete_person() {
     ));
 
     if (is_wp_error($delete_person)) {
+        pba_admin_member_audit_log(
+            'member.hard_deleted',
+            'Person',
+            $person_id,
+            array(
+                'entity_label'     => pba_admin_member_get_person_label($before ?: $person),
+                'target_person_id' => $person_id,
+                'result_status'    => 'failure',
+                'summary'          => 'Failed to hard delete person while deleting person record.',
+                'before'           => $before,
+                'details'          => array(
+                    'stage' => 'delete_person',
+                    'error_code' => $delete_person->get_error_code(),
+                    'error_message' => $delete_person->get_error_message(),
+                ),
+            )
+        );
+
         pba_members_redirect('delete_person_failed', $person_id, 'edit');
     }
 
     if (function_exists('pba_delete_member_invite_transients')) {
         pba_delete_member_invite_transients($person_id);
     }
+
+    pba_admin_member_audit_log(
+        'member.hard_deleted',
+        'Person',
+        $person_id,
+        array(
+            'entity_label'     => pba_admin_member_get_person_label($before ?: $person),
+            'target_person_id' => $person_id,
+            'summary'          => 'Person record hard deleted by admin.',
+            'before'           => $before,
+            'after'            => null,
+            'details'          => array(
+                'deleted_wp_user' => ($wp_user_id > 0),
+                'deleted_person_to_role_links' => true,
+                'deleted_person_to_committee_links' => true,
+                'deleted_person_record' => true,
+            ),
+        )
+    );
 
     pba_members_redirect('member_deleted', 0, 'list');
 }

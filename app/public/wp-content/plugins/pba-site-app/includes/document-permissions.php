@@ -321,6 +321,59 @@ function pba_get_document_origin_context($document_item_id) {
     );
 }
 
+if (!function_exists('pba_document_permission_get_item_snapshot')) {
+    function pba_document_permission_get_item_snapshot($document_item_id) {
+        $document_item_id = (int) $document_item_id;
+
+        if ($document_item_id < 1) {
+            return null;
+        }
+
+        $rows = pba_supabase_get('Document_Item', array(
+            'select'           => 'document_item_id,document_folder_id,file_name,file_url,mime_type,uploaded_by_person_id,last_modified_by_person_id,is_active,notes,last_modified_at,document_title,document_date,document_category,document_version,visible_to_all_members,shared_with_members_at,shared_with_members_by_person_id,member_summary',
+            'document_item_id' => 'eq.' . $document_item_id,
+            'limit'            => 1,
+        ));
+
+        if (is_wp_error($rows) || empty($rows[0]) || !is_array($rows[0])) {
+            return null;
+        }
+
+        return $rows[0];
+    }
+}
+
+if (!function_exists('pba_document_permission_get_item_label')) {
+    function pba_document_permission_get_item_label($item_row) {
+        if (!is_array($item_row)) {
+            return '';
+        }
+
+        $title = trim((string) ($item_row['document_title'] ?? ''));
+        if ($title !== '') {
+            return $title;
+        }
+
+        $file_name = trim((string) ($item_row['file_name'] ?? ''));
+        if ($file_name !== '') {
+            return $file_name;
+        }
+
+        $document_item_id = isset($item_row['document_item_id']) ? (int) $item_row['document_item_id'] : 0;
+        return $document_item_id > 0 ? 'Document #' . $document_item_id : '';
+    }
+}
+
+if (!function_exists('pba_document_permission_audit_log')) {
+    function pba_document_permission_audit_log($action_type, $entity_type, $entity_id = null, $args = array()) {
+        if (!function_exists('pba_audit_log')) {
+            return;
+        }
+
+        pba_audit_log($action_type, $entity_type, $entity_id, $args);
+    }
+}
+
 function pba_current_person_can_view_member_resources() {
     if (!is_user_logged_in()) {
         return false;
@@ -597,6 +650,7 @@ function pba_handle_member_share_update($share_with_members) {
         pba_member_share_redirect($redirect_to, 'invalid_nonce');
     }
 
+    $before = pba_document_permission_get_item_snapshot($document_item_id);
     $document_item = pba_get_document_item($document_item_id);
 
     if (!$document_item) {
@@ -610,6 +664,12 @@ function pba_handle_member_share_update($share_with_members) {
     if (!pba_current_person_can_share_document_with_members($document_item_id)) {
         pba_member_share_redirect($redirect_to, 'permission_denied');
     }
+
+    $origin_context = pba_get_document_origin_context($document_item_id);
+    $folder_id = ($origin_context && isset($origin_context['document_folder_id'])) ? (int) $origin_context['document_folder_id'] : null;
+    $committee_id = ($origin_context && isset($origin_context['committee_id']) && (int) $origin_context['committee_id'] > 0)
+        ? (int) $origin_context['committee_id']
+        : null;
 
     $person_id = function_exists('pba_current_person_id') ? (int) pba_current_person_id() : 0;
     $payload = array(
@@ -629,8 +689,49 @@ function pba_handle_member_share_update($share_with_members) {
     ));
 
     if (is_wp_error($result)) {
+        pba_document_permission_audit_log(
+            $share_with_members ? 'document.shared' : 'document.unshared',
+            'Document_Item',
+            $document_item_id,
+            array(
+                'entity_label'              => pba_document_permission_get_item_label($before ?: $document_item),
+                'target_committee_id'       => $committee_id,
+                'target_document_folder_id' => $folder_id,
+                'target_document_item_id'   => $document_item_id,
+                'result_status'             => 'failure',
+                'summary'                   => $share_with_members
+                    ? 'Failed to share document with members.'
+                    : 'Failed to remove member access from document.',
+                'before'                    => $before,
+                'details'                   => array(
+                    'error_code'    => $result->get_error_code(),
+                    'error_message' => $result->get_error_message(),
+                    'share_with_members' => (bool) $share_with_members,
+                ),
+            )
+        );
+
         pba_member_share_redirect($redirect_to, $share_with_members ? 'share_failed' : 'unshare_failed');
     }
+
+    $after = pba_document_permission_get_item_snapshot($document_item_id);
+
+    pba_document_permission_audit_log(
+        $share_with_members ? 'document.shared' : 'document.unshared',
+        'Document_Item',
+        $document_item_id,
+        array(
+            'entity_label'              => pba_document_permission_get_item_label($after ?: $before ?: $document_item),
+            'target_committee_id'       => $committee_id,
+            'target_document_folder_id' => $folder_id,
+            'target_document_item_id'   => $document_item_id,
+            'summary'                   => $share_with_members
+                ? 'Document shared with members.'
+                : 'Member access removed from document.',
+            'before'                    => $before,
+            'after'                     => $after,
+        )
+    );
 
     pba_member_share_redirect($redirect_to, $share_with_members ? 'shared_with_members' : 'removed_from_member_resources');
 }

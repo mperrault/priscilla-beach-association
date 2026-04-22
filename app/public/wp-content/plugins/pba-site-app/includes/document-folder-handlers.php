@@ -40,6 +40,56 @@ function pba_normalize_document_page_slug($raw_page) {
     return 'board-documents';
 }
 
+if (!function_exists('pba_document_folder_get_snapshot')) {
+    function pba_document_folder_get_snapshot($folder_id) {
+        $folder_id = (int) $folder_id;
+
+        if ($folder_id < 1) {
+            return null;
+        }
+
+        $rows = pba_supabase_get('Document_Folder', array(
+            'select'             => 'document_folder_id,folder_name,folder_scope,committee_id,parent_folder_id,display_order,is_active,created_by_person_id,last_modified_by_person_id,notes,last_modified_at',
+            'document_folder_id' => 'eq.' . $folder_id,
+            'limit'              => 1,
+        ));
+
+        if (is_wp_error($rows) || empty($rows[0]) || !is_array($rows[0])) {
+            return null;
+        }
+
+        return $rows[0];
+    }
+}
+
+if (!function_exists('pba_document_folder_get_label')) {
+    function pba_document_folder_get_label($folder_row) {
+        if (!is_array($folder_row)) {
+            return '';
+        }
+
+        $folder_name = trim((string) ($folder_row['folder_name'] ?? ''));
+
+        if ($folder_name !== '') {
+            return $folder_name;
+        }
+
+        $folder_id = isset($folder_row['document_folder_id']) ? (int) $folder_row['document_folder_id'] : 0;
+
+        return $folder_id > 0 ? 'Folder #' . $folder_id : '';
+    }
+}
+
+if (!function_exists('pba_document_folder_audit_log')) {
+    function pba_document_folder_audit_log($action_type, $entity_type, $entity_id = null, $args = array()) {
+        if (!function_exists('pba_audit_log')) {
+            return;
+        }
+
+        pba_audit_log($action_type, $entity_type, $entity_id, $args);
+    }
+}
+
 function pba_handle_create_document_folder() {
     if (!is_user_logged_in()) {
         wp_die('Unauthorized', 403);
@@ -87,8 +137,45 @@ function pba_handle_create_document_folder() {
     ));
 
     if (is_wp_error($inserted)) {
+        pba_document_folder_audit_log(
+            'document.folder.created',
+            'Document_Folder',
+            null,
+            array(
+                'entity_label'        => $folder_name,
+                'target_committee_id' => $committee_id > 0 ? $committee_id : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to create document folder.',
+                'details'             => array(
+                    'folder_name'    => $folder_name,
+                    'folder_scope'   => $folder_scope,
+                    'committee_id'   => $committee_id > 0 ? $committee_id : null,
+                    'error_code'     => $inserted->get_error_code(),
+                    'error_message'  => $inserted->get_error_message(),
+                ),
+            )
+        );
+
         pba_documents_redirect($page_slug, 'folder_create_failed', $committee_id);
     }
+
+    $folder_id = isset($inserted['document_folder_id']) ? (int) $inserted['document_folder_id'] : 0;
+    $after = $folder_id > 0 ? pba_document_folder_get_snapshot($folder_id) : null;
+
+    pba_document_folder_audit_log(
+        'document.folder.created',
+        'Document_Folder',
+        $folder_id > 0 ? $folder_id : null,
+        array(
+            'entity_label'        => pba_document_folder_get_label($after) !== '' ? pba_document_folder_get_label($after) : $folder_name,
+            'target_committee_id' => $committee_id > 0 ? $committee_id : null,
+            'summary'             => 'Document folder created.',
+            'after'               => $after,
+            'details'             => array(
+                'folder_scope' => $folder_scope,
+            ),
+        )
+    );
 
     pba_documents_redirect($page_slug, 'folder_created', $committee_id);
 }
@@ -119,6 +206,8 @@ function pba_handle_rename_document_folder() {
         wp_die('Unauthorized', 403);
     }
 
+    $before = pba_document_folder_get_snapshot($folder_id);
+
     $updated = pba_supabase_update(
         'Document_Folder',
         array(
@@ -132,8 +221,41 @@ function pba_handle_rename_document_folder() {
     );
 
     if (is_wp_error($updated)) {
+        pba_document_folder_audit_log(
+            'document.folder.renamed',
+            'Document_Folder',
+            $folder_id,
+            array(
+                'entity_label'        => pba_document_folder_get_label($before),
+                'target_committee_id' => isset($before['committee_id']) ? (int) $before['committee_id'] : ($committee_id > 0 ? $committee_id : null),
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to rename document folder.',
+                'before'              => $before,
+                'details'             => array(
+                    'new_folder_name' => $folder_name,
+                    'error_code'      => $updated->get_error_code(),
+                    'error_message'   => $updated->get_error_message(),
+                ),
+            )
+        );
+
         pba_documents_redirect($page_slug, 'folder_rename_failed', $committee_id);
     }
+
+    $after = pba_document_folder_get_snapshot($folder_id);
+
+    pba_document_folder_audit_log(
+        'document.folder.renamed',
+        'Document_Folder',
+        $folder_id,
+        array(
+            'entity_label'        => pba_document_folder_get_label($after ?: $before),
+            'target_committee_id' => isset($after['committee_id']) ? (int) $after['committee_id'] : (isset($before['committee_id']) ? (int) $before['committee_id'] : ($committee_id > 0 ? $committee_id : null)),
+            'summary'             => 'Document folder renamed.',
+            'before'              => $before,
+            'after'               => $after,
+        )
+    );
 
     pba_documents_redirect($page_slug, 'folder_renamed', $committee_id);
 }
@@ -163,6 +285,8 @@ function pba_handle_deactivate_document_folder() {
         wp_die('Unauthorized', 403);
     }
 
+    $before = pba_document_folder_get_snapshot($folder_id);
+
     $updated = pba_supabase_update(
         'Document_Folder',
         array(
@@ -176,8 +300,40 @@ function pba_handle_deactivate_document_folder() {
     );
 
     if (is_wp_error($updated)) {
+        pba_document_folder_audit_log(
+            'document.folder.deleted',
+            'Document_Folder',
+            $folder_id,
+            array(
+                'entity_label'        => pba_document_folder_get_label($before),
+                'target_committee_id' => isset($before['committee_id']) ? (int) $before['committee_id'] : ($committee_id > 0 ? $committee_id : null),
+                'result_status'       => 'failure',
+                'summary'             => 'Failed to deactivate document folder.',
+                'before'              => $before,
+                'details'             => array(
+                    'error_code'    => $updated->get_error_code(),
+                    'error_message' => $updated->get_error_message(),
+                ),
+            )
+        );
+
         pba_documents_redirect($page_slug, 'folder_delete_failed', $committee_id);
     }
+
+    $after = pba_document_folder_get_snapshot($folder_id);
+
+    pba_document_folder_audit_log(
+        'document.folder.deleted',
+        'Document_Folder',
+        $folder_id,
+        array(
+            'entity_label'        => pba_document_folder_get_label($after ?: $before),
+            'target_committee_id' => isset($after['committee_id']) ? (int) $after['committee_id'] : (isset($before['committee_id']) ? (int) $before['committee_id'] : ($committee_id > 0 ? $committee_id : null)),
+            'summary'             => 'Document folder deactivated.',
+            'before'              => $before,
+            'after'               => $after,
+        )
+    );
 
     pba_documents_redirect($page_slug, 'folder_deleted', $committee_id);
 }
