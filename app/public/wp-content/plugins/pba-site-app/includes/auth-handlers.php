@@ -7,6 +7,9 @@ if (!defined('ABSPATH')) {
 add_action('admin_post_nopriv_pba_member_login', 'pba_handle_member_login');
 add_action('admin_post_pba_member_login', 'pba_handle_member_login');
 
+add_action('admin_post_nopriv_pba_member_logout', 'pba_handle_member_logout');
+add_action('admin_post_pba_member_logout', 'pba_handle_member_logout');
+
 add_action('admin_post_nopriv_pba_house_admin_verify', 'pba_handle_house_admin_verify');
 add_action('admin_post_pba_house_admin_verify', 'pba_handle_house_admin_verify');
 
@@ -114,6 +117,47 @@ function pba_reset_password_redirect($status, $args = array()) {
     exit;
 }
 
+function pba_handle_member_logout() {
+    if (is_user_logged_in()) {
+        $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+
+        if ($nonce === '' || !wp_verify_nonce($nonce, 'pba_member_logout_action')) {
+            wp_safe_redirect(home_url('/member-home/'));
+            exit;
+        }
+
+        $user_id = get_current_user_id();
+        $person_id = (int) get_user_meta($user_id, 'pba_person_id', true);
+        $person_snapshot = pba_auth_get_person_snapshot($person_id);
+
+        pba_auth_audit_log(
+            'auth.logout',
+            'Person',
+            $person_id > 0 ? $person_id : null,
+            array(
+                'entity_label'        => pba_auth_get_person_label($person_snapshot, ''),
+                'target_person_id'    => $person_id > 0 ? $person_id : null,
+                'target_household_id' => is_array($person_snapshot) && isset($person_snapshot['household_id']) ? (int) $person_snapshot['household_id'] : null,
+                'summary'             => 'Logout succeeded.',
+                'details'             => array(
+                    'wp_user_id' => $user_id > 0 ? $user_id : null,
+                ),
+            )
+        );
+
+        delete_user_meta($user_id, 'pba_last_activity');
+        wp_logout();
+    }
+
+    wp_safe_redirect(add_query_arg(
+        array(
+            'logged_out' => '1',
+        ),
+        home_url('/login/')
+    ));
+    exit;
+}
+
 function pba_handle_member_login() {
     if (
         !isset($_POST['pba_member_login_nonce']) ||
@@ -164,10 +208,10 @@ function pba_handle_member_login() {
                 'result_status' => 'failure',
                 'summary'       => 'Login failed.',
                 'details'       => array(
-                    'email'        => $email,
-                    'error_code'   => $user->get_error_code(),
-                    'error_message'=> $user->get_error_message(),
-                    'status'       => $status,
+                    'email'         => $email,
+                    'error_code'    => $user->get_error_code(),
+                    'error_message' => $user->get_error_message(),
+                    'status'        => $status,
                 ),
             )
         );
@@ -203,11 +247,11 @@ function pba_handle_member_login() {
         'Person',
         $person_id > 0 ? $person_id : null,
         array(
-            'entity_label'     => pba_auth_get_person_label($person_snapshot, $email),
-            'target_person_id' => $person_id > 0 ? $person_id : null,
+            'entity_label'        => pba_auth_get_person_label($person_snapshot, $email),
+            'target_person_id'    => $person_id > 0 ? $person_id : null,
             'target_household_id' => is_array($person_snapshot) && isset($person_snapshot['household_id']) ? (int) $person_snapshot['household_id'] : null,
-            'summary'          => 'Login succeeded.',
-            'details'          => array(
+            'summary'             => 'Login succeeded.',
+            'details'             => array(
                 'email'      => $email,
                 'wp_user_id' => ($user instanceof WP_User) ? (int) $user->ID : null,
                 'roles'      => ($user instanceof WP_User) ? array_values((array) $user->roles) : array(),
@@ -363,13 +407,13 @@ function pba_handle_reset_password_request() {
             'Person',
             $person_id,
             array(
-                'entity_label'        => pba_auth_get_person_label($person_row, $email),
-                'target_person_id'    => $person_id,
-                'result_status'       => 'failure',
-                'summary'             => 'Password reset requested, but reset email failed to send.',
-                'before'              => $person_row,
-                'details'             => array(
-                    'email' => $email,
+                'entity_label'     => pba_auth_get_person_label($person_row, $email),
+                'target_person_id' => $person_id,
+                'result_status'    => 'failure',
+                'summary'          => 'Password reset requested, but reset email failed to send.',
+                'before'           => $person_row,
+                'details'          => array(
+                    'email'      => $email,
                     'wp_user_id' => (int) $user->ID,
                     'email_sent' => false,
                 ),
@@ -389,12 +433,12 @@ function pba_handle_reset_password_request() {
         'Person',
         $person_id,
         array(
-            'entity_label'        => pba_auth_get_person_label($person_row, $email),
-            'target_person_id'    => $person_id,
-            'summary'             => 'Password reset requested; reset email sent.',
-            'before'              => $person_row,
-            'details'             => array(
-                'email' => $email,
+            'entity_label'     => pba_auth_get_person_label($person_row, $email),
+            'target_person_id' => $person_id,
+            'summary'          => 'Password reset requested; reset email sent.',
+            'before'           => $person_row,
+            'details'          => array(
+                'email'      => $email,
                 'wp_user_id' => (int) $user->ID,
                 'email_sent' => true,
             ),
@@ -701,9 +745,9 @@ function pba_handle_house_admin_verify() {
                 'result_status'       => 'failure',
                 'summary'             => 'House Admin verification passed, but setup email failed to send.',
                 'details'             => array(
-                    'email' => $email,
+                    'email'      => $email,
                     'first_name' => $first_name,
-                    'last_name' => $last_name,
+                    'last_name'  => $last_name,
                 ),
             )
         );
@@ -721,9 +765,9 @@ function pba_handle_house_admin_verify() {
             'target_person_id'    => $existing_person_id > 0 ? $existing_person_id : null,
             'summary'             => 'House Admin verification succeeded; setup email sent.',
             'details'             => array(
-                'email' => $email,
-                'first_name' => $first_name,
-                'last_name' => $last_name,
+                'email'              => $email,
+                'first_name'         => $first_name,
+                'last_name'          => $last_name,
                 'existing_person_id' => $existing_person_id > 0 ? $existing_person_id : null,
             ),
         )
@@ -843,14 +887,14 @@ function pba_handle_house_admin_create_user() {
         $updated_person = pba_supabase_update(
             'Person',
             array(
-                'household_id'      => $household_id,
-                'first_name'        => $first_name,
-                'last_name'         => $last_name,
-                'email_address'     => $email,
-                'status'            => 'Active',
-                'email_verified'    => 1,
-                'wp_user_id'        => (string) $user_id,
-                'last_modified_at'  => gmdate('c'),
+                'household_id'     => $household_id,
+                'first_name'       => $first_name,
+                'last_name'        => $last_name,
+                'email_address'    => $email,
+                'status'           => 'Active',
+                'email_verified'   => 1,
+                'wp_user_id'       => (string) $user_id,
+                'last_modified_at' => gmdate('c'),
             ),
             array(
                 'person_id' => 'eq.' . $person_id,

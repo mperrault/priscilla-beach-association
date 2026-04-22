@@ -47,7 +47,17 @@
                 </a>
 
                 <?php if (is_user_logged_in()) : ?>
-                    <a class="pba-logout-link" href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">
+                    <?php
+                    $logout_url = add_query_arg(
+                        array(
+                            'action' => 'pba_member_logout',
+                        ),
+                        admin_url('admin-post.php')
+                    );
+
+                    $logout_url = wp_nonce_url($logout_url, 'pba_member_logout_action');
+                    ?>
+                    <a class="pba-logout-link" href="<?php echo esc_url($logout_url); ?>">
                         Logout
                     </a>
                 <?php else : ?>

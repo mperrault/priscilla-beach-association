@@ -108,7 +108,15 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
         </form>
       </section>
     <?php else : ?>
+      <?php
+      $logged_out = isset($_GET['logged_out']) && $_GET['logged_out'] === '1';
+      ?>
 
+      <?php if ($logged_out) : ?>
+          <div class="pba-login-message pba-login-message-success" role="status" aria-live="polite">
+              <strong>Signed out.</strong> You have been logged out successfully.
+          </div>
+      <?php endif; ?>
       <section class="pba-auth-card" id="pba-login-section">
         <h1>Member Login</h1>
         <p>Please sign in to access member-only content.</p>
