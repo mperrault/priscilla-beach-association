@@ -48,6 +48,51 @@ function pba_supabase_extract_total_count_from_response($response) {
     return null;
 }
 
+function pba_supabase_build_error_message($operation, $status, $body, $table, $extra = array()) {
+    $message = sprintf(
+        'Supabase %s failed. HTTP %d. Table: %s.',
+        strtoupper((string) $operation),
+        (int) $status,
+        (string) $table
+    );
+
+    if (!empty($extra)) {
+        $message .= ' Request: ' . wp_json_encode($extra);
+    }
+
+    if (is_string($body) && trim($body) !== '') {
+        $decoded = json_decode($body, true);
+
+        if (is_array($decoded)) {
+            if (!empty($decoded['message'])) {
+                $message .= ' Message: ' . (string) $decoded['message'];
+            }
+            if (!empty($decoded['details'])) {
+                $message .= ' Details: ' . (string) $decoded['details'];
+            }
+            if (!empty($decoded['hint'])) {
+                $message .= ' Hint: ' . (string) $decoded['hint'];
+            }
+            if (!empty($decoded['code'])) {
+                $message .= ' Code: ' . (string) $decoded['code'];
+            }
+
+            if (
+                empty($decoded['message']) &&
+                empty($decoded['details']) &&
+                empty($decoded['hint']) &&
+                empty($decoded['code'])
+            ) {
+                $message .= ' Body: ' . wp_json_encode($decoded);
+            }
+        } else {
+            $message .= ' Body: ' . trim($body);
+        }
+    }
+
+    return $message;
+}
+
 function pba_supabase_get($table, $query_args = array(), $options = array()) {
     static $request_cache = array();
 
@@ -90,22 +135,35 @@ function pba_supabase_get($table, $query_args = array(), $options = array()) {
     $data   = json_decode($body, true);
 
     if ($status < 200 || $status >= 300) {
-        $request_cache[$cache_key] = new WP_Error('supabase_get_failed', 'Supabase GET failed', array(
+        $message = pba_supabase_build_error_message('get', $status, $body, $table, array(
+            'query'   => $query_args,
+            'options' => $options,
+        ));
+
+        error_log('PBA Supabase GET error: ' . $message);
+
+        $request_cache[$cache_key] = new WP_Error('supabase_get_failed', $message, array(
             'status'  => $status,
             'body'    => $body,
             'table'   => $table,
             'query'   => $query_args,
             'options' => $options,
+            'url'     => $url,
         ));
         return $request_cache[$cache_key];
     }
 
     if (!is_array($data)) {
-        $request_cache[$cache_key] = new WP_Error('supabase_get_invalid_json', 'Invalid Supabase GET JSON', array(
+        $message = 'Invalid Supabase GET JSON. HTTP ' . (int) $status . '. Table: ' . (string) $table . '. Body: ' . $body;
+
+        error_log('PBA Supabase GET JSON error: ' . $message);
+
+        $request_cache[$cache_key] = new WP_Error('supabase_get_invalid_json', $message, array(
             'status'  => $status,
             'body'    => $body,
             'table'   => $table,
             'options' => $options,
+            'url'     => $url,
         ));
         return $request_cache[$cache_key];
     }
@@ -142,19 +200,23 @@ function pba_supabase_insert($table, $payload) {
     $data   = json_decode($body, true);
 
     if ($status < 200 || $status >= 300) {
-        return new WP_Error('supabase_insert_failed', 'Supabase INSERT failed', array(
+        return new WP_Error('supabase_insert_failed', pba_supabase_build_error_message('insert', $status, $body, $table, array(
+            'payload' => $payload,
+        )), array(
             'status'  => $status,
             'body'    => $body,
             'table'   => $table,
             'payload' => $payload,
+            'url'     => $url,
         ));
     }
 
     if (!is_array($data) || empty($data[0]) || !is_array($data[0])) {
-        return new WP_Error('supabase_insert_invalid_json', 'Invalid Supabase INSERT JSON', array(
+        return new WP_Error('supabase_insert_invalid_json', 'Invalid Supabase INSERT JSON. HTTP ' . (int) $status . '. Table: ' . (string) $table . '. Body: ' . $body, array(
             'status' => $status,
             'body'   => $body,
             'table'  => $table,
+            'url'    => $url,
         ));
     }
 
@@ -184,12 +246,16 @@ function pba_supabase_update($table, $payload, $filters = array()) {
     $data   = json_decode($body, true);
 
     if ($status < 200 || $status >= 300) {
-        return new WP_Error('supabase_update_failed', 'Supabase UPDATE failed', array(
+        return new WP_Error('supabase_update_failed', pba_supabase_build_error_message('update', $status, $body, $table, array(
+            'payload' => $payload,
+            'filters' => $filters,
+        )), array(
             'status'  => $status,
             'body'    => $body,
             'table'   => $table,
             'payload' => $payload,
             'filters' => $filters,
+            'url'     => $url,
         ));
     }
 
@@ -198,10 +264,11 @@ function pba_supabase_update($table, $payload, $filters = array()) {
     }
 
     if (!is_array($data)) {
-        return new WP_Error('supabase_update_invalid_json', 'Invalid Supabase UPDATE JSON', array(
+        return new WP_Error('supabase_update_invalid_json', 'Invalid Supabase UPDATE JSON. HTTP ' . (int) $status . '. Table: ' . (string) $table . '. Body: ' . $body, array(
             'status' => $status,
             'body'   => $body,
             'table'  => $table,
+            'url'    => $url,
         ));
     }
 
@@ -229,11 +296,14 @@ function pba_supabase_delete($table, $filters = array()) {
     $body   = wp_remote_retrieve_body($response);
 
     if ($status < 200 || $status >= 300) {
-        return new WP_Error('supabase_delete_failed', 'Supabase DELETE failed', array(
+        return new WP_Error('supabase_delete_failed', pba_supabase_build_error_message('delete', $status, $body, $table, array(
+            'filters' => $filters,
+        )), array(
             'status'  => $status,
             'body'    => $body,
             'table'   => $table,
             'filters' => $filters,
+            'url'     => $url,
         ));
     }
 
@@ -359,10 +429,6 @@ function pba_get_people_for_household_by_status($household_id, $invited_by_perso
         'order'        => 'person_id.desc',
     );
 
-    /*
-     * inviter_person_id > 0 means filter to one inviter.
-     * inviter_person_id <= 0 means household-wide.
-     */
     if ($invited_by_person_id > 0) {
         $query_args['invited_by_person_id'] = 'eq.' . $invited_by_person_id;
     }
