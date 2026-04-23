@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once dirname(__FILE__) . '/pba-admin-list-ui.php';
+
 add_action('init', 'pba_register_household_shortcode');
 
 function pba_register_household_shortcode() {
@@ -118,6 +120,7 @@ function pba_household_render_message($status, $duplicate_messages) {
         <?php endif; ?>
     </div>
     <?php
+
     return ob_get_clean();
 }
 
@@ -135,26 +138,6 @@ function pba_household_render_summary_card($label, $value, $note) {
     </div>
     <?php
     return ob_get_clean();
-}
-
-function pba_household_sort_rows($rows) {
-    $rows = is_array($rows) ? array_values($rows) : array();
-
-    usort($rows, function ($a, $b) {
-        $a_last_modified = isset($a['last_modified_at']) ? strtotime((string) $a['last_modified_at']) : 0;
-        $b_last_modified = isset($b['last_modified_at']) ? strtotime((string) $b['last_modified_at']) : 0;
-
-        if ($a_last_modified !== $b_last_modified) {
-            return $b_last_modified <=> $a_last_modified;
-        }
-
-        $a_id = isset($a['person_id']) ? (int) $a['person_id'] : 0;
-        $b_id = isset($b['person_id']) ? (int) $b['person_id'] : 0;
-
-        return $b_id <=> $a_id;
-    });
-
-    return $rows;
 }
 
 if (!function_exists('pba_household_person_has_role_name')) {
@@ -212,33 +195,306 @@ if (!function_exists('pba_household_person_has_role_name')) {
     }
 }
 
-function pba_render_household_previous_invitations_table($rows, $title) {
+function pba_get_household_members_request_args() {
+    $allowed_sort_columns = array(
+        'first_name',
+        'last_name',
+        'email_address',
+        'status',
+        'last_modified_at',
+    );
+
+    $allowed_sort_directions = array('asc', 'desc');
+    $allowed_per_page = array(10, 25, 50, 100);
+
+    $search = isset($_GET['household_members_search']) ? sanitize_text_field(wp_unslash($_GET['household_members_search'])) : '';
+    $status_filter = isset($_GET['household_members_status']) ? sanitize_text_field(wp_unslash($_GET['household_members_status'])) : '';
+    $sort = isset($_GET['household_members_sort']) ? sanitize_key(wp_unslash($_GET['household_members_sort'])) : 'last_modified_at';
+    $direction = isset($_GET['household_members_direction']) ? strtolower(sanitize_text_field(wp_unslash($_GET['household_members_direction']))) : 'desc';
+    $page = isset($_GET['household_members_page']) ? max(1, absint($_GET['household_members_page'])) : 1;
+    $per_page = isset($_GET['household_members_per_page']) ? absint($_GET['household_members_per_page']) : 10;
+
+    if (!in_array($sort, $allowed_sort_columns, true)) {
+        $sort = 'last_modified_at';
+    }
+
+    if (!in_array($direction, $allowed_sort_directions, true)) {
+        $direction = 'desc';
+    }
+
+    if (!in_array($per_page, $allowed_per_page, true)) {
+        $per_page = 10;
+    }
+
+    if (!in_array($status_filter, array('', 'Active', 'Pending', 'Expired', 'Disabled'), true)) {
+        $status_filter = '';
+    }
+
+    return array(
+        'search' => $search,
+        'status_filter' => $status_filter,
+        'sort' => $sort,
+        'direction' => $direction,
+        'page' => $page,
+        'per_page' => $per_page,
+    );
+}
+
+function pba_get_household_dashboard_base_url() {
+    global $post;
+
+    if ($post instanceof WP_Post) {
+        $permalink = get_permalink($post);
+        if (!empty($permalink)) {
+            return $permalink;
+        }
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '/';
+    return home_url($request_uri);
+}
+
+function pba_get_household_members_list_url($overrides = array()) {
+    $args = pba_get_household_members_request_args();
+    $query_args = $_GET;
+
+    $query_args['household_members_search'] = $args['search'];
+    $query_args['household_members_status'] = $args['status_filter'];
+    $query_args['household_members_sort'] = $args['sort'];
+    $query_args['household_members_direction'] = $args['direction'];
+    $query_args['household_members_page'] = $args['page'];
+    $query_args['household_members_per_page'] = $args['per_page'];
+
+    foreach ($overrides as $key => $value) {
+        $query_args[$key] = $value;
+    }
+
+    foreach ($query_args as $key => $value) {
+        if (
+            $value === '' ||
+            $value === null ||
+            ($key === 'household_members_page' && (int) $value === 1) ||
+            ($key === 'household_members_per_page' && (int) $value === 10) ||
+            ($key === 'household_members_sort' && (string) $value === 'last_modified_at') ||
+            ($key === 'household_members_direction' && (string) $value === 'desc')
+        ) {
+            unset($query_args[$key]);
+        }
+    }
+
+    return add_query_arg($query_args, pba_get_household_dashboard_base_url()) . '#pba-household-members-table';
+}
+
+function pba_filter_household_rows_by_request($rows, $request_args) {
+    $search = strtolower(trim((string) $request_args['search']));
+    $status_filter = trim((string) $request_args['status_filter']);
+
+    return array_values(array_filter($rows, function ($row) use ($search, $status_filter) {
+        $status = isset($row['status']) ? (string) $row['status'] : '';
+
+        if ($status_filter !== '' && $status !== $status_filter) {
+            return false;
+        }
+
+        if ($search !== '') {
+            $haystack = strtolower(implode(' ', array(
+                (string) ($row['first_name'] ?? ''),
+                (string) ($row['last_name'] ?? ''),
+                (string) ($row['email_address'] ?? ''),
+                (string) ($row['status'] ?? ''),
+            )));
+
+            if (strpos($haystack, $search) === false) {
+                return false;
+            }
+        }
+
+        return true;
+    }));
+}
+
+function pba_sort_household_rows_by_request($rows, $sort, $direction) {
+    $rows = is_array($rows) ? array_values($rows) : array();
+
+    usort($rows, function ($a, $b) use ($sort, $direction) {
+        switch ($sort) {
+            case 'first_name':
+                $a_value = strtolower((string) ($a['first_name'] ?? ''));
+                $b_value = strtolower((string) ($b['first_name'] ?? ''));
+                break;
+
+            case 'last_name':
+                $a_value = strtolower((string) ($a['last_name'] ?? ''));
+                $b_value = strtolower((string) ($b['last_name'] ?? ''));
+                break;
+
+            case 'email_address':
+                $a_value = strtolower((string) ($a['email_address'] ?? ''));
+                $b_value = strtolower((string) ($b['email_address'] ?? ''));
+                break;
+
+            case 'status':
+                $a_value = strtolower((string) ($a['status'] ?? ''));
+                $b_value = strtolower((string) ($b['status'] ?? ''));
+                break;
+
+            case 'last_modified_at':
+            default:
+                $a_value = strtotime((string) ($a['last_modified_at'] ?? '')) ?: 0;
+                $b_value = strtotime((string) ($b['last_modified_at'] ?? '')) ?: 0;
+                break;
+        }
+
+        if ($a_value === $b_value) {
+            return 0;
+        }
+
+        $result = ($a_value < $b_value) ? -1 : 1;
+
+        return ($direction === 'desc') ? -$result : $result;
+    });
+
+    return $rows;
+}
+
+function pba_paginate_household_rows($rows, $page, $per_page) {
+    $total_rows = count($rows);
+    $total_pages = max(1, (int) ceil($total_rows / $per_page));
+    $page = min(max(1, (int) $page), $total_pages);
+    $offset = ($page - 1) * $per_page;
+
+    $start_number = $total_rows > 0 ? $offset + 1 : 0;
+    $end_number = min($offset + $per_page, $total_rows);
+
+    return array(
+        'current_page' => $page,
+        'per_page' => $per_page,
+        'offset' => $offset,
+        'total_rows' => $total_rows,
+        'total_pages' => $total_pages,
+        'start_number' => $start_number,
+        'end_number' => $end_number,
+    );
+}
+
+function pba_render_household_members_sortable_th($label, $column, $request_args) {
+    $next_direction = ($request_args['sort'] === $column && $request_args['direction'] === 'asc') ? 'desc' : 'asc';
+
+    return pba_admin_list_render_sortable_th(array(
+        'label' => $label,
+        'column' => $column,
+        'current_sort' => $request_args['sort'],
+        'current_direction' => $request_args['direction'],
+        'url' => pba_get_household_members_list_url(array(
+            'household_members_sort' => $column,
+            'household_members_direction' => $next_direction,
+            'household_members_page' => 1,
+        )),
+        'link_class' => 'pba-admin-list-sort-link',
+        'indicator_class' => 'pba-admin-list-sort-indicator',
+    ));
+}
+
+function pba_render_household_members_pagination($pagination) {
+    return pba_admin_list_render_pagination(array(
+        'pagination' => array(
+            'page' => $pagination['current_page'],
+            'total_pages' => $pagination['total_pages'],
+        ),
+        'url_builder' => function ($overrides) {
+            return pba_get_household_members_list_url($overrides);
+        },
+        'page_param' => 'household_members_page',
+        'container_class' => 'pba-admin-list-pagination',
+        'muted_class' => 'pba-admin-list-muted',
+        'links_class' => 'pba-admin-list-page-links',
+    ));
+}
+
+function pba_render_household_previous_invitations_table($rows, $title, $request_args, $pagination) {
     ob_start();
     ?>
-    <div class="pba-section">
+    <div class="pba-section" id="pba-household-members-table">
         <div class="pba-section-heading">
             <h3><?php echo esc_html($title); ?></h3>
             <p class="pba-section-subtitle">Any Household Admin for this household can manage invites and non-admin members below. Household Admins are protected and cannot be removed or disabled from this page.</p>
         </div>
 
+        <div class="pba-admin-list-resultsbar" style="padding-left:0; padding-right:0; border-bottom:0;">
+            <div>
+                Showing <?php echo esc_html(number_format_i18n($pagination['start_number'])); ?>–<?php echo esc_html(number_format_i18n($pagination['end_number'])); ?>
+                of <?php echo esc_html(number_format_i18n($pagination['total_rows'])); ?> members / invitations
+            </div>
+
+            <div class="pba-admin-list-filter-summary">
+                <?php if ($request_args['search'] !== '') : ?>
+                    <span class="pba-admin-list-chip">Search: <?php echo esc_html($request_args['search']); ?></span>
+                <?php endif; ?>
+                <?php if ($request_args['status_filter'] !== '') : ?>
+                    <span class="pba-admin-list-chip">Status: <?php echo esc_html($request_args['status_filter']); ?></span>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <form method="get" action="<?php echo esc_url(pba_get_household_dashboard_base_url()) . '#pba-household-members-table'; ?>" class="pba-admin-list-toolbar" style="margin-bottom:14px;">
+            <div class="pba-admin-list-toolbar-grid">
+                <div class="pba-admin-list-field">
+                    <label for="household_members_search">Search</label>
+                    <input id="household_members_search" type="text" name="household_members_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Search by first name, last name, email, or status">
+                </div>
+
+                <div class="pba-admin-list-field">
+                    <label for="household_members_status">Status</label>
+                    <select id="household_members_status" name="household_members_status">
+                        <option value="">All statuses</option>
+                        <?php foreach (array('Active', 'Pending', 'Expired', 'Disabled') as $status_option) : ?>
+                            <option value="<?php echo esc_attr($status_option); ?>" <?php selected($request_args['status_filter'], $status_option); ?>>
+                                <?php echo esc_html($status_option); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="pba-admin-list-field">
+                    <label for="household_members_per_page">Rows</label>
+                    <select id="household_members_per_page" name="household_members_per_page">
+                        <?php foreach (array(10, 25, 50, 100) as $option) : ?>
+                            <option value="<?php echo esc_attr((string) $option); ?>" <?php selected($request_args['per_page'], $option); ?>>
+                                <?php echo esc_html((string) $option); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <input type="hidden" name="household_members_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
+            <input type="hidden" name="household_members_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
+            <input type="hidden" name="household_members_page" value="1">
+
+            <div class="pba-admin-list-toolbar-actions">
+                <button type="submit" class="pba-btn">Apply</button>
+                <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_household_dashboard_base_url()) . '#pba-household-members-table'; ?>">Reset</a>
+            </div>
+        </form>
+
         <div class="pba-table-wrap">
-            <table class="pba-table">
+            <table class="pba-table pba-resizable-table" id="pba-household-members-grid" data-resize-key="pbaHouseholdMembersColumnWidthsV4" data-min-col-width="120">
                 <colgroup>
                     <col>
                     <col>
                     <col>
-                    <col style="width: 140px;">
-                    <col style="width: 180px;">
-                    <col style="width: 220px;">
+                    <col>
+                    <col>
+                    <col>
                 </colgroup>
                 <thead>
                     <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email Address</th>
-                        <th>Status</th>
-                        <th>Last Status Update</th>
-                        <th class="pba-action-col">Action</th>
+                        <?php echo pba_render_household_members_sortable_th('First Name', 'first_name', $request_args); ?>
+                        <?php echo pba_render_household_members_sortable_th('Last Name', 'last_name', $request_args); ?>
+                        <?php echo pba_render_household_members_sortable_th('Email Address', 'email_address', $request_args); ?>
+                        <?php echo pba_render_household_members_sortable_th('Status', 'status', $request_args); ?>
+                        <?php echo pba_render_household_members_sortable_th('Updated', 'last_modified_at', $request_args); ?>
+                        <th data-resizable="false">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -318,6 +574,8 @@ function pba_render_household_previous_invitations_table($rows, $title) {
                 </tbody>
             </table>
         </div>
+
+        <?php echo pba_render_household_members_pagination($pagination); ?>
     </div>
     <?php
     return ob_get_clean();
@@ -382,6 +640,16 @@ function pba_render_household_dashboard() {
         return '<p>You do not have permission to access this page.</p>';
     }
 
+    $base_url = plugin_dir_url(__FILE__) . 'css/';
+    $base_path = dirname(__FILE__) . '/css/';
+
+    wp_enqueue_style(
+        'pba-admin-list-styles',
+        $base_url . 'pba-admin-list-styles.css',
+        array(),
+        file_exists($base_path . 'pba-admin-list-styles.css') ? (string) filemtime($base_path . 'pba-admin-list-styles.css') : '1.0.0'
+    );
+
     $household_id      = (int) pba_get_current_household_id();
     $inviter_person_id = (int) pba_get_current_house_admin_person_id();
 
@@ -401,14 +669,18 @@ function pba_render_household_dashboard() {
     $expired_rows  = is_array($expired_rows) ? $expired_rows : array();
     $disabled_rows = is_array($disabled_rows) ? $disabled_rows : array();
 
-    $previous_rows = array_merge(
+    $all_rows = array_merge(
         $accepted_rows,
         $pending_rows,
         $expired_rows,
         $disabled_rows
     );
 
-    $previous_rows = pba_household_sort_rows($previous_rows);
+    $request_args = pba_get_household_members_request_args();
+    $filtered_rows = pba_filter_household_rows_by_request($all_rows, $request_args);
+    $sorted_rows = pba_sort_household_rows_by_request($filtered_rows, $request_args['sort'], $request_args['direction']);
+    $pagination = pba_paginate_household_rows($sorted_rows, $request_args['page'], $request_args['per_page']);
+    $page_rows = array_slice($sorted_rows, $pagination['offset'], $pagination['per_page']);
 
     $status = isset($_GET['pba_household_status']) ? sanitize_text_field(wp_unslash($_GET['pba_household_status'])) : '';
     $duplicate_messages = get_transient('pba_household_duplicate_messages_' . get_current_user_id());
@@ -449,13 +721,15 @@ function pba_render_household_dashboard() {
         </div>
 
         <?php echo pba_render_household_invite_section(); ?>
-        <?php echo pba_render_household_previous_invitations_table($previous_rows, 'Household Members and Invitations'); ?>
+        <?php echo pba_render_household_previous_invitations_table($page_rows, 'Household Members and Invitations', $request_args, $pagination); ?>
     </div>
     <?php
 
     if (function_exists('pba_shared_list_ui_render_household_script')) {
         echo pba_shared_list_ui_render_household_script();
     }
+
+    echo pba_admin_list_render_resizable_table_script();
 
     return ob_get_clean();
 }

@@ -1,186 +1,317 @@
 .pba-households-wrap {
-    max-width: 1480px;
+    max-width: 1720px;
     margin: 0 auto;
+}
+
+.pba-households-admin-list-shell,
+.pba-households-wrap .pba-admin-list-card {
+    width: 100%;
+}
+
+.pba-households-wrap .pba-admin-list-grid-wrap {
+    overflow-x: auto;
+}
+
+/* =========================================================
+   HOUSEHOLDS LIST PAGE
+   ========================================================= */
+
+.pba-households-toolbar-compact .pba-admin-list-toolbar-grid,
+.pba-households-toolbar-grid {
+    grid-template-columns: minmax(260px, 1.4fr) minmax(180px, 0.8fr) minmax(180px, 0.8fr) minmax(160px, 0.7fr);
+    gap: 12px;
+}
+
+.pba-households-toolbar-compact .pba-admin-list-field input[type="text"],
+.pba-households-toolbar-compact .pba-admin-list-field select {
+    min-height: 42px;
+    padding: 9px 12px;
+}
+
+#pba-households-admin-table {
+    width: 100%;
+    min-width: 1230px;
+}
+
+#pba-households-admin-table .pba-col-resizer,
+#pba-households-admin-table .pba-col-resizer:hover,
+#pba-households-admin-table .pba-col-resizer:active,
+#pba-household-members-table .pba-col-resizer,
+#pba-household-members-table .pba-col-resizer:hover,
+#pba-household-members-table .pba-col-resizer:active {
+    cursor: col-resize !important;
+}
+
+#pba-households-admin-table th,
+#pba-household-members-table th {
+    position: relative;
+}
+
+#pba-households-admin-table td:last-child .pba-admin-list-btn {
+    min-width: 120px;
+}
+
+#pba-households-admin-table td:nth-child(1) strong {
+    display: inline-block;
+}
+
+.pba-households-status-members-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+/* =========================================================
+   HOUSEHOLD EDIT PAGE
+   Scoped tightly to avoid regressions
+   ========================================================= */
+
+.pba-household-detail-wrap {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 8px 24px;
+}
+
+.pba-household-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.pba-household-detail-header .pba-page-eyebrow {
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #607487;
+    margin-bottom: 8px;
+}
+
+.pba-household-detail-header .pba-page-title {
     color: #17324a;
 }
 
-.pba-households-message {
-    margin: 0 0 16px;
-    padding: 12px 16px;
-    background: #eef6ee;
-    border-radius: 10px;
+.pba-household-detail-header .pba-page-intro {
+    color: #52697d;
+    max-width: 820px;
 }
 
-.pba-households-message.error {
-    background: #f8e9e9;
-}
-
-.pba-households-search {
-    display: grid;
-    grid-template-columns: minmax(220px, 2.2fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(120px, 140px) auto auto;
-    gap: 12px;
-    align-items: end;
-}
-
-.pba-households-badge.status-active,
-.pba-households-badge.owner-yes {
-    background: #eaf7ef;
-    color: #21633f;
-}
-
-.pba-households-badge.status-inactive,
-.pba-households-badge.owner-no {
-    background: #f7eee7;
-    color: #8f4a1f;
-}
-
-.pba-households-badge.status-unknown {
-    background: #eef3f8;
-    color: #46617a;
-}
-
-.pba-households-table {
-    min-width: 1120px;
-}
-
-.pba-household-edit-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.pba-households-btn {
-    display: inline-block;
-    padding: 9px 14px;
-    border: 1px solid #0d3b66;
-    background: #0d3b66;
-    color: #fff;
-    border-radius: 4px;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.pba-households-btn.secondary {
-    background: #fff;
-    color: #0d3b66;
-}
-
-.pba-household-summary {
-    margin: 0 0 24px;
-    padding: 18px;
-    border: 1px solid #d7d7d7;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.pba-household-summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px 24px;
-    margin-top: 14px;
-}
-
-.pba-household-summary-item strong {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 4px;
-}
-
-.pba-household-detail-section {
-    margin-top: 18px;
-    border: 1px solid #d7d7d7;
-    border-radius: 8px;
-    background: #fff;
+.pba-household-detail-wrap > details.pba-household-detail-section,
+.pba-household-detail-wrap > .pba-household-detail-section {
+    margin: 0 0 22px;
+    border: 1px solid #dde7f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(14, 46, 76, 0.05);
     overflow: hidden;
 }
 
-.pba-household-detail-section summary {
-    cursor: pointer;
+.pba-household-detail-wrap > details.pba-household-detail-section > summary,
+.pba-household-detail-wrap > .pba-household-detail-section > summary {
     list-style: none;
-    padding: 14px 16px;
-    font-weight: 600;
-    background: #f7f9fb;
-    border-bottom: 1px solid #e7edf3;
+    cursor: pointer;
+    position: relative;
+    margin: 0;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fbfe 100%);
+    border-bottom: 1px solid #e6eef5;
+    color: #17324a;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.3;
 }
 
-.pba-household-detail-section summary::-webkit-details-marker {
+.pba-household-detail-wrap > details.pba-household-detail-section > summary::-webkit-details-marker,
+.pba-household-detail-wrap > .pba-household-detail-section > summary::-webkit-details-marker {
     display: none;
 }
 
-.pba-household-detail-section[open] summary {
-    background: #eef3f8;
+.pba-household-detail-wrap > details.pba-household-detail-section > summary::after,
+.pba-household-detail-wrap > .pba-household-detail-section > summary::after {
+    content: "−";
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    line-height: 1;
+    color: #607487;
+}
+
+.pba-household-detail-wrap > details.pba-household-detail-section:not([open]) > summary::after,
+.pba-household-detail-wrap > .pba-household-detail-section:not([open]) > summary::after {
+    content: "+";
 }
 
 .pba-household-detail-body {
-    padding: 16px;
+    padding: 24px;
+    background: #ffffff;
 }
 
-.pba-household-edit-form table,
-.pba-household-display-table,
-.pba-household-members-table {
+/* Admin & Contact form */
+.pba-household-detail-body form,
+.pba-household-detail-body .pba-auth-form {
+    margin: 0;
+}
+
+.pba-household-detail-body .pba-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+    gap: 18px 22px;
+}
+
+.pba-household-detail-body .pba-field {
+    min-width: 0;
+}
+
+.pba-household-detail-body .pba-field label {
+    display: block;
+    margin: 0 0 8px;
+    color: #17324a;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.pba-household-detail-body .pba-field input[type="text"],
+.pba-household-detail-body .pba-field input[type="email"],
+.pba-household-detail-body .pba-field input[type="number"],
+.pba-household-detail-body .pba-field select,
+.pba-household-detail-body .pba-field textarea {
+    display: block;
     width: 100%;
-    border-collapse: collapse;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 11px 14px;
+    border: 1px solid #ccd8e4;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #17324a;
+    font-size: 15px;
+    line-height: 1.4;
 }
 
-.pba-household-edit-form th,
-.pba-household-edit-form td,
+.pba-household-detail-body .pba-field textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.pba-household-detail-body .pba-maintenance-actions {
+    margin: 20px 0 0;
+}
+
+/* Read-only info tables in other panes */
+.pba-household-display-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
 .pba-household-display-table th,
-.pba-household-display-table td,
-.pba-household-members-table th,
-.pba-household-members-table td {
-    padding: 12px 8px;
-    text-align: left;
+.pba-household-display-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #e9eff5;
     vertical-align: top;
-    border-bottom: 1px solid #eee;
+    background: #ffffff;
 }
 
-.pba-household-edit-form th,
+.pba-household-display-table tr:last-child th,
+.pba-household-display-table tr:last-child td {
+    border-bottom: 0;
+}
+
 .pba-household-display-table th {
-    width: 240px;
+    width: 280px;
+    color: #17324a;
+    font-weight: 700;
+    background: #f8fbfe;
+    white-space: normal;
 }
 
-.pba-household-edit-input,
-.pba-household-edit-textarea {
-    width: 420px;
-    max-width: 100%;
-    padding: 8px 10px;
+.pba-household-display-table td {
+    color: #334e68;
 }
 
-.pba-household-edit-input[readonly] {
-    background: #f7f7f7;
-    color: #555;
-    cursor: not-allowed;
+/* Members pane */
+.pba-household-detail-wrap .pba-admin-list-grid-wrap {
+    overflow-x: auto;
 }
 
-.pba-household-edit-textarea {
-    min-height: 90px;
+#pba-household-members-table {
+    width: 100%;
+    min-width: 1120px;
 }
 
-.pba-household-status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #eef3f8;
-    color: #21425c;
+#pba-household-members-table td,
+#pba-household-members-table th {
+    vertical-align: middle;
 }
 
-.pba-household-muted {
-    color: #666;
+#pba-household-members-table td strong {
+    color: #17324a;
+    font-size: 15px;
 }
 
-@media (max-width: 1080px) {
-    .pba-households-search {
-        grid-template-columns: repeat(2, minmax(220px, 1fr));
+#pba-household-members-table td:nth-child(2) {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+#pba-household-members-table td:last-child .pba-btn,
+#pba-household-members-table td:last-child .pba-households-btn {
+    min-width: 130px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .pba-household-detail-body .pba-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pba-household-display-table th {
+        width: 220px;
+    }
+}
+
+@media (max-width: 900px) {
+    .pba-household-detail-header {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 
 @media (max-width: 680px) {
-    .pba-households-search {
-        grid-template-columns: 1fr;
+    .pba-household-detail-wrap {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .pba-household-detail-body {
+        padding: 18px 16px;
+    }
+
+    .pba-household-detail-wrap > details.pba-household-detail-section > summary,
+    .pba-household-detail-wrap > .pba-household-detail-section > summary {
+        padding: 18px 16px;
+    }
+
+    .pba-household-display-table,
+    .pba-household-display-table tbody,
+    .pba-household-display-table tr,
+    .pba-household-display-table th,
+    .pba-household-display-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .pba-household-display-table th {
+        border-bottom: 0;
     }
 }

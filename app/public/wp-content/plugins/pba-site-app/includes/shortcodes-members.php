@@ -6,85 +6,47 @@ if (!defined('ABSPATH')) {
 
 require_once dirname(__FILE__) . '/pba-admin-list-ui.php';
 
+$member_edit_file = dirname(__FILE__) . '/member-admin-actions.php';
+if (file_exists($member_edit_file)) {
+    require_once $member_edit_file;
+}
+
 add_action('init', 'pba_register_members_shortcode');
 
+if (isset($_GET['pba_members_partial']) && sanitize_text_field(wp_unslash($_GET['pba_members_partial'])) === '1') {
+    add_action('template_redirect', 'pba_maybe_render_members_partial');
+}
+
 function pba_register_members_shortcode() {
+    add_shortcode('pba_members_admin', 'pba_render_members_shortcode');
     add_shortcode('pba_members', 'pba_render_members_shortcode');
 }
 
-if (!function_exists('pba_get_active_role_names_for_person')) {
-    function pba_get_active_role_names_for_person($person_id) {
-        static $role_cache = array();
-
-        $person_id = (int) $person_id;
-
-        if ($person_id < 1) {
-            return array();
-        }
-
-        if (array_key_exists($person_id, $role_cache)) {
-            return $role_cache[$person_id];
-        }
-
-        $rows = pba_supabase_get('Person_to_Role', array(
-            'select'    => 'role_id',
-            'person_id' => 'eq.' . $person_id,
-            'is_active' => 'eq.true',
-        ));
-
-        if (is_wp_error($rows) || empty($rows)) {
-            $role_cache[$person_id] = array();
-            return $role_cache[$person_id];
-        }
-
-        $role_ids = array();
-
-        foreach ($rows as $row) {
-            $role_id = isset($row['role_id']) ? (int) $row['role_id'] : 0;
-            if ($role_id > 0) {
-                $role_ids[] = $role_id;
-            }
-        }
-
-        $role_ids = array_values(array_unique($role_ids));
-
-        if (empty($role_ids)) {
-            $role_cache[$person_id] = array();
-            return $role_cache[$person_id];
-        }
-
-        $role_rows = pba_supabase_get('Role', array(
-            'select'  => 'role_id,role_name',
-            'role_id' => 'in.(' . implode(',', $role_ids) . ')',
-            'limit'   => count($role_ids),
-        ));
-
-        if (is_wp_error($role_rows) || empty($role_rows)) {
-            $role_cache[$person_id] = array();
-            return $role_cache[$person_id];
-        }
-
-        $role_names = array();
-
-        foreach ($role_rows as $role_row) {
-            if (!empty($role_row['role_name'])) {
-                $role_names[] = (string) $role_row['role_name'];
-            }
-        }
-
-        sort($role_names);
-        $role_cache[$person_id] = array_values(array_unique($role_names));
-
-        return $role_cache[$person_id];
-    }
-}
-
-function pba_members_render_shared_styles_if_available() {
-    if (function_exists('pba_shared_list_ui_render_styles')) {
-        return pba_shared_list_ui_render_styles();
+function pba_maybe_render_members_partial() {
+    if (!is_user_logged_in()) {
+        return;
     }
 
-    return '';
+    if (!current_user_can('pba_manage_roles')) {
+        return;
+    }
+
+    $view = isset($_GET['member_view']) ? sanitize_text_field(wp_unslash($_GET['member_view'])) : 'list';
+    if ($view !== 'list') {
+        return;
+    }
+
+    pba_members_admin_enqueue_styles();
+
+    $request_args = pba_get_members_list_request_args();
+    $data = pba_get_members_list_data($request_args);
+
+    if (is_wp_error($data)) {
+        wp_die('Unable to load members.', 500);
+    }
+
+    echo pba_render_members_dynamic_content($data, $request_args);
+    exit;
 }
 
 function pba_render_members_shortcode() {
@@ -92,18 +54,53 @@ function pba_render_members_shortcode() {
         return '<p>Please log in to access this page.</p>';
     }
 
-    if (!pba_current_person_has_role('PBAAdmin')) {
+    if (!current_user_can('pba_manage_roles')) {
         return '<p>You do not have permission to access this page.</p>';
     }
 
-    $view = isset($_GET['member_view']) ? sanitize_text_field(wp_unslash($_GET['member_view'])) : 'list';
-    $member_id = isset($_GET['member_id']) ? absint($_GET['member_id']) : 0;
+    pba_members_admin_enqueue_styles();
 
-    if ($view === 'edit' && $member_id > 0) {
-        return pba_render_member_edit_view($member_id);
+    $view = isset($_GET['member_view']) ? sanitize_text_field(wp_unslash($_GET['member_view'])) : 'list';
+
+    $person_id = 0;
+    if (isset($_GET['person_id'])) {
+        $person_id = absint($_GET['person_id']);
+    } elseif (isset($_GET['member_id'])) {
+        $person_id = absint($_GET['member_id']);
+    }
+
+    if ($view === 'edit' && $person_id > 0) {
+        return pba_render_member_edit_view($person_id);
     }
 
     return pba_render_members_list_view();
+}
+
+function pba_members_admin_enqueue_styles() {
+    static $done = false;
+
+    if ($done) {
+        return;
+    }
+
+    $done = true;
+
+    $base_url = plugin_dir_url(__FILE__) . 'css/';
+    $base_path = dirname(__FILE__) . '/css/';
+
+    wp_enqueue_style(
+        'pba-admin-list-styles',
+        $base_url . 'pba-admin-list-styles.css',
+        array(),
+        file_exists($base_path . 'pba-admin-list-styles.css') ? (string) filemtime($base_path . 'pba-admin-list-styles.css') : '1.0.0'
+    );
+
+    wp_enqueue_style(
+        'pba-members-admin-styles',
+        $base_url . 'pba-members-admin.css',
+        array('pba-admin-list-styles'),
+        file_exists($base_path . 'pba-members-admin.css') ? (string) filemtime($base_path . 'pba-members-admin.css') : '1.0.0'
+    );
 }
 
 function pba_render_members_status_message() {
@@ -121,19 +118,35 @@ function pba_render_members_status_message() {
         'invite_resent'                 => 'Invitation resent successfully.',
         'member_removed_from_household' => 'Member was removed from the household successfully.',
         'member_deleted'                => 'Person record deleted successfully.',
+        'roles_updated'                 => 'Member roles updated successfully.',
+        'password_reset_sent'           => 'Password reset email sent successfully.',
+        'member_removed'                => 'Member removed from household successfully.',
+        'member_updated'                => 'Member updated successfully.',
     );
 
     $error_messages = array(
         'invalid_request'                            => 'We could not process that request.',
         'save_failed'                                => 'We could not save that member.',
         'remove_from_household_failed'               => 'We could not remove that member from the household.',
-        'remove_from_household_blocked_house_admin' => 'Household Admins cannot be removed from a household here.',
-        'remove_from_household_blocked_last_admin'  => 'The last active Household Admin cannot be removed from the household.',
-        'delete_person_failed'                      => 'We could not delete that person record.',
-        'delete_person_blocked_house_admin'         => 'Household Admins cannot be hard deleted here.',
-        'delete_person_blocked_wp_user'             => 'This person is linked to a WordPress user and cannot be hard deleted.',
-        'delete_person_blocked_committees'          => 'This person has active committee assignments and cannot be hard deleted.',
-        'delete_person_blocked_household'           => 'Remove this person from their household before hard deleting.',
+        'remove_from_household_blocked_house_admin'  => 'Household Admins cannot be removed from a household here.',
+        'remove_from_household_blocked_last_admin'   => 'The last active Household Admin cannot be removed from the household.',
+        'delete_person_failed'                       => 'We could not delete that person record.',
+        'delete_person_blocked_house_admin'          => 'Household Admins cannot be hard deleted here.',
+        'delete_person_blocked_wp_user'              => 'This person is linked to a WordPress user and cannot be hard deleted.',
+        'delete_person_blocked_committees'           => 'This person has active committee assignments and cannot be hard deleted.',
+        'delete_person_blocked_household'            => 'Remove this person from their household before hard deleting.',
+        'roles_update_failed'                        => 'We could not update the member roles.',
+        'password_reset_failed'                      => 'We could not send the password reset email.',
+        'disable_failed'                             => 'We could not disable that member.',
+        'enable_failed'                              => 'We could not enable that member.',
+        'remove_failed'                              => 'We could not remove that member from the household.',
+        'delete_failed'                              => 'We could not hard delete that member.',
+        'protected_member'                           => 'That member is protected and cannot be changed with this action.',
+        'member_update_failed'                       => 'We could not save that member.',
+        'invalid_member_input'                       => 'Please provide the required member fields.',
+        'invalid_member_email'                       => 'Please provide a valid email address.',
+        'cancel_failed'                              => 'We could not cancel that invitation.',
+        'resend_failed'                              => 'We could not resend that invitation.',
     );
 
     if (isset($success_messages[$status])) {
@@ -154,6 +167,15 @@ function pba_render_members_status_message() {
 }
 
 function pba_get_members_base_url() {
+    global $post;
+
+    if ($post instanceof WP_Post) {
+        $permalink = get_permalink($post);
+        if (!empty($permalink)) {
+            return $permalink;
+        }
+    }
+
     return home_url('/members/');
 }
 
@@ -162,10 +184,8 @@ function pba_get_members_list_request_args() {
         'name',
         'email',
         'status',
-        'household',
         'roles',
-        'committees',
-        'last_modified',
+        'household',
     );
 
     $allowed_sort_directions = array('asc', 'desc');
@@ -191,12 +211,12 @@ function pba_get_members_list_request_args() {
     }
 
     return array(
-        'search'        => $search,
+        'search' => $search,
         'status_filter' => $status_filter,
-        'sort'          => $sort,
-        'direction'     => $direction,
-        'page'          => $page,
-        'per_page'      => $per_page,
+        'sort' => $sort,
+        'direction' => $direction,
+        'page' => $page,
+        'per_page' => $per_page,
     );
 }
 
@@ -204,12 +224,12 @@ function pba_get_members_list_url($overrides = array()) {
     $args = pba_get_members_list_request_args();
 
     $query_args = array(
-        'member_search'        => $args['search'],
+        'member_search' => $args['search'],
         'member_status_filter' => $args['status_filter'],
-        'member_sort'          => $args['sort'],
-        'member_direction'     => $args['direction'],
-        'member_page'          => $args['page'],
-        'member_per_page'      => $args['per_page'],
+        'member_sort' => $args['sort'],
+        'member_direction' => $args['direction'],
+        'member_page' => $args['page'],
+        'member_per_page' => $args['per_page'],
     );
 
     foreach ($overrides as $key => $value) {
@@ -234,44 +254,32 @@ function pba_render_members_list_view() {
     }
 
     ob_start();
-    echo pba_members_render_shared_styles_if_available();
     ?>
     <style>
-        .pba-members-table a.pba-admin-list-sort-link,
-        .pba-members-table a.pba-admin-list-sort-link:visited,
-        .pba-members-table a.pba-admin-list-sort-link:hover,
-        .pba-members-table a.pba-admin-list-sort-link:focus,
-        .pba-members-table th a.pba-admin-list-sort-link,
-        .pba-members-table th a.pba-admin-list-sort-link:visited,
-        .pba-members-table th a.pba-admin-list-sort-link:hover,
-        .pba-members-table th a.pba-admin-list-sort-link:focus {
-            color: #607487 !important;
+        html.pba-members-cursor-reset,
+        html.pba-members-cursor-reset *,
+        body.pba-members-cursor-reset,
+        body.pba-members-cursor-reset *,
+        #pba-members-admin-root,
+        #pba-members-admin-root * {
+            cursor: auto !important;
         }
 
-        .pba-members-table {
-            min-width: 1400px;
+        #pba-members-admin-root.is-busy,
+        #pba-members-admin-root.is-busy * {
+            cursor: wait !important;
         }
 
-        .pba-members-table th,
-        .pba-members-table td {
-            vertical-align: top;
+        .pba-member-edit-wrap .pba-summary-value {
+            font-size: 18px;
+            line-height: 1.35;
+            font-weight: 600;
         }
 
-        .pba-members-table td:nth-child(2),
-        .pba-members-table td:nth-child(5),
-        .pba-members-table td:nth-child(6) {
-            white-space: normal;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-        }
-
-        .pba-members-table td:nth-child(2) {
-            min-width: 220px;
-        }
-
-        .pba-members-table td:nth-child(5),
-        .pba-members-table td:nth-child(6) {
-            min-width: 220px;
+        .pba-member-edit-wrap .pba-summary-label {
+            font-size: 12px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
 
         .pba-maintenance-actions {
@@ -299,6 +307,7 @@ function pba_render_members_list_view() {
             color: #fff;
         }
     </style>
+
     <div class="pba-members-wrap pba-page-wrap">
         <?php echo pba_render_members_status_message(); ?>
 
@@ -308,6 +317,8 @@ function pba_render_members_list_view() {
     </div>
 
     <?php
+    echo pba_admin_list_render_resizable_table_script();
+
     echo pba_admin_list_render_ajax_script(array(
         'root_id' => 'pba-members-admin-root',
         'form_id' => 'pba-members-search-form',
@@ -316,701 +327,165 @@ function pba_render_members_list_view() {
         'ajax_link_attr' => 'data-members-ajax-link',
         'partial_param' => 'pba_members_partial',
     ));
-
-    return ob_get_clean();
-}
-
-function pba_get_members_server_sortable_columns() {
-    return array('name', 'email', 'status', 'last_modified');
-}
-
-function pba_get_members_hybrid_sort_columns() {
-    return array('household', 'roles', 'committees');
-}
-
-function pba_build_members_person_query_args($request_args, $include_paging = true, $include_sort = true) {
-    $query_args = array(
-        'select' => 'person_id,household_id,first_name,last_name,email_address,status,last_modified_at',
-    );
-
-    if ($request_args['status_filter'] !== '') {
-        $query_args['status'] = 'eq.' . $request_args['status_filter'];
-    }
-
-    if ($request_args['search'] !== '') {
-        $search = trim((string) $request_args['search']);
-        $escaped = str_replace('*', '', $search);
-        $query_args['or'] = '(first_name.ilike.*' . $escaped . '*,last_name.ilike.*' . $escaped . '*,email_address.ilike.*' . $escaped . '*)';
-    }
-
-    if ($include_sort) {
-        switch ($request_args['sort']) {
-            case 'email':
-                $query_args['order'] = 'email_address.' . $request_args['direction'];
-                break;
-            case 'status':
-                $query_args['order'] = 'status.' . $request_args['direction'] . ',last_name.asc,first_name.asc';
-                break;
-            case 'last_modified':
-                $query_args['order'] = 'last_modified_at.' . $request_args['direction'];
-                break;
-            case 'name':
-            default:
-                $query_args['order'] = 'last_name.' . $request_args['direction'] . ',first_name.' . $request_args['direction'];
-                break;
-        }
-    } else {
-        $query_args['order'] = 'last_name.asc,first_name.asc';
-    }
-
-    if ($include_paging) {
-        $offset = max(0, ((int) $request_args['page'] - 1) * (int) $request_args['per_page']);
-        $query_args['limit'] = (int) $request_args['per_page'];
-        $query_args['offset'] = $offset;
-    }
-
-    return $query_args;
-}
-
-function pba_get_members_list_data($request_args) {
-    $filter_options = pba_get_members_filter_options();
-
-    if (in_array($request_args['sort'], pba_get_members_server_sortable_columns(), true)) {
-        return pba_get_members_list_data_server_mode($request_args, $filter_options);
-    }
-
-    return pba_get_members_list_data_hybrid_mode($request_args, $filter_options);
-}
-
-function pba_get_members_list_data_server_mode($request_args, $filter_options) {
-    $meta = pba_supabase_get(
-        'Person',
-        pba_build_members_person_query_args($request_args, true, true),
-        array(
-            'return_meta' => true,
-            'count'       => 'exact',
-        )
-    );
-
-    if (is_wp_error($meta) || !is_array($meta) || !isset($meta['rows'])) {
-        return is_wp_error($meta) ? $meta : new WP_Error('pba_members_load_failed', 'Unable to load members.');
-    }
-
-    $base_rows = array_map('pba_prepare_members_list_base_row', $meta['rows']);
-    $page_rows = pba_enrich_members_page_rows($base_rows);
-    $total_rows = isset($meta['count']) && $meta['count'] !== null ? (int) $meta['count'] : count($page_rows);
-
-    $pagination = pba_build_members_pagination_from_total(
-        $total_rows,
-        (int) $request_args['page'],
-        (int) $request_args['per_page'],
-        count($page_rows)
-    );
-
-    return array(
-        'all_rows'       => array(),
-        'filtered_rows'  => array(),
-        'page_rows'      => $page_rows,
-        'filter_options' => $filter_options,
-        'pagination'     => $pagination,
-        'total_filtered' => $total_rows,
-    );
-}
-
-function pba_get_members_list_data_hybrid_mode($request_args, $filter_options) {
-    $meta = pba_supabase_get(
-        'Person',
-        pba_build_members_person_query_args($request_args, false, false),
-        array(
-            'return_meta' => true,
-            'count'       => 'exact',
-        )
-    );
-
-    if (is_wp_error($meta) || !is_array($meta) || !isset($meta['rows'])) {
-        return is_wp_error($meta) ? $meta : new WP_Error('pba_members_load_failed', 'Unable to load members.');
-    }
-
-    $base_rows = array_map('pba_prepare_members_list_base_row', $meta['rows']);
-    $enriched_rows = pba_enrich_members_page_rows($base_rows);
-
-    $sorted_rows = pba_sort_members_hybrid_rows($enriched_rows, $request_args['sort'], $request_args['direction']);
-    $pagination = pba_paginate_members_rows($sorted_rows, $request_args['page'], $request_args['per_page']);
-
-    return array(
-        'all_rows'       => array(),
-        'filtered_rows'  => array(),
-        'page_rows'      => $pagination['rows'],
-        'filter_options' => $filter_options,
-        'pagination'     => $pagination,
-        'total_filtered' => isset($meta['count']) && $meta['count'] !== null ? (int) $meta['count'] : count($sorted_rows),
-    );
-}
-
-function pba_prepare_members_list_base_row($row) {
-    $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
-    $first_name = trim((string) ($row['first_name'] ?? ''));
-    $last_name = trim((string) ($row['last_name'] ?? ''));
-    $display_name = trim($first_name . ' ' . $last_name);
-    $email_address = trim((string) ($row['email_address'] ?? ''));
-    $status = trim((string) ($row['status'] ?? ''));
-    $last_modified_raw = (string) ($row['last_modified_at'] ?? '');
-    $last_modified_timestamp = $last_modified_raw !== '' ? strtotime($last_modified_raw) : false;
-    $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
-
-    return array(
-        'person_id'               => $person_id,
-        'first_name'              => $first_name,
-        'last_name'               => $last_name,
-        'display_name'            => $display_name,
-        'display_name_sort'       => strtolower(trim($last_name . ' ' . $first_name)),
-        'email_address'           => $email_address,
-        'status'                  => $status,
-        'household_id'            => $household_id,
-        'household_label'         => '',
-        'household_label_sort'    => '',
-        'roles'                   => array(),
-        'roles_label'             => '',
-        'committees'              => array(),
-        'committees_label'        => '',
-        'last_modified_raw'       => $last_modified_raw,
-        'last_modified_timestamp' => $last_modified_timestamp ? (int) $last_modified_timestamp : 0,
-    );
-}
-
-function pba_enrich_members_page_rows($rows) {
-    if (!is_array($rows) || empty($rows)) {
-        return array();
-    }
-
-    $person_ids = array();
-    $household_ids = array();
-
-    foreach ($rows as $row) {
-        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
-        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
-
-        if ($person_id > 0) {
-            $person_ids[] = $person_id;
-        }
-
-        if ($household_id > 0) {
-            $household_ids[] = $household_id;
-        }
-    }
-
-    $person_ids = array_values(array_unique($person_ids));
-    $household_ids = array_values(array_unique($household_ids));
-
-    $household_labels = pba_get_household_labels_map_for_members($household_ids);
-    $roles_map = pba_get_role_names_map_for_people($person_ids);
-    $committees_map = pba_get_committee_labels_map_for_people($person_ids);
-
-    foreach ($rows as $index => $row) {
-        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
-        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
-
-        $household_label = isset($household_labels[$household_id]) ? $household_labels[$household_id] : '';
-        $roles = isset($roles_map[$person_id]) ? $roles_map[$person_id] : array();
-        $committees = isset($committees_map[$person_id]) ? $committees_map[$person_id] : array();
-
-        $rows[$index]['household_label'] = $household_label;
-        $rows[$index]['household_label_sort'] = strtolower($household_label);
-        $rows[$index]['roles'] = $roles;
-        $rows[$index]['roles_label'] = !empty($roles) ? implode(', ', $roles) : '';
-        $rows[$index]['committees'] = $committees;
-        $rows[$index]['committees_label'] = !empty($committees) ? implode(', ', $committees) : '';
-    }
-
-    return $rows;
-}
-
-function pba_get_household_labels_map_for_members($household_ids) {
-    $household_ids = array_values(array_unique(array_map('intval', (array) $household_ids)));
-    $household_ids = array_filter($household_ids, function ($id) {
-        return $id > 0;
-    });
-
-    if (empty($household_ids)) {
-        return array();
-    }
-
-    $rows = pba_supabase_get('Household', array(
-        'select'       => 'household_id,pb_street_number,pb_street_name',
-        'household_id' => 'in.(' . implode(',', $household_ids) . ')',
-        'limit'        => count($household_ids),
-    ));
-
-    if (is_wp_error($rows) || !is_array($rows) || empty($rows)) {
-        return array();
-    }
-
-    $map = array();
-
-    foreach ($rows as $row) {
-        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
-        if ($household_id < 1) {
-            continue;
-        }
-
-        $map[$household_id] = trim(((string) ($row['pb_street_number'] ?? '')) . ' ' . ((string) ($row['pb_street_name'] ?? '')));
-    }
-
-    return $map;
-}
-
-function pba_get_role_names_map_for_people($person_ids) {
-    $person_ids = array_values(array_unique(array_map('intval', (array) $person_ids)));
-    $person_ids = array_filter($person_ids, function ($id) {
-        return $id > 0;
-    });
-
-    if (empty($person_ids)) {
-        return array();
-    }
-
-    $rows = pba_supabase_get('Person_to_Role', array(
-        'select'    => 'person_id,role_id',
-        'person_id' => 'in.(' . implode(',', $person_ids) . ')',
-        'is_active' => 'eq.true',
-        'limit'     => max(count($person_ids) * 12, count($person_ids)),
-    ));
-
-    $map = array();
-    foreach ($person_ids as $person_id) {
-        $map[$person_id] = array();
-    }
-
-    if (is_wp_error($rows) || !is_array($rows) || empty($rows)) {
-        return $map;
-    }
-
-    $role_ids = array();
-    $role_ids_by_person = array();
-
-    foreach ($rows as $row) {
-        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
-        $role_id = isset($row['role_id']) ? (int) $row['role_id'] : 0;
-
-        if ($person_id < 1 || $role_id < 1) {
-            continue;
-        }
-
-        if (!isset($role_ids_by_person[$person_id])) {
-            $role_ids_by_person[$person_id] = array();
-        }
-
-        $role_ids_by_person[$person_id][] = $role_id;
-        $role_ids[] = $role_id;
-    }
-
-    $role_ids = array_values(array_unique($role_ids));
-
-    if (empty($role_ids)) {
-        return $map;
-    }
-
-    $role_rows = pba_supabase_get('Role', array(
-        'select'  => 'role_id,role_name',
-        'role_id' => 'in.(' . implode(',', $role_ids) . ')',
-        'limit'   => count($role_ids),
-    ));
-
-    if (is_wp_error($role_rows) || !is_array($role_rows) || empty($role_rows)) {
-        return $map;
-    }
-
-    $role_name_map = array();
-
-    foreach ($role_rows as $role_row) {
-        $role_id = isset($role_row['role_id']) ? (int) $role_row['role_id'] : 0;
-        $role_name = isset($role_row['role_name']) ? (string) $role_row['role_name'] : '';
-        if ($role_id > 0 && $role_name !== '') {
-            $role_name_map[$role_id] = $role_name;
-        }
-    }
-
-    foreach ($role_ids_by_person as $person_id => $role_ids_for_person) {
-        $names = array();
-
-        foreach ($role_ids_for_person as $role_id) {
-            if (isset($role_name_map[$role_id])) {
-                $names[] = $role_name_map[$role_id];
-            }
-        }
-
-        sort($names);
-        $map[$person_id] = array_values(array_unique($names));
-    }
-
-    return $map;
-}
-
-function pba_get_committee_labels_map_for_people($person_ids) {
-    $person_ids = array_values(array_unique(array_map('intval', (array) $person_ids)));
-    $person_ids = array_filter($person_ids, function ($id) {
-        return $id > 0;
-    });
-
-    if (empty($person_ids)) {
-        return array();
-    }
-
-    $rows = pba_supabase_get('Person_to_Committee', array(
-        'select'    => 'person_id,committee_id,committee_role',
-        'person_id' => 'in.(' . implode(',', $person_ids) . ')',
-        'is_active' => 'eq.true',
-        'limit'     => max(count($person_ids) * 12, count($person_ids)),
-    ));
-
-    $map = array();
-    foreach ($person_ids as $person_id) {
-        $map[$person_id] = array();
-    }
-
-    if (is_wp_error($rows) || !is_array($rows) || empty($rows)) {
-        return $map;
-    }
-
-    $committee_ids = array();
-    $rows_by_person = array();
-
-    foreach ($rows as $row) {
-        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
-        $committee_id = isset($row['committee_id']) ? (int) $row['committee_id'] : 0;
-
-        if ($person_id < 1 || $committee_id < 1) {
-            continue;
-        }
-
-        if (!isset($rows_by_person[$person_id])) {
-            $rows_by_person[$person_id] = array();
-        }
-
-        $rows_by_person[$person_id][] = array(
-            'committee_id'   => $committee_id,
-            'committee_role' => isset($row['committee_role']) ? (string) $row['committee_role'] : '',
-        );
-
-        $committee_ids[] = $committee_id;
-    }
-
-    $committee_ids = array_values(array_unique($committee_ids));
-
-    if (empty($committee_ids)) {
-        return $map;
-    }
-
-    $committee_rows = pba_supabase_get('Committee', array(
-        'select'       => 'committee_id,committee_name',
-        'committee_id' => 'in.(' . implode(',', $committee_ids) . ')',
-        'limit'        => count($committee_ids),
-    ));
-
-    if (is_wp_error($committee_rows) || !is_array($committee_rows) || empty($committee_rows)) {
-        return $map;
-    }
-
-    $committee_name_map = array();
-
-    foreach ($committee_rows as $committee_row) {
-        $committee_id = isset($committee_row['committee_id']) ? (int) $committee_row['committee_id'] : 0;
-        $committee_name = isset($committee_row['committee_name']) ? (string) $committee_row['committee_name'] : '';
-        if ($committee_id > 0 && $committee_name !== '') {
-            $committee_name_map[$committee_id] = $committee_name;
-        }
-    }
-
-    foreach ($rows_by_person as $person_id => $committee_rows_for_person) {
-        $labels = array();
-
-        foreach ($committee_rows_for_person as $committee_item) {
-            $committee_id = (int) $committee_item['committee_id'];
-            if (!isset($committee_name_map[$committee_id])) {
-                continue;
-            }
-
-            $label = $committee_name_map[$committee_id];
-            $committee_role = trim((string) $committee_item['committee_role']);
-            if ($committee_role !== '') {
-                $label .= ' (' . $committee_role . ')';
-            }
-
-            $labels[] = $label;
-        }
-
-        sort($labels);
-        $map[$person_id] = array_values(array_unique($labels));
-    }
-
-    return $map;
-}
-
-function pba_get_members_filter_options() {
-    $rows = pba_supabase_get('Person', array(
-        'select' => 'status',
-        'order'  => 'status.asc',
-    ));
-
-    $statuses = array();
-
-    if (!is_wp_error($rows) && is_array($rows)) {
-        foreach ($rows as $row) {
-            $status = trim((string) ($row['status'] ?? ''));
-            if ($status !== '') {
-                $statuses[$status] = $status;
-            }
-        }
-    }
-
-    natcasesort($statuses);
-
-    return array(
-        'statuses' => array_values($statuses),
-    );
-}
-
-function pba_sort_members_hybrid_rows($rows, $sort, $direction) {
-    usort($rows, function ($a, $b) use ($sort, $direction) {
-        switch ($sort) {
-            case 'household':
-                $value_a = strtolower((string) ($a['household_label'] ?? ''));
-                $value_b = strtolower((string) ($b['household_label'] ?? ''));
-                break;
-            case 'roles':
-                $value_a = strtolower((string) ($a['roles_label'] ?? ''));
-                $value_b = strtolower((string) ($b['roles_label'] ?? ''));
-                break;
-            case 'committees':
-                $value_a = strtolower((string) ($a['committees_label'] ?? ''));
-                $value_b = strtolower((string) ($b['committees_label'] ?? ''));
-                break;
-            default:
-                $value_a = '';
-                $value_b = '';
-                break;
-        }
-
-        if ($value_a === $value_b) {
-            $fallback_a = (int) ($a['person_id'] ?? 0);
-            $fallback_b = (int) ($b['person_id'] ?? 0);
-            return $fallback_a <=> $fallback_b;
-        }
-
-        $comparison = ($value_a < $value_b) ? -1 : 1;
-        return $direction === 'desc' ? -$comparison : $comparison;
-    });
-
-    return $rows;
-}
-
-function pba_build_members_pagination_from_total($total_rows, $page, $per_page, $page_row_count) {
-    $total_rows = max(0, (int) $total_rows);
-    $per_page = max(1, (int) $per_page);
-    $total_pages = max(1, (int) ceil($total_rows / $per_page));
-    $current_page = min(max(1, (int) $page), $total_pages);
-    $offset = ($current_page - 1) * $per_page;
-
-    return array(
-        'rows'         => array(),
-        'total_rows'   => $total_rows,
-        'total_pages'  => $total_pages,
-        'current_page' => $current_page,
-        'per_page'     => $per_page,
-        'offset'       => $offset,
-        'start_number' => $total_rows > 0 ? ($offset + 1) : 0,
-        'end_number'   => $total_rows > 0 ? min($offset + (int) $page_row_count, $total_rows) : 0,
-    );
-}
-
-function pba_paginate_members_rows($rows, $page, $per_page) {
-    $total_rows = count($rows);
-    $total_pages = max(1, (int) ceil($total_rows / $per_page));
-    $current_page = min(max(1, (int) $page), $total_pages);
-    $offset = ($current_page - 1) * $per_page;
-    $page_rows = array_slice($rows, $offset, $per_page);
-
-    return array(
-        'rows'         => $page_rows,
-        'total_rows'   => $total_rows,
-        'total_pages'  => $total_pages,
-        'current_page' => $current_page,
-        'per_page'     => $per_page,
-        'offset'       => $offset,
-        'start_number' => $total_rows > 0 ? ($offset + 1) : 0,
-        'end_number'   => $total_rows > 0 ? min($offset + $per_page, $total_rows) : 0,
-    );
-}
-
-function pba_render_members_summary_card($label, $value, $note = '') {
-    if (function_exists('pba_shared_render_summary_card')) {
-        return pba_shared_render_summary_card($label, $value, $note);
-    }
-
-    ob_start();
     ?>
-    <div class="pba-summary-card">
-        <div class="pba-summary-label"><?php echo esc_html($label); ?></div>
-        <div class="pba-summary-value"><?php echo esc_html((string) $value); ?></div>
-        <?php if ($note !== '') : ?>
-            <div class="pba-summary-note"><?php echo esc_html($note); ?></div>
-        <?php endif; ?>
-    </div>
-    <?php
-    return ob_get_clean();
-}
+    <script>
+    (function () {
+        var root = document.getElementById('pba-members-admin-root');
 
-function pba_get_removed_members_data($limit = 10) {
-    $limit = max(1, (int) $limit);
+        function clearCursorEverywhere() {
+            var nodes;
+            var i;
 
-    $rows = pba_supabase_get('Person', array(
-        'select'      => 'person_id,first_name,last_name,email_address,status,last_modified_at,household_id',
-        'household_id'=> 'is.null',
-        'order'       => 'last_modified_at.desc,last_name.asc,first_name.asc',
-        'limit'       => $limit,
-    ));
+            document.documentElement.classList.add('pba-members-cursor-reset');
+            document.body.classList.add('pba-members-cursor-reset');
 
-    if (is_wp_error($rows) || !is_array($rows)) {
-        return array(
-            'count' => 0,
-            'rows'  => array(),
-        );
-    }
+            document.documentElement.style.cursor = '';
+            document.body.style.cursor = '';
 
-    $count_rows = pba_supabase_get('Person', array(
-        'select'      => 'person_id',
-        'household_id'=> 'is.null',
-    ));
+            document.documentElement.classList.remove('pba-loading', 'pba-submitting', 'pba-household-submitting');
+            document.body.classList.remove('pba-loading', 'pba-submitting', 'pba-household-submitting', 'pba-table-resizing');
 
-    $count = (!is_wp_error($count_rows) && is_array($count_rows)) ? count($count_rows) : count($rows);
+            if (root) {
+                root.classList.remove('is-busy');
+            }
 
-    return array(
-        'count' => (int) $count,
-        'rows'  => array_values($rows),
-    );
-}
+            nodes = document.querySelectorAll('[style*="cursor"]');
+            for (i = 0; i < nodes.length; i++) {
+                nodes[i].style.cursor = '';
+            }
+        }
 
-function pba_render_removed_members_section($removed_data) {
-    $removed_count = isset($removed_data['count']) ? (int) $removed_data['count'] : 0;
-    $removed_rows = isset($removed_data['rows']) && is_array($removed_data['rows']) ? $removed_data['rows'] : array();
+        function setBusy() {
+            if (root) {
+                root.classList.add('is-busy');
+            }
+        }
 
-    ob_start();
-    ?>
-    <div class="pba-section">
-        <div class="pba-section-heading">
-            <h3>Removed from Household</h3>
-            <p class="pba-section-subtitle">People who are currently not assigned to any household. Use Manage to review, reassign, disable, or delete as needed.</p>
-        </div>
+        function scheduleClear() {
+            clearCursorEverywhere();
+            window.requestAnimationFrame(clearCursorEverywhere);
+            window.setTimeout(clearCursorEverywhere, 0);
+            window.setTimeout(clearCursorEverywhere, 150);
+            window.setTimeout(clearCursorEverywhere, 500);
+        }
 
-        <?php if ($removed_count < 1) : ?>
-            <p class="pba-admin-list-muted" style="margin:0;">No people are currently removed from household.</p>
-        <?php else : ?>
-            <p class="pba-admin-list-muted" style="margin:0 0 14px;">Showing up to <?php echo esc_html((string) count($removed_rows)); ?> of <?php echo esc_html(number_format_i18n($removed_count)); ?> removed member<?php echo $removed_count === 1 ? '' : 's'; ?>.</p>
+        document.addEventListener('click', function (event) {
+            var link = event.target.closest('[data-members-ajax-link="1"]');
+            if (link) {
+                setBusy();
+            }
+        }, true);
 
-            <div class="pba-table-wrap">
-                <table class="pba-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Last Modified</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($removed_rows as $row) : ?>
-                            <?php
-                            $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
-                            $display_name = trim(((string) ($row['first_name'] ?? '')) . ' ' . ((string) ($row['last_name'] ?? '')));
-                            ?>
-                            <tr>
-                                <td>
-                                    <strong><?php echo esc_html($display_name !== '' ? $display_name : ('Member #' . $person_id)); ?></strong>
-                                    <div class="pba-admin-list-muted">Member ID <?php echo esc_html((string) $person_id); ?></div>
-                                </td>
-                                <td><?php echo esc_html((string) ($row['email_address'] ?? '')); ?></td>
-                                <td><?php echo pba_render_members_status_badge((string) ($row['status'] ?? '')); ?></td>
-                                <td><?php echo esc_html(pba_format_datetime_display((string) ($row['last_modified_at'] ?? ''))); ?></td>
-                                <td>
-                                    <a class="pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
-                                        'member_view' => 'edit',
-                                        'member_id'   => $person_id,
-                                    ), pba_get_members_base_url())); ?>">Manage &rarr;</a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
+        document.addEventListener('submit', function (event) {
+            var form = event.target.closest('#pba-members-search-form');
+            if (form) {
+                setBusy();
+            }
+        }, true);
+
+        if (window.MutationObserver && root) {
+            new MutationObserver(function () {
+                scheduleClear();
+            }).observe(root, { childList: true, subtree: true });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', scheduleClear);
+        } else {
+            scheduleClear();
+        }
+
+        window.addEventListener('load', scheduleClear);
+        window.addEventListener('pageshow', scheduleClear);
+        window.addEventListener('focus', scheduleClear);
+    })();
+    </script>
     <?php
 
     return ob_get_clean();
 }
 
 function pba_render_members_dynamic_content($data, $request_args) {
-    $removed_data = pba_get_removed_members_data(10);
+    $status_options = isset($data['status_options']) && is_array($data['status_options']) ? $data['status_options'] : array();
+    $pagination = isset($data['pagination']) && is_array($data['pagination']) ? $data['pagination'] : array(
+        'total_rows' => 0,
+        'start_number' => 0,
+        'end_number' => 0,
+    );
 
     ob_start();
     ?>
-    <div class="pba-admin-list-hero">
-        <div class="pba-admin-list-hero-top">
-            <div>
-                <p>View and manage member records, roles, committee assignments, and invite status.</p>
+    <div class="pba-members-admin-list-shell">
+        <div class="pba-admin-list-hero">
+            <div class="pba-admin-list-hero-top">
+                <div>
+                    <h2 style="margin:0 0 6px;">Members</h2>
+                    <p>Manage member accounts, household assignments, and role access.</p>
+                </div>
+                <div class="pba-admin-list-badge">
+                    Total Members: <?php echo esc_html(number_format_i18n((int) ($pagination['total_rows'] ?? 0))); ?>
+                </div>
+            </div>
+
+            <div class="pba-admin-list-kpis">
+                <div class="pba-admin-list-kpi">
+                    <span class="pba-admin-list-kpi-label">Active</span>
+                    <span class="pba-admin-list-kpi-value"><?php echo esc_html(number_format_i18n((int) ($data['summary']['active'] ?? 0))); ?></span>
+                </div>
+                <div class="pba-admin-list-kpi">
+                    <span class="pba-admin-list-kpi-label">Inactive</span>
+                    <span class="pba-admin-list-kpi-value"><?php echo esc_html(number_format_i18n((int) ($data['summary']['inactive'] ?? 0))); ?></span>
+                </div>
+                <div class="pba-admin-list-kpi">
+                    <span class="pba-admin-list-kpi-label">Linked WP Users</span>
+                    <span class="pba-admin-list-kpi-value"><?php echo esc_html(number_format_i18n((int) ($data['summary']['linked_wp_users'] ?? 0))); ?></span>
+                </div>
+                <div class="pba-admin-list-kpi">
+                    <span class="pba-admin-list-kpi-label">Email Verified</span>
+                    <span class="pba-admin-list-kpi-value"><?php echo esc_html(number_format_i18n((int) ($data['summary']['email_verified'] ?? 0))); ?></span>
+                </div>
             </div>
         </div>
 
-        <div class="pba-summary-grid">
-            <?php echo pba_render_members_summary_card('Filtered Members', number_format_i18n($data['total_filtered'])); ?>
-            <?php echo pba_render_members_summary_card('On This Page', number_format_i18n(count($data['page_rows']))); ?>
-            <?php echo pba_render_members_summary_card('Page', number_format_i18n($data['pagination']['current_page']) . ' / ' . number_format_i18n($data['pagination']['total_pages'])); ?>
-            <?php echo pba_render_members_summary_card('Page Size', number_format_i18n($request_args['per_page'])); ?>
-            <?php echo pba_render_members_summary_card('Removed from Household', number_format_i18n($removed_data['count'])); ?>
-        </div>
-    </div>
+        <div class="pba-admin-list-card">
+            <form id="pba-members-search-form" class="pba-admin-list-toolbar" method="get" action="<?php echo esc_url(pba_get_members_base_url()); ?>">
+                <div class="pba-admin-list-toolbar-grid">
+                    <div class="pba-admin-list-field">
+                        <label for="pba-member-search">Search</label>
+                        <input id="pba-member-search" type="text" name="member_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Search by name, email, household, or role">
+                    </div>
 
-    <?php echo pba_render_removed_members_section($removed_data); ?>
+                    <div class="pba-admin-list-field">
+                        <label for="pba-member-status-filter">Status</label>
+                        <select id="pba-member-status-filter" name="member_status_filter">
+                            <option value="">All statuses</option>
+                            <?php foreach ($status_options as $status_option) : ?>
+                                <option value="<?php echo esc_attr($status_option); ?>" <?php selected($request_args['status_filter'], $status_option); ?>>
+                                    <?php echo esc_html($status_option); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-    <div class="pba-section">
-        <div class="pba-admin-list-toolbar">
-            <form method="get" class="pba-members-search" id="pba-members-search-form" style="display:grid;grid-template-columns:minmax(220px,2fr) minmax(180px,1fr) minmax(120px,140px) auto auto;gap:12px;align-items:end;">
-                <input type="hidden" name="member_page" value="1">
-                <input type="hidden" name="member_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
-                <input type="hidden" name="member_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
-
-                <div class="pba-field">
-                    <label for="member_search">Search</label>
-                    <input type="text" id="member_search" name="member_search" value="<?php echo esc_attr($request_args['search']); ?>" placeholder="Name or email">
+                    <div class="pba-admin-list-field">
+                        <label for="pba-member-per-page">Rows per page</label>
+                        <select id="pba-member-per-page" name="member_per_page">
+                            <?php foreach (array(25, 50, 100) as $per_page_option) : ?>
+                                <option value="<?php echo esc_attr((string) $per_page_option); ?>" <?php selected($request_args['per_page'], $per_page_option); ?>>
+                                    <?php echo esc_html(number_format_i18n($per_page_option)); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="pba-field">
-                    <label for="member_status_filter">Status</label>
-                    <select id="member_status_filter" name="member_status_filter">
-                        <option value="">All statuses</option>
-                        <?php foreach ($data['filter_options']['statuses'] as $status_option) : ?>
-                            <option value="<?php echo esc_attr($status_option); ?>" <?php selected($request_args['status_filter'], $status_option); ?>><?php echo esc_html($status_option); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="pba-admin-list-toolbar-actions">
+                    <button type="submit" class="pba-admin-list-btn">Apply Filters</button>
+                    <a class="pba-admin-list-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Reset</a>
                 </div>
-
-                <div class="pba-field">
-                    <label for="member_per_page">Rows</label>
-                    <select id="member_per_page" name="member_per_page">
-                        <option value="25" <?php selected($request_args['per_page'], 25); ?>>25</option>
-                        <option value="50" <?php selected($request_args['per_page'], 50); ?>>50</option>
-                        <option value="100" <?php selected($request_args['per_page'], 100); ?>>100</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="pba-btn">Apply</button>
-                <a href="<?php echo esc_url(pba_get_members_base_url()); ?>" class="pba-btn secondary">Reset</a>
             </form>
-        </div>
 
-        <div class="pba-members-admin-list-shell">
-            <?php echo pba_render_members_list_shell($data, $request_args); ?>
+            <?php echo pba_render_members_table($data, $request_args); ?>
         </div>
     </div>
     <?php
@@ -1018,15 +493,19 @@ function pba_render_members_dynamic_content($data, $request_args) {
     return ob_get_clean();
 }
 
-function pba_render_members_list_shell($data, $request_args) {
-    ob_start();
+function pba_render_members_table($data, $request_args) {
+    $pagination = isset($data['pagination']) && is_array($data['pagination']) ? $data['pagination'] : array(
+        'start_number' => 0,
+        'end_number' => 0,
+        'total_rows' => 0,
+    );
+    $page_rows = isset($data['page_rows']) && is_array($data['page_rows']) ? $data['page_rows'] : array();
 
-    $pagination = $data['pagination'];
-    $page_rows = $data['page_rows'];
+    ob_start();
     ?>
     <div class="pba-admin-list-resultsbar">
         <div>
-            Showing <?php echo esc_html(number_format_i18n($pagination['start_number'])); ?>–<?php echo esc_html(number_format_i18n($pagination['end_number'])); ?> of <?php echo esc_html(number_format_i18n($pagination['total_rows'])); ?> members
+            Showing <?php echo esc_html(number_format_i18n((int) ($pagination['start_number'] ?? 0))); ?>–<?php echo esc_html(number_format_i18n((int) ($pagination['end_number'] ?? 0))); ?> of <?php echo esc_html(number_format_i18n((int) ($pagination['total_rows'] ?? 0))); ?> members
         </div>
         <div class="pba-admin-list-filter-summary">
             <?php if ($request_args['search'] !== '') : ?>
@@ -1046,58 +525,59 @@ function pba_render_members_list_shell($data, $request_args) {
             <div class="pba-admin-list-skeleton-line"></div>
         </div>
 
-        <table class="pba-table pba-members-table">
+        <table class="pba-admin-list-table pba-table pba-members-table pba-resizable-table" id="pba-members-admin-table" data-resize-key="pbaMembersAdminColumnWidthsV9" data-min-col-width="100">
+            <colgroup data-pba-resizable-cols="1">
+                <col style="width: 210px;">
+                <col style="width: 300px;">
+                <col style="width: 180px;">
+                <col style="width: 220px;">
+                <col style="width: 220px;">
+                <col style="width: 160px;">
+            </colgroup>
             <thead>
                 <tr>
-                    <?php echo pba_render_members_sortable_th('Name', 'name', $request_args); ?>
+                    <?php echo pba_render_members_sortable_th('Member', 'name', $request_args); ?>
                     <?php echo pba_render_members_sortable_th('Email', 'email', $request_args); ?>
-                    <?php echo pba_render_members_sortable_th('Status', 'status', $request_args); ?>
-                    <?php echo pba_render_members_sortable_th('Household', 'household', $request_args); ?>
+                    <?php echo pba_render_members_sortable_th('Status / Verified', 'status', $request_args); ?>
                     <?php echo pba_render_members_sortable_th('Roles', 'roles', $request_args); ?>
-                    <?php echo pba_render_members_sortable_th('Committees', 'committees', $request_args); ?>
-                    <?php echo pba_render_members_sortable_th('Last Modified', 'last_modified', $request_args); ?>
-                    <th>Action</th>
+                    <?php echo pba_render_members_sortable_th('Household', 'household', $request_args); ?>
+                    <th data-resizable="false">Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($page_rows)) : ?>
                     <tr>
-                        <td colspan="8" class="pba-admin-list-empty">No members found for the current filters.</td>
+                        <td colspan="6" class="pba-admin-list-empty">No members found for the current filters.</td>
                     </tr>
                 <?php else : ?>
                     <?php foreach ($page_rows as $row) : ?>
                         <?php
-                        $person_id = (int) ($row['person_id'] ?? 0);
-                        $roles = (array) ($row['roles'] ?? array());
-                        $committees = (array) ($row['committees'] ?? array());
+                        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+                        $full_name = trim((string) ($row['full_name'] ?? ''));
+                        $email = trim((string) ($row['email_address'] ?? ''));
+                        $status = trim((string) ($row['status'] ?? ''));
+                        $roles = isset($row['role_names']) && is_array($row['role_names']) ? $row['role_names'] : array();
+                        $household_label = trim((string) ($row['household_label'] ?? ''));
+                        $email_verified = !empty($row['email_verified']);
                         ?>
                         <tr>
                             <td>
-                                <strong><?php echo esc_html(($row['display_name'] ?? '') !== '' ? $row['display_name'] : ('Member #' . $person_id)); ?></strong>
-                                <div class="pba-admin-list-muted">Member ID <?php echo esc_html((string) $person_id); ?></div>
+                                <strong><?php echo esc_html($full_name !== '' ? $full_name : 'Unnamed member'); ?></strong>
+                                <div class="pba-admin-list-muted">Person ID <?php echo esc_html((string) $person_id); ?></div>
                             </td>
-                            <td><?php echo esc_html($row['email_address'] ?? ''); ?></td>
-                            <td><?php echo pba_render_members_status_badge($row['status'] ?? ''); ?></td>
-                            <td><?php echo esc_html(($row['household_label'] ?? '') !== '' ? $row['household_label'] : '—'); ?></td>
+                            <td><?php echo esc_html($email !== '' ? $email : '—'); ?></td>
                             <td>
-                                <?php if (!empty($roles)) : ?>
-                                    <?php echo esc_html(implode(', ', $roles)); ?>
-                                <?php else : ?>
-                                    —
-                                <?php endif; ?>
+                                <div class="pba-members-status-stack">
+                                    <?php echo pba_render_members_status_badge($status); ?>
+                                    <?php echo pba_render_members_boolean_badge($email_verified, 'Verified', 'Not verified'); ?>
+                                </div>
                             </td>
+                            <td><?php echo esc_html(!empty($roles) ? implode(', ', $roles) : '—'); ?></td>
+                            <td><?php echo esc_html($household_label !== '' ? $household_label : '—'); ?></td>
                             <td>
-                                <?php if (!empty($committees)) : ?>
-                                    <?php echo esc_html(implode(', ', $committees)); ?>
-                                <?php else : ?>
-                                    —
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo esc_html(pba_format_datetime_display($row['last_modified_raw'] ?? '')); ?></td>
-                            <td>
-                                <a class="pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
+                                <a class="pba-admin-list-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                     'member_view' => 'edit',
-                                    'member_id'   => $person_id,
+                                    'person_id'   => $person_id,
                                 ), pba_get_members_base_url())); ?>">Manage &rarr;</a>
                             </td>
                         </tr>
@@ -1115,75 +595,450 @@ function pba_render_members_list_shell($data, $request_args) {
 
 function pba_render_members_sortable_th($label, $column, $request_args) {
     $next_direction = ($request_args['sort'] === $column && $request_args['direction'] === 'asc') ? 'desc' : 'asc';
+
     $url = pba_get_members_list_url(array(
-        'member_sort'      => $column,
+        'member_sort' => $column,
         'member_direction' => $next_direction,
-        'member_page'      => 1,
+        'member_page' => 1,
     ));
 
-    if (function_exists('pba_admin_list_render_sortable_th')) {
-        return pba_admin_list_render_sortable_th(array(
-            'label' => $label,
-            'column' => $column,
-            'current_sort' => $request_args['sort'],
-            'current_direction' => $request_args['direction'],
-            'url' => $url,
-            'link_attr' => 'data-members-ajax-link',
-            'link_class' => 'pba-admin-list-sort-link',
-            'indicator_class' => 'pba-admin-list-sort-indicator',
+    return pba_admin_list_render_sortable_th(array(
+        'label' => $label,
+        'column' => $column,
+        'current_sort' => $request_args['sort'],
+        'current_direction' => $request_args['direction'],
+        'url' => $url,
+        'link_attr' => 'data-members-ajax-link',
+        'link_class' => 'pba-admin-list-sort-link',
+        'indicator_class' => 'pba-admin-list-sort-indicator',
+    ));
+}
+
+function pba_render_members_pagination($pagination) {
+    return pba_admin_list_render_pagination(array(
+        'pagination' => $pagination,
+        'url_builder' => function ($overrides) {
+            return pba_get_members_list_url($overrides);
+        },
+        'page_param' => 'member_page',
+        'container_class' => 'pba-admin-list-pagination',
+        'muted_class' => 'pba-admin-list-muted',
+        'links_class' => 'pba-admin-list-page-links',
+    ));
+}
+
+function pba_get_members_list_data($request_args) {
+    $person_rows = pba_supabase_get('Person', array(
+        'select' => 'person_id,first_name,last_name,email_address,status,wp_user_id,email_verified,household_id,last_modified_at',
+        'limit'  => 10000,
+    ));
+
+    if (is_wp_error($person_rows)) {
+        return $person_rows;
+    }
+
+    $person_rows = is_array($person_rows) ? $person_rows : array();
+
+    $person_ids = array();
+    $household_ids = array();
+
+    foreach ($person_rows as $row) {
+        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
+
+        if ($person_id > 0) {
+            $person_ids[] = $person_id;
+        }
+
+        if ($household_id > 0) {
+            $household_ids[] = $household_id;
+        }
+    }
+
+    $person_ids = array_values(array_unique($person_ids));
+    $household_ids = array_values(array_unique($household_ids));
+
+    $role_map = pba_get_members_role_map($person_ids);
+    $household_map = pba_get_members_household_map($household_ids);
+
+    $rows = array();
+    $summary = array(
+        'active' => 0,
+        'inactive' => 0,
+        'linked_wp_users' => 0,
+        'email_verified' => 0,
+    );
+
+    foreach ($person_rows as $row) {
+        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
+        $first_name = trim((string) ($row['first_name'] ?? ''));
+        $last_name = trim((string) ($row['last_name'] ?? ''));
+        $full_name = trim($first_name . ' ' . $last_name);
+        $status = trim((string) ($row['status'] ?? ''));
+        $wp_user_id = isset($row['wp_user_id']) ? (int) $row['wp_user_id'] : 0;
+        $email_verified = !empty($row['email_verified']);
+
+        if ($status === 'Active') {
+            $summary['active']++;
+        } else {
+            $summary['inactive']++;
+        }
+
+        if ($wp_user_id > 0) {
+            $summary['linked_wp_users']++;
+        }
+
+        if ($email_verified) {
+            $summary['email_verified']++;
+        }
+
+        $rows[] = array(
+            'person_id' => $person_id,
+            'full_name' => $full_name,
+            'email_address' => (string) ($row['email_address'] ?? ''),
+            'status' => $status,
+            'role_names' => isset($role_map[$person_id]) ? $role_map[$person_id] : array(),
+            'wp_user_id' => $wp_user_id > 0 ? (string) $wp_user_id : '',
+            'email_verified' => $email_verified,
+            'household_label' => ($household_id > 0 && isset($household_map[$household_id])) ? $household_map[$household_id] : '',
+            'last_modified_at' => (string) ($row['last_modified_at'] ?? ''),
+        );
+    }
+
+    $status_options = array();
+    foreach ($rows as $row) {
+        $row_status = trim((string) ($row['status'] ?? ''));
+        if ($row_status !== '') {
+            $status_options[$row_status] = $row_status;
+        }
+    }
+    natcasesort($status_options);
+
+    $rows = pba_filter_members_rows($rows, $request_args);
+    $rows = pba_sort_members_rows($rows, $request_args['sort'], $request_args['direction']);
+
+    $pagination = pba_paginate_members_rows($rows, $request_args['page'], $request_args['per_page']);
+    $page_rows = array_slice($rows, $pagination['offset'], $pagination['per_page']);
+
+    return array(
+        'summary' => $summary,
+        'rows' => $rows,
+        'page_rows' => $page_rows,
+        'pagination' => $pagination,
+        'status_options' => array_values($status_options),
+    );
+}
+
+function pba_get_members_role_map($person_ids) {
+    $map = array();
+
+    if (empty($person_ids)) {
+        return $map;
+    }
+
+    $role_links = pba_supabase_get('Person_to_Role', array(
+        'select'    => 'person_id,role_id,is_active',
+        'person_id' => 'in.(' . implode(',', array_map('intval', $person_ids)) . ')',
+        'is_active' => 'eq.true',
+        'limit'     => 10000,
+    ));
+
+    if (is_wp_error($role_links) || !is_array($role_links) || empty($role_links)) {
+        return $map;
+    }
+
+    $role_ids = array();
+    foreach ($role_links as $link) {
+        $role_id = isset($link['role_id']) ? (int) $link['role_id'] : 0;
+        if ($role_id > 0) {
+            $role_ids[] = $role_id;
+        }
+    }
+
+    $role_ids = array_values(array_unique($role_ids));
+    $role_name_map = array();
+
+    if (!empty($role_ids)) {
+        $role_rows = pba_supabase_get('Role', array(
+            'select'  => 'role_id,role_name',
+            'role_id' => 'in.(' . implode(',', array_map('intval', $role_ids)) . ')',
+            'limit'   => count($role_ids),
         ));
+
+        if (!is_wp_error($role_rows) && is_array($role_rows)) {
+            foreach ($role_rows as $role_row) {
+                $role_id = isset($role_row['role_id']) ? (int) $role_row['role_id'] : 0;
+                $role_name = trim((string) ($role_row['role_name'] ?? ''));
+                if ($role_id > 0 && $role_name !== '') {
+                    $role_name_map[$role_id] = $role_name;
+                }
+            }
+        }
     }
 
-    $is_current = $request_args['sort'] === $column;
-    $indicator = '↕';
-    if ($is_current) {
-        $indicator = $request_args['direction'] === 'asc' ? '↑' : '↓';
+    foreach ($role_links as $link) {
+        $person_id = isset($link['person_id']) ? (int) $link['person_id'] : 0;
+        $role_id = isset($link['role_id']) ? (int) $link['role_id'] : 0;
+
+        if ($person_id < 1 || $role_id < 1 || !isset($role_name_map[$role_id])) {
+            continue;
+        }
+
+        if (!isset($map[$person_id])) {
+            $map[$person_id] = array();
+        }
+
+        $map[$person_id][] = $role_name_map[$role_id];
     }
 
-    return '<th><a class="pba-admin-list-sort-link" data-members-ajax-link="1" href="' . esc_url($url) . '">' . esc_html($label) . '<span class="pba-admin-list-sort-indicator">' . esc_html($indicator) . '</span></a></th>';
+    foreach ($map as $person_id => $role_names) {
+        $role_names = array_values(array_unique($role_names));
+        natcasesort($role_names);
+        $map[$person_id] = array_values($role_names);
+    }
+
+    return $map;
+}
+
+function pba_get_members_household_map($household_ids) {
+    $map = array();
+
+    if (empty($household_ids)) {
+        return $map;
+    }
+
+    $household_rows = pba_supabase_get('Household', array(
+        'select'       => 'household_id,pb_street_number,pb_street_name',
+        'household_id' => 'in.(' . implode(',', array_map('intval', $household_ids)) . ')',
+        'limit'        => count($household_ids),
+    ));
+
+    if (is_wp_error($household_rows) || !is_array($household_rows)) {
+        return $map;
+    }
+
+    foreach ($household_rows as $row) {
+        $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
+        if ($household_id < 1) {
+            continue;
+        }
+
+        $street_number = trim((string) ($row['pb_street_number'] ?? ''));
+        $street_name = trim((string) ($row['pb_street_name'] ?? ''));
+        $map[$household_id] = trim($street_number . ' ' . $street_name);
+    }
+
+    return $map;
+}
+
+function pba_filter_members_rows($rows, $request_args) {
+    $search = strtolower(trim((string) ($request_args['search'] ?? '')));
+    $status_filter = trim((string) ($request_args['status_filter'] ?? ''));
+
+    return array_values(array_filter($rows, function ($row) use ($search, $status_filter) {
+        if ($status_filter !== '' && (string) ($row['status'] ?? '') !== $status_filter) {
+            return false;
+        }
+
+        if ($search !== '') {
+            $haystack = strtolower(implode(' ', array(
+                (string) ($row['full_name'] ?? ''),
+                (string) ($row['email_address'] ?? ''),
+                (string) ($row['status'] ?? ''),
+                !empty($row['email_verified']) ? 'verified' : 'not verified',
+                implode(' ', isset($row['role_names']) && is_array($row['role_names']) ? $row['role_names'] : array()),
+                (string) ($row['household_label'] ?? ''),
+            )));
+
+            if (strpos($haystack, $search) === false) {
+                return false;
+            }
+        }
+
+        return true;
+    }));
+}
+
+function pba_sort_members_rows($rows, $sort, $direction) {
+    usort($rows, function ($a, $b) use ($sort, $direction) {
+        switch ($sort) {
+            case 'email':
+                $a_value = strtolower((string) ($a['email_address'] ?? ''));
+                $b_value = strtolower((string) ($b['email_address'] ?? ''));
+                break;
+            case 'status':
+                $a_value = strtolower((string) ($a['status'] ?? '')) . '|' . (!empty($a['email_verified']) ? '1' : '0');
+                $b_value = strtolower((string) ($b['status'] ?? '')) . '|' . (!empty($b['email_verified']) ? '1' : '0');
+                break;
+            case 'roles':
+                $a_value = strtolower(implode(', ', isset($a['role_names']) ? $a['role_names'] : array()));
+                $b_value = strtolower(implode(', ', isset($b['role_names']) ? $b['role_names'] : array()));
+                break;
+            case 'household':
+                $a_value = strtolower((string) ($a['household_label'] ?? ''));
+                $b_value = strtolower((string) ($b['household_label'] ?? ''));
+                break;
+            case 'name':
+            default:
+                $a_value = strtolower((string) ($a['full_name'] ?? ''));
+                $b_value = strtolower((string) ($b['full_name'] ?? ''));
+                break;
+        }
+
+        if ($a_value === $b_value) {
+            return 0;
+        }
+
+        $result = ($a_value < $b_value) ? -1 : 1;
+
+        return ($direction === 'desc') ? -$result : $result;
+    });
+
+    return $rows;
+}
+
+function pba_paginate_members_rows($rows, $page, $per_page) {
+    $total_rows = count($rows);
+    $total_pages = max(1, (int) ceil($total_rows / $per_page));
+    $page = min(max(1, (int) $page), $total_pages);
+    $offset = ($page - 1) * $per_page;
+
+    $start_number = $total_rows > 0 ? $offset + 1 : 0;
+    $end_number = min($offset + $per_page, $total_rows);
+
+    return array(
+        'page' => $page,
+        'per_page' => $per_page,
+        'offset' => $offset,
+        'total_rows' => $total_rows,
+        'total_pages' => $total_pages,
+        'start_number' => $start_number,
+        'end_number' => $end_number,
+    );
 }
 
 function pba_render_members_status_badge($status) {
     $status = trim((string) $status);
-    $normalized = strtolower($status);
+    $class = 'default';
+
+    if ($status === 'Active') {
+        $class = 'accepted';
+    } elseif ($status === 'Inactive' || $status === 'Disabled' || $status === 'Unregistered') {
+        $class = 'disabled';
+    } elseif ($status === 'Pending') {
+        $class = 'pending';
+    }
 
     if (function_exists('pba_shared_render_status_badge')) {
-        if ($normalized === 'active') {
-            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'accepted');
-        }
-
-        if ($normalized === 'disabled' || $normalized === 'inactive' || $normalized === 'expired') {
-            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'disabled');
-        }
-
-        if ($normalized === 'pending') {
-            return pba_shared_render_status_badge($status !== '' ? $status : '—', 'pending');
-        }
-
-        return pba_shared_render_status_badge($status !== '' ? $status : '—', 'default');
+        return pba_shared_render_status_badge($status !== '' ? $status : 'Unknown', $class);
     }
 
-    return '<span class="pba-status-badge default">' . esc_html($status !== '' ? $status : '—') . '</span>';
+    return '<span class="pba-status-badge ' . esc_attr($class) . '">' . esc_html($status !== '' ? $status : 'Unknown') . '</span>';
 }
 
-function pba_render_members_pagination($pagination) {
-    if (function_exists('pba_admin_list_render_pagination')) {
-        return pba_admin_list_render_pagination(array(
-            'pagination' => $pagination,
-            'url_builder' => 'pba_get_members_list_url',
-            'page_param' => 'member_page',
-            'container_class' => 'pba-admin-list-pagination',
-            'muted_class' => 'pba-admin-list-muted',
-            'links_class' => 'pba-admin-list-page-links',
-            'link_class' => 'pba-admin-list-page-link',
-            'current_class' => 'current',
-            'ajax_link_attr' => 'data-members-ajax-link',
-            'prev_label' => 'Prev',
-            'next_label' => 'Next',
-        ));
+function pba_render_members_boolean_badge($value, $true_label = 'Yes', $false_label = 'No') {
+    $label = $value ? $true_label : $false_label;
+    $class = $value ? 'accepted' : 'default';
+
+    if (function_exists('pba_shared_render_status_badge')) {
+        return pba_shared_render_status_badge($label, $class);
     }
 
-    return '';
+    return '<span class="pba-status-badge ' . esc_attr($class) . '">' . esc_html($label) . '</span>';
+}
+
+/* ===== Restored inline edit view ===== */
+
+function pba_get_committee_labels_for_person_in_app($person_id) {
+    $rows = pba_supabase_get('Person_to_Committee', array(
+        'select'    => 'committee_id,committee_role,is_active',
+        'person_id' => 'eq.' . (int) $person_id,
+        'is_active' => 'eq.true',
+    ));
+
+    if (is_wp_error($rows) || empty($rows)) {
+        return array();
+    }
+
+    $labels = array();
+
+    foreach ($rows as $row) {
+        $committee_id = isset($row['committee_id']) ? (int) $row['committee_id'] : 0;
+        if ($committee_id < 1) {
+            continue;
+        }
+
+        $committee_name = pba_get_committee_name($committee_id);
+        if ($committee_name === '') {
+            continue;
+        }
+
+        $label = $committee_name;
+        if (!empty($row['committee_role'])) {
+            $label .= ' (' . $row['committee_role'] . ')';
+        }
+
+        $labels[] = $label;
+    }
+
+    return $labels;
+}
+
+function pba_get_role_ids_for_person_in_app($person_id) {
+    $rows = pba_supabase_get('Person_to_Role', array(
+        'select'    => 'role_id,is_active',
+        'person_id' => 'eq.' . (int) $person_id,
+        'is_active' => 'eq.true',
+    ));
+
+    if (is_wp_error($rows) || empty($rows)) {
+        return array();
+    }
+
+    return array_map(function ($row) {
+        return (int) $row['role_id'];
+    }, $rows);
+}
+
+function pba_get_committees_for_person_in_app($person_id) {
+    $rows = pba_supabase_get('Person_to_Committee', array(
+        'select'    => 'committee_id,committee_role,is_active',
+        'person_id' => 'eq.' . (int) $person_id,
+        'is_active' => 'eq.true',
+    ));
+
+    if (is_wp_error($rows) || empty($rows)) {
+        return array();
+    }
+
+    $result = array();
+
+    foreach ($rows as $row) {
+        $result[(int) $row['committee_id']] = array(
+            'committee_role' => $row['committee_role'] ?? '',
+        );
+    }
+
+    return $result;
+}
+
+function pba_render_members_summary_card($label, $value, $note = '') {
+    if (function_exists('pba_shared_render_summary_card')) {
+        return pba_shared_render_summary_card($label, $value, $note);
+    }
+
+    ob_start();
+    ?>
+    <div class="pba-summary-card">
+        <div class="pba-summary-label"><?php echo esc_html($label); ?></div>
+        <div class="pba-summary-value"><?php echo esc_html((string) $value); ?></div>
+        <?php if ($note !== '') : ?>
+            <div class="pba-summary-note"><?php echo esc_html($note); ?></div>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
 }
 
 function pba_render_member_edit_view($member_id) {
@@ -1216,7 +1071,7 @@ function pba_render_member_edit_view($member_id) {
 
     $selected_role_ids = pba_get_role_ids_for_person_in_app($member_id);
     $selected_committees = pba_get_committees_for_person_in_app($member_id);
-    $invite_data = pba_get_member_invite_data_by_person($member_id);
+    $invite_data = function_exists('pba_get_member_invite_data_by_person') ? pba_get_member_invite_data_by_person($member_id) : null;
 
     $wp_user_id = isset($member['wp_user_id']) && $member['wp_user_id'] !== null && $member['wp_user_id'] !== '' ? (string) $member['wp_user_id'] : '';
     $email_verified = !empty($member['email_verified']) ? 'Yes' : 'No';
@@ -1225,24 +1080,10 @@ function pba_render_member_edit_view($member_id) {
     $can_hard_delete = function_exists('pba_admin_can_hard_delete_person') ? pba_admin_can_hard_delete_person((int) $member['person_id']) : false;
 
     ob_start();
-    echo pba_members_render_shared_styles_if_available();
     ?>
-    <style>
-        .pba-member-edit-wrap .pba-summary-value {
-            font-size: 18px;
-            line-height: 1.35;
-            font-weight: 600;
-        }
-
-        .pba-member-edit-wrap .pba-summary-label {
-            font-size: 12px;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-        }
-    </style>
     <div class="pba-member-edit-wrap pba-page-wrap">
         <p>
-            <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">Back to Members</a>
+            <a class="pba-admin-list-btn secondary" href="<?php echo esc_url(pba_get_members_base_url()); ?>">&larr; Back to Members</a>
         </p>
 
         <?php echo pba_render_members_status_message(); ?>
@@ -1253,7 +1094,7 @@ function pba_render_member_edit_view($member_id) {
                 <?php echo pba_render_members_summary_card('Status', $status !== '' ? $status : '—'); ?>
                 <?php echo pba_render_members_summary_card('Linked WP User ID', $wp_user_id !== '' ? $wp_user_id : 'Not linked'); ?>
                 <?php echo pba_render_members_summary_card('Email Verified', $email_verified); ?>
-                <?php echo pba_render_members_summary_card('Last Modified', pba_format_datetime_display($member['last_modified_at'] ?? '')); ?>
+                <?php echo pba_render_members_summary_card('Last Modified', function_exists('pba_format_datetime_display') ? pba_format_datetime_display($member['last_modified_at'] ?? '') : (string) ($member['last_modified_at'] ?? '')); ?>
                 <?php if (is_array($invite_data) && !empty($invite_data['expires_at_gmt'])) : ?>
                     <?php echo pba_render_members_summary_card('Invite Expires', date('m/d/y h:i A', (int) $invite_data['expires_at_gmt'])); ?>
                 <?php endif; ?>
@@ -1268,28 +1109,28 @@ function pba_render_member_edit_view($member_id) {
                             <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
                             <input type="hidden" name="action" value="pba_admin_disable_member">
                             <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                            <button type="submit" class="pba-btn secondary">Disable</button>
+                            <button type="submit" class="pba-admin-list-btn secondary">Disable</button>
                         </form>
                     <?php elseif ($status === 'Disabled') : ?>
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
                             <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
                             <input type="hidden" name="action" value="pba_admin_enable_member">
                             <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                            <button type="submit" class="pba-btn secondary">Enable</button>
+                            <button type="submit" class="pba-admin-list-btn secondary">Enable</button>
                         </form>
                     <?php elseif ($status === 'Pending') : ?>
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form" onsubmit="return confirm('Cancel this invite?');">
                             <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
                             <input type="hidden" name="action" value="pba_admin_cancel_invite">
                             <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                            <button type="submit" class="pba-btn secondary">Cancel Invite</button>
+                            <button type="submit" class="pba-admin-list-btn secondary">Cancel Invite</button>
                         </form>
                     <?php elseif ($status === 'Expired') : ?>
                         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-member-action-form">
                             <?php wp_nonce_field('pba_admin_member_action', 'pba_admin_member_action_nonce'); ?>
                             <input type="hidden" name="action" value="pba_admin_resend_invite">
                             <input type="hidden" name="person_id" value="<?php echo esc_attr((int) $member['person_id']); ?>">
-                            <button type="submit" class="pba-btn secondary">Resend Invite</button>
+                            <button type="submit" class="pba-admin-list-btn secondary">Resend Invite</button>
                         </form>
                     <?php endif; ?>
                 </div>
@@ -1442,8 +1283,7 @@ function pba_render_member_edit_view($member_id) {
                         <button type="submit" class="pba-btn danger">Hard Delete Person</button>
                     </form>
                 <?php else : ?>
-                    <span class="pba-admin-list-muted">Hard delete is blocked when the person is still linked to a household, has active committee assignments, or is a Household Admin.
-                    </span>                
+                    <span class="pba-admin-list-muted">Hard delete is blocked when the person is still linked to a household, has active committee assignments, or is a Household Admin.</span>
                 <?php endif; ?>
             </div>
         </div>
@@ -1451,106 +1291,4 @@ function pba_render_member_edit_view($member_id) {
     <?php
 
     return ob_get_clean();
-}
-
-function pba_get_committee_labels_for_person_in_app($person_id) {
-    $rows = pba_supabase_get('Person_to_Committee', array(
-        'select'    => 'committee_id,committee_role,is_active',
-        'person_id' => 'eq.' . (int) $person_id,
-        'is_active' => 'eq.true',
-    ));
-
-    if (is_wp_error($rows) || empty($rows)) {
-        return array();
-    }
-
-    $labels = array();
-
-    foreach ($rows as $row) {
-        $committee_id = isset($row['committee_id']) ? (int) $row['committee_id'] : 0;
-        if ($committee_id < 1) {
-            continue;
-        }
-
-        $committee_name = pba_get_committee_name($committee_id);
-        if ($committee_name === '') {
-            continue;
-        }
-
-        $label = $committee_name;
-        if (!empty($row['committee_role'])) {
-            $label .= ' (' . $row['committee_role'] . ')';
-        }
-
-        $labels[] = $label;
-    }
-
-    return $labels;
-}
-
-function pba_get_role_ids_for_person_in_app($person_id) {
-    $rows = pba_supabase_get('Person_to_Role', array(
-        'select'    => 'role_id,is_active',
-        'person_id' => 'eq.' . (int) $person_id,
-        'is_active' => 'eq.true',
-    ));
-
-    if (is_wp_error($rows) || empty($rows)) {
-        return array();
-    }
-
-    return array_map(function ($row) {
-        return (int) $row['role_id'];
-    }, $rows);
-}
-
-function pba_get_committees_for_person_in_app($person_id) {
-    $rows = pba_supabase_get('Person_to_Committee', array(
-        'select'    => 'committee_id,committee_role,is_active',
-        'person_id' => 'eq.' . (int) $person_id,
-        'is_active' => 'eq.true',
-    ));
-
-    if (is_wp_error($rows) || empty($rows)) {
-        return array();
-    }
-
-    $result = array();
-
-    foreach ($rows as $row) {
-        $result[(int) $row['committee_id']] = array(
-            'committee_role' => $row['committee_role'] ?? '',
-        );
-    }
-
-    return $result;
-}
-
-if (isset($_GET['pba_members_partial']) && sanitize_text_field(wp_unslash($_GET['pba_members_partial'])) === '1') {
-    add_action('template_redirect', 'pba_maybe_render_members_partial');
-}
-
-function pba_maybe_render_members_partial() {
-    if (!is_user_logged_in()) {
-        return;
-    }
-
-    if (!pba_current_person_has_role('PBAAdmin')) {
-        return;
-    }
-
-    $view = isset($_GET['member_view']) ? sanitize_text_field(wp_unslash($_GET['member_view'])) : 'list';
-    if ($view !== 'list') {
-        return;
-    }
-
-    $request_args = pba_get_members_list_request_args();
-    $data = pba_get_members_list_data($request_args);
-
-    if (is_wp_error($data)) {
-        wp_die('Unable to load members.', 500);
-    }
-
-    echo pba_render_members_dynamic_content($data, $request_args);
-    exit;
 }
