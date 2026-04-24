@@ -631,6 +631,35 @@ function pba_render_household_invite_section() {
     return ob_get_clean();
 }
 
+function pba_household_format_address($household_id) {
+    $household_id = (int) $household_id;
+
+    if ($household_id < 1) {
+        return '';
+    }
+
+    $rows = pba_supabase_get('Household', array(
+        'select'       => 'pb_street_number,pb_street_name',
+        'household_id' => 'eq.' . $household_id,
+        'limit'        => 1,
+    ));
+
+    if (is_wp_error($rows) || empty($rows) || !is_array($rows)) {
+        return '';
+    }
+
+    $household = $rows[0];
+    $street_number = isset($household['pb_street_number']) ? trim((string) $household['pb_street_number']) : '';
+    $street_name = isset($household['pb_street_name']) ? trim((string) $household['pb_street_name']) : '';
+    $street = trim($street_number . ' ' . $street_name);
+
+    if ($street === '') {
+        return '';
+    }
+
+    return $street . ', Plymouth, MA';
+}
+
 function pba_render_household_dashboard() {
     if (!is_user_logged_in()) {
         return '<p>Please log in to access this page.</p>';
@@ -696,6 +725,13 @@ function pba_render_household_dashboard() {
     $expired_count  = count($expired_rows);
     $disabled_count = count($disabled_rows);
 
+    $household_address = pba_household_format_address($household_id);
+    $page_title = 'Manage Household Members';
+
+    if ($household_address !== '') {
+        $page_title .= ' for: ' . $household_address;
+    }
+
     ob_start();
 
     if (function_exists('pba_shared_list_ui_render_styles')) {
@@ -705,7 +741,7 @@ function pba_render_household_dashboard() {
     <div class="pba-page-wrap pba-household-wrap">
         <div class="pba-page-hero">
             <div class="pba-page-eyebrow">Household Access</div>
-            <h2 class="pba-page-title">Manage Household Members</h2>
+            <h2 class="pba-page-title"><?php echo esc_html($page_title); ?></h2>
             <p class="pba-page-intro">
                 Invite members of your household, review invitation status, and manage household access. Any Household Admin for this household can manage these records.
             </p>

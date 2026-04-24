@@ -61,7 +61,7 @@ function pba_render_member_home_shortcode() {
         $cards[] = array(
             'title' => 'My Household',
             'description' => 'Manage my household invitations and member status.',
-            'url' => home_url('/my-household/'),
+            'url' => home_url('/household/'),
         );
     }
 

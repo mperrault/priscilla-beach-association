@@ -56,3 +56,12 @@ function pba_output_favicon_links() {
     echo '<link rel="icon" type="image/png" href="' . esc_url($favicon_url) . '">' . "\n";
     echo '<link rel="shortcut icon" type="image/png" href="' . esc_url($favicon_url) . '">' . "\n";
 }
+
+register_deactivation_hook(__FILE__, 'pba_plugin_deactivate');
+
+function pba_plugin_deactivate() {
+    if (function_exists('pba_clear_background_jobs')) {
+        pba_clear_background_jobs();
+    }
+}
+
