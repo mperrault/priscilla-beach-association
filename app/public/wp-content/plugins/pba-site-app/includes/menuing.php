@@ -197,7 +197,7 @@ function pba_get_logged_in_menu_items() {
             'url'   => home_url('/households/'),
         );
         $admin_children[] = array(
-            'label' => 'Committees',
+            'label' => 'Board/Committees',
             'url'   => home_url('/committees/'),
         );
         $admin_children[] = array(

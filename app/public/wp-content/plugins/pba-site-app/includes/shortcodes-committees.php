@@ -434,7 +434,7 @@ if (!function_exists('pba_render_committees_list_view')) {
         <div class="pba-committees-page">
             <div class="pba-committees-shell">
                 <div class="pba-committees-header">
-                    <p class="pba-committees-subtitle">View and manage committees and their current board and member rosters.</p>
+                    <p class="pba-committees-subtitle">View and manage the Board and committees and their current member rosters.</p>
                 </div>
 
                 <div class="pba-committees-toolbar">
@@ -579,12 +579,12 @@ if (!function_exists('pba_render_committee_edit_view')) {
         <div class="pba-committees-page">
             <div class="pba-committee-edit-shell">
                 <div class="pba-committee-edit-header">
-                    <h1 class="pba-committee-edit-title">Edit Committee</h1>
-                    <p class="pba-committee-edit-subtitle">Update committee details, status, and internal notes.</p>
+                    <h1 class="pba-committee-edit-title">Edit Board/Committee</h1>
+                    <p class="pba-committee-edit-subtitle">Update board/committee details, status, and internal notes.</p>
                 </div>
 
                 <div class="pba-committee-edit-toolbar">
-                    <a class="pba-committees-btn secondary" href="<?php echo esc_url(home_url('/committees/')); ?>">Back to Committees</a>
+                    <a class="pba-committees-btn secondary" href="<?php echo esc_url(home_url('/committees/')); ?>">Back to Board/Committees</a>
                 </div>
 
                 <div class="pba-committee-edit-content">
@@ -602,7 +602,7 @@ if (!function_exists('pba_render_committee_edit_view')) {
 
                         <table class="pba-committee-edit-form-table">
                             <tr>
-                                <th><label for="committee_name">Committee Name</label></th>
+                                <th><label for="committee_name">Board/Committee Name</label></th>
                                 <td><input class="pba-committee-edit-input" type="text" name="committee_name" id="committee_name" value="<?php echo esc_attr($committee['committee_name'] ?? ''); ?>" required></td>
                             </tr>
 
@@ -628,7 +628,7 @@ if (!function_exists('pba_render_committee_edit_view')) {
                         </table>
 
                         <div class="pba-committee-edit-actions">
-                            <button type="submit" class="pba-committees-btn">Save Committee</button>
+                            <button type="submit" class="pba-committees-btn">Save Board/Committee</button>
                             <a class="pba-committees-btn secondary" href="<?php echo esc_url(home_url('/committees/')); ?>">Cancel</a>
                         </div>
                     </form>
