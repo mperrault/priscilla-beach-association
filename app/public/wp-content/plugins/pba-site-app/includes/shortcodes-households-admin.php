@@ -694,6 +694,7 @@ function pba_filter_households_admin_rows($rows, $request_args) {
         return true;
     }));
 }
+
 function pba_get_household_admin_edit_record($household_id) {
     $rows = pba_supabase_get('Household', array(
         'select' => '*',
@@ -714,19 +715,68 @@ function pba_get_household_admin_edit_record($household_id) {
 
 function pba_get_household_admin_edit_members($household_id) {
     $rows = pba_supabase_get('Person', array(
-        'select' => 'person_id,first_name,last_name,email_address,status,household_id',
+        'select'       => 'person_id,first_name,last_name,email_address,status,household_id',
         'household_id' => 'eq.' . (int) $household_id,
-        'limit' => 500,
+        'limit'        => 500,
     ));
 
     if (is_wp_error($rows) || !is_array($rows)) {
         return array();
     }
 
-    usort($rows, function ($a, $b) {
-        $a_name = strtolower(trim(((string) ($a['last_name'] ?? '')) . ' ' . ((string) ($a['first_name'] ?? ''))));
-        $b_name = strtolower(trim(((string) ($b['last_name'] ?? '')) . ' ' . ((string) ($b['first_name'] ?? ''))));
-        return strcmp($a_name, $b_name);
+    foreach ($rows as &$row) {
+        $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+        $roles = array();
+
+        if (function_exists('pba_get_active_supabase_role_names_for_person')) {
+            $roles = pba_get_active_supabase_role_names_for_person($person_id);
+        } elseif (function_exists('pba_get_active_role_names_for_person')) {
+            $roles = pba_get_active_role_names_for_person($person_id);
+        }
+
+        $row['role_names'] = is_array($roles) ? $roles : array();
+        $row['roles_display'] = !empty($row['role_names']) ? implode(', ', $row['role_names']) : '—';
+    }
+    unset($row);
+
+    $sort = isset($_GET['member_sort']) ? sanitize_key(wp_unslash($_GET['member_sort'])) : 'name';
+    $direction = isset($_GET['member_direction']) ? strtolower(sanitize_text_field(wp_unslash($_GET['member_direction']))) : 'asc';
+
+    if (!in_array($sort, array('name', 'email', 'status', 'roles'), true)) {
+        $sort = 'name';
+    }
+
+    if (!in_array($direction, array('asc', 'desc'), true)) {
+        $direction = 'asc';
+    }
+
+    usort($rows, function ($a, $b) use ($sort, $direction) {
+        switch ($sort) {
+            case 'email':
+                $a_value = strtolower((string) ($a['email_address'] ?? ''));
+                $b_value = strtolower((string) ($b['email_address'] ?? ''));
+                break;
+
+            case 'status':
+                $a_value = strtolower((string) ($a['status'] ?? ''));
+                $b_value = strtolower((string) ($b['status'] ?? ''));
+                break;
+
+            case 'roles':
+                $a_value = strtolower((string) ($a['roles_display'] ?? ''));
+                $b_value = strtolower((string) ($b['roles_display'] ?? ''));
+                break;
+
+            case 'name':
+            default:
+                $a_value = strtolower(trim(((string) ($a['last_name'] ?? '')) . ' ' . ((string) ($a['first_name'] ?? ''))));
+                $b_value = strtolower(trim(((string) ($b['last_name'] ?? '')) . ' ' . ((string) ($b['first_name'] ?? ''))));
+                break;
+        }
+
+        $result = strcmp($a_value, $b_value);
+
+        return ($direction === 'desc') ? -$result : $result;
     });
 
     return $rows;
@@ -862,6 +912,62 @@ function pba_render_households_admin_owner_occupied_badge($value) {
     return '<span class="pba-status-badge ' . esc_attr($class) . '">' . esc_html($label) . '</span>';
 }
 
+function pba_render_household_admin_members_sortable_th($label, $column) {
+    $current_sort = isset($_GET['member_sort']) ? sanitize_key(wp_unslash($_GET['member_sort'])) : 'name';
+    $current_direction = isset($_GET['member_direction']) ? strtolower(sanitize_text_field(wp_unslash($_GET['member_direction']))) : 'asc';
+
+    if (!in_array($current_sort, array('name', 'email', 'status', 'roles'), true)) {
+        $current_sort = 'name';
+    }
+
+    if (!in_array($current_direction, array('asc', 'desc'), true)) {
+        $current_direction = 'asc';
+    }
+
+    $next_direction = ($current_sort === $column && $current_direction === 'asc') ? 'desc' : 'asc';
+
+    $url = add_query_arg(array(
+        'member_sort'      => $column,
+        'member_direction' => $next_direction,
+    )) . '#pba-household-members-section';
+
+    if (function_exists('pba_admin_list_render_sortable_th')) {
+        return pba_admin_list_render_sortable_th(array(
+            'label'             => $label,
+            'column'            => $column,
+            'current_sort'      => $current_sort,
+            'current_direction' => $current_direction,
+            'url'               => $url,
+            'link_class'        => 'pba-admin-list-sort-link',
+            'indicator_class'   => 'pba-admin-list-sort-indicator',
+        ));
+    }
+
+    $indicator = '';
+    if ($current_sort === $column) {
+        $indicator = $current_direction === 'asc' ? ' ▲' : ' ▼';
+    }
+
+    return '<th><a class="pba-admin-list-sort-link" href="' . esc_url($url) . '">' . esc_html($label . $indicator) . '</a></th>';
+}
+
+function pba_format_household_admin_currency($value) {
+    if ($value === null || $value === '') {
+        return '—';
+    }
+
+    if (!is_numeric($value)) {
+        return (string) $value;
+    }
+
+    return '$' . number_format((float) $value, 2, '.', ',');
+}
+
+function pba_render_household_admin_raw_value($value) {
+    $value = trim((string) $value);
+    return $value !== '' ? $value : '—';
+}
+
 function pba_render_household_admin_edit_view($household_id) {
     $household = pba_get_household_admin_edit_record($household_id);
 
@@ -871,19 +977,44 @@ function pba_render_household_admin_edit_view($household_id) {
 
     $member_rows = pba_get_household_admin_edit_members($household_id);
 
+    $street_address = trim(((string) ($household['pb_street_number'] ?? '')) . ' ' . ((string) ($household['pb_street_name'] ?? '')));
+    $city = trim((string) ($household['city'] ?? 'Plymouth'));
+    $state = trim((string) ($household['state'] ?? 'MA'));
+    $household_address_parts = array_filter(array($street_address, trim($city . ', ' . $state)));
+    $household_address = implode(', ', $household_address_parts);
+
+    if ($street_address === '') {
+        $household_address = 'Address not set';
+    }
+
+    $status = isset($_GET['pba_households_status'])
+        ? sanitize_text_field(wp_unslash($_GET['pba_households_status']))
+        : '';
+
     ob_start();
     ?>
     <div class="pba-household-detail-wrap pba-page-wrap">
         <div class="pba-household-detail-header">
             <div>
-                <div class="pba-page-eyebrow">Household</div>
-                <h2 class="pba-page-title" style="margin:0;"><?php echo esc_html(trim(((string) ($household['pb_street_number'] ?? '')) . ' ' . ((string) ($household['pb_street_name'] ?? '')))); ?></h2>
+                <h2 class="pba-page-title" style="margin:0;">Manage Household: <?php echo esc_html($household_address); ?></h2>
                 <p class="pba-page-intro" style="margin-top:8px;">Review household ownership, registration readiness, members, and association details.</p>
             </div>
             <div>
                 <a class="pba-btn secondary" href="<?php echo esc_url(pba_get_households_admin_base_url()); ?>">&larr; Back to Households</a>
             </div>
         </div>
+
+        <?php if ($status === 'household_saved') : ?>
+            <div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#137333;font-weight:700;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#34a853;color:#fff;font-size:20px;font-weight:800;line-height:1;">✓</span>
+                <span>Household updated successfully.</span>
+            </div>
+        <?php elseif ($status === 'save_failed') : ?>
+            <div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fdecea;color:#a50e0e;font-weight:700;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#d93025;color:#fff;font-size:20px;font-weight:800;line-height:1;">!</span>
+                <span>Household update failed. Please try again.</span>
+            </div>
+        <?php endif; ?>
 
         <details class="pba-household-detail-section pba-section" open>
             <summary>Admin &amp; Contact</summary>
@@ -928,25 +1059,25 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section" open>
+        <details id="pba-household-members-section" class="pba-household-detail-section pba-section" open>
             <summary>Members</summary>
             <div class="pba-household-detail-body">
                 <div class="pba-admin-list-grid-wrap">
-                    <table class="pba-household-members-table pba-admin-list-table pba-table pba-resizable-table" id="pba-household-members-table" data-resize-key="pbaHouseholdMembersColumnWidthsV3" data-min-col-width="100">
+                    <table class="pba-household-members-table pba-admin-list-table pba-table pba-resizable-table" id="pba-household-members-table" data-resize-key="pbaHouseholdMembersColumnWidthsV5" data-min-col-width="80">
                         <colgroup data-pba-resizable-cols="1">
-                            <col style="width: 220px;">
-                            <col style="width: 300px;">
-                            <col style="width: 150px;">
-                            <col style="width: 260px;">
                             <col style="width: 170px;">
+                            <col style="width: 220px;">
+                            <col style="width: 105px;">
+                            <col style="width: 210px;">
+                            <col style="width: 150px;">
                         </colgroup>
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Status</th>
-                                <th>Roles</th>
-                                <th data-resizable="false">Action</th>
+                                <?php echo pba_render_household_admin_members_sortable_th('Name', 'name'); ?>
+                                <?php echo pba_render_household_admin_members_sortable_th('Email', 'email'); ?>
+                                <?php echo pba_render_household_admin_members_sortable_th('Status', 'status'); ?>
+                                <?php echo pba_render_household_admin_members_sortable_th('Roles', 'roles'); ?>
+                                <th style="text-align:left;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -959,7 +1090,7 @@ function pba_render_household_admin_edit_view($household_id) {
                                     <?php
                                     $person_id = isset($member['person_id']) ? (int) $member['person_id'] : 0;
                                     $name = trim(((string) ($member['first_name'] ?? '')) . ' ' . ((string) ($member['last_name'] ?? '')));
-                                    $roles = function_exists('pba_get_active_role_names_for_person') ? pba_get_active_role_names_for_person($person_id) : array();
+                                    $roles = isset($member['role_names']) && is_array($member['role_names']) ? $member['role_names'] : array();
                                     ?>
                                     <tr>
                                         <td>
@@ -969,7 +1100,7 @@ function pba_render_household_admin_edit_view($household_id) {
                                         <td><?php echo esc_html((string) ($member['email_address'] ?? '')); ?></td>
                                         <td><?php echo pba_render_households_admin_status_badge($member['status'] ?? ''); ?></td>
                                         <td><?php echo esc_html(!empty($roles) ? implode(', ', $roles) : '—'); ?></td>
-                                        <td>
+                                        <td style="text-align:left;white-space:nowrap;">
                                             <a class="pba-households-btn pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                                 'member_view' => 'edit',
                                                 'person_id'   => $person_id,
@@ -999,8 +1130,22 @@ function pba_render_household_admin_edit_view($household_id) {
                         </tr>
                         <tr>
                             <th>Invite Policy</th>
-                            <td><?php echo esc_html((string) ($household['invite_policy'] ?? '')); ?></td>
+                            <td><?php echo esc_html('Allowed'); ?></td>
                         </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details class="pba-household-detail-section pba-section" open>
+            <summary>Property Identifiers</summary>
+            <div class="pba-household-detail-body">
+                <table class="pba-household-display-table pba-table">
+                    <tbody>
+                        <tr><th>Assessor Book Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_book_raw'] ?? '')); ?></td></tr>
+                        <tr><th>Assessor Page Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_page_raw'] ?? '')); ?></td></tr>
+                        <tr><th>Property ID</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['property_id'] ?? '')); ?></td></tr>
+                        <tr><th>Location ID</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['location_id'] ?? '')); ?></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1029,10 +1174,10 @@ function pba_render_household_admin_edit_view($household_id) {
             <div class="pba-household-detail-body">
                 <table class="pba-household-display-table pba-table">
                     <tbody>
-                        <tr><th>Building Value</th><td><?php echo esc_html((string) ($household['building_value'] ?? '')); ?></td></tr>
-                        <tr><th>Land Value</th><td><?php echo esc_html((string) ($household['land_value'] ?? '')); ?></td></tr>
-                        <tr><th>Other Value</th><td><?php echo esc_html((string) ($household['other_value'] ?? '')); ?></td></tr>
-                        <tr><th>Total Value</th><td><?php echo esc_html((string) ($household['total_value'] ?? '')); ?></td></tr>
+                        <tr><th>Building Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['building_value'] ?? null)); ?></td></tr>
+                        <tr><th>Land Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['land_value'] ?? null)); ?></td></tr>
+                        <tr><th>Other Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['other_value'] ?? null)); ?></td></tr>
+                        <tr><th>Total Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['total_value'] ?? null)); ?></td></tr>
                         <tr><th>Assessment FY</th><td><?php echo esc_html((string) ($household['assessment_fy'] ?? '')); ?></td></tr>
                     </tbody>
                 </table>
@@ -1066,6 +1211,7 @@ function pba_render_household_admin_edit_view($household_id) {
         </details>
     </div>
     <?php
+    echo pba_admin_list_render_resizable_table_script();
 
     return ob_get_clean();
 }
@@ -1093,7 +1239,7 @@ function pba_handle_save_household_admin() {
         'last_modified_at' => gmdate('c'),
     );
 
-    $result = pba_supabase_patch('Household', $payload, array(
+    $result = pba_supabase_update('Household', $payload, array(
         'household_id' => 'eq.' . $household_id,
     ));
 

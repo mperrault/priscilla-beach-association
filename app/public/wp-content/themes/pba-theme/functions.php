@@ -46,3 +46,13 @@ function pba_add_favicon_tags() {
     <link rel="apple-touch-icon" href="<?php echo esc_url($favicon_url); ?>">
     <?php
 }
+add_action('wp_head', 'pba_output_favicon_links');
+add_action('admin_head', 'pba_output_favicon_links');
+add_action('login_head', 'pba_output_favicon_links');
+
+function pba_output_favicon_links() {
+    $favicon_url = content_url('uploads/pba-favicon.png');
+
+    echo '<link rel="icon" type="image/png" href="' . esc_url($favicon_url) . '">' . "\n";
+    echo '<link rel="shortcut icon" type="image/png" href="' . esc_url($favicon_url) . '">' . "\n";
+}
