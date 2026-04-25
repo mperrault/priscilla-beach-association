@@ -63,6 +63,18 @@
     color: #607487;
 }
 
+.pba-member-directory-table a[href^="mailto:"] {
+    color: #0d3b66;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pba-member-directory-table a[href^="mailto:"]:hover,
+.pba-member-directory-table a[href^="mailto:"]:focus {
+    color: #0b3154;
+    text-decoration: underline;
+}
+
 @media (max-width: 1080px) {
     .pba-member-directory-search {
         grid-template-columns: repeat(2, minmax(220px, 1fr));

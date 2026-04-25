@@ -12,10 +12,14 @@ function pba_register_member_directory_shortcode() {
     add_shortcode('pba_member_directory', 'pba_render_member_directory_shortcode');
 }
 
-function pba_render_member_directory_shortcode() {
-    if (!is_user_logged_in()) {
-        return '<p>Please log in to access this page.</p>';
+function pba_member_directory_enqueue_styles() {
+    static $done = false;
+
+    if ($done) {
+        return;
     }
+
+    $done = true;
 
     $base_url = plugin_dir_url(__FILE__) . 'css/';
     $base_path = dirname(__FILE__) . '/css/';
@@ -26,6 +30,21 @@ function pba_render_member_directory_shortcode() {
         array(),
         file_exists($base_path . 'pba-admin-list-styles.css') ? (string) filemtime($base_path . 'pba-admin-list-styles.css') : '1.0.0'
     );
+
+    wp_enqueue_style(
+        'pba-member-directory-styles',
+        $base_url . 'pba-member-directory.css',
+        array('pba-admin-list-styles'),
+        file_exists($base_path . 'pba-member-directory.css') ? (string) filemtime($base_path . 'pba-member-directory.css') : '1.0.0'
+    );
+}
+
+function pba_render_member_directory_shortcode() {
+    if (!is_user_logged_in()) {
+        return '<p>Please log in to access this page.</p>';
+    }
+
+    pba_member_directory_enqueue_styles();
 
     $allowed_sort_columns = array('name', 'email', 'household', 'committees');
     $allowed_sort_directions = array('asc', 'desc');
@@ -49,7 +68,7 @@ function pba_render_member_directory_shortcode() {
     }
 
     $rows = pba_supabase_get('Person', array(
-        'select' => 'person_id,household_id,first_name,last_name,email_address,status',
+        'select' => 'person_id,household_id,first_name,last_name,email_address,status,directory_visibility_level',
         'status' => 'eq.Active',
         'order'  => 'last_name.asc,first_name.asc',
     ));
@@ -62,19 +81,25 @@ function pba_render_member_directory_shortcode() {
         $rows = array();
     }
 
+    $rows = array_values(array_filter($rows, 'pba_member_directory_is_visible'));
+
     $household_labels = pba_member_directory_get_household_labels($rows);
     $committee_labels = pba_member_directory_get_committee_labels($rows);
 
     $normalized_rows = array();
     foreach ($rows as $row) {
         $person_id = isset($row['person_id']) ? (int) $row['person_id'] : 0;
+        $can_show_contact_details = pba_member_directory_can_show_contact_details($row);
+
         $normalized_rows[] = array(
             'person_id' => $person_id,
             'first_name' => isset($row['first_name']) ? (string) $row['first_name'] : '',
             'last_name' => isset($row['last_name']) ? (string) $row['last_name'] : '',
-            'email_address' => isset($row['email_address']) ? (string) $row['email_address'] : '',
-            'household_label' => isset($household_labels[$person_id]) ? (string) $household_labels[$person_id] : '',
-            'committee_labels' => isset($committee_labels[$person_id]) ? (array) $committee_labels[$person_id] : array(),
+            'email_address' => $can_show_contact_details && isset($row['email_address']) ? (string) $row['email_address'] : '',
+            'directory_visibility_level' => isset($row['directory_visibility_level']) ? (string) $row['directory_visibility_level'] : '',
+            'can_show_contact_details' => $can_show_contact_details,
+            'household_label' => $can_show_contact_details && isset($household_labels[$person_id]) ? (string) $household_labels[$person_id] : '',
+            'committee_labels' => $can_show_contact_details && isset($committee_labels[$person_id]) ? (array) $committee_labels[$person_id] : array(),
         );
     }
 
@@ -135,301 +160,192 @@ function pba_render_member_directory_shortcode() {
 
     ob_start();
     ?>
-    <style>
-        .pba-member-directory-wrap {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .pba-member-directory-search {
-            margin: 18px 0 20px;
-            display: grid;
-            grid-template-columns: minmax(260px, 1fr) minmax(120px, 140px) auto auto;
-            gap: 10px;
-            align-items: end;
-        }
-
-        .pba-member-directory-field label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #607487;
-        }
-
-        .pba-member-directory-search input[type="text"],
-        .pba-member-directory-search select {
-            width: 100%;
-            max-width: 100%;
-            padding: 9px 10px;
-            box-sizing: border-box;
-        }
-
-        .pba-member-directory-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 40px;
-            padding: 9px 14px;
-            border: 1px solid #0d3b66;
-            background: #0d3b66;
-            color: #fff;
-            border-radius: 4px;
-            text-decoration: none;
-            cursor: pointer;
-            box-sizing: border-box;
-        }
-
-        .pba-member-directory-btn.secondary {
-            background: #fff;
-            color: #0d3b66;
-        }
-
-        .pba-member-directory-meta {
-            margin-bottom: 14px;
-            color: #666;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .pba-member-directory-table-wrap {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .pba-member-directory-table {
-            width: 100%;
-            min-width: 760px;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .pba-member-directory-table th,
-        .pba-member-directory-table td {
-            border: 1px solid #d7d7d7;
-            padding: 10px;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        .pba-member-directory-table th {
-            background: #f3f3f3;
-            position: relative;
-        }
-
-        .pba-member-directory-table a.pba-admin-list-sort-link,
-        .pba-member-directory-table a.pba-admin-list-sort-link:visited,
-        .pba-member-directory-table a.pba-admin-list-sort-link:hover,
-        .pba-member-directory-table a.pba-admin-list-sort-link:focus {
-            color: #17324a !important;
-        }
-
-        .pba-member-directory-muted {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .pba-member-directory-pagination {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            align-items: center;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-
-        .pba-member-directory-page-links {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .pba-member-directory-page-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            min-height: 40px;
-            padding: 0 12px;
-            border-radius: 10px;
-            text-decoration: none;
-            border: 1px solid #d4e0eb;
-            background: #fff;
-            color: #17324a;
-            font-weight: 700;
-            box-sizing: border-box;
-        }
-
-        .pba-member-directory-page-link.current {
-            background: #0d3b66;
-            border-color: #0d3b66;
-            color: #fff;
-        }
-
-        .pba-member-directory-page-link.disabled {
-            opacity: 0.55;
-            pointer-events: none;
-        }
-
-        @media (max-width: 700px) {
-            .pba-member-directory-search {
-                grid-template-columns: 1fr;
-            }
-
-            .pba-member-directory-table-wrap {
-                overflow-x: visible;
-            }
-
-            .pba-member-directory-table,
-            .pba-member-directory-table thead,
-            .pba-member-directory-table tbody,
-            .pba-member-directory-table th,
-            .pba-member-directory-table td,
-            .pba-member-directory-table tr {
-                display: block;
-            }
-
-            .pba-member-directory-table {
-                min-width: 0;
-            }
-
-            .pba-member-directory-table thead {
-                display: none;
-            }
-
-            .pba-member-directory-table tr {
-                margin-bottom: 14px;
-                border: 1px solid #d7d7d7;
-            }
-
-            .pba-member-directory-table td {
-                border: 0;
-                border-bottom: 1px solid #eee;
-            }
-
-            .pba-member-directory-table td:last-child {
-                border-bottom: 0;
-            }
-
-            .pba-member-directory-pagination {
-                align-items: flex-start;
-            }
-        }
-    </style>
-
-    <div class="pba-member-directory-wrap">
-        <h2>Member Directory</h2>
-        <p>Browse active PBA members and their household and committee information.</p>
-
-        <form method="get" class="pba-member-directory-search">
-            <div class="pba-member-directory-field">
-                <label for="directory_search">Search</label>
-                <input
-                    id="directory_search"
-                    type="text"
-                    name="directory_search"
-                    value="<?php echo esc_attr($search); ?>"
-                    placeholder="Search by name, email, household, or committee"
-                >
-            </div>
-
-            <div class="pba-member-directory-field">
-                <label for="directory_per_page">Rows</label>
-                <select id="directory_per_page" name="directory_per_page">
-                    <option value="25" <?php selected($per_page, 25); ?>>25</option>
-                    <option value="50" <?php selected($per_page, 50); ?>>50</option>
-                    <option value="100" <?php selected($per_page, 100); ?>>100</option>
-                </select>
-            </div>
-
-            <input type="hidden" name="directory_page" value="1">
-
-            <button type="submit" class="pba-member-directory-btn secondary">Apply</button>
-
-            <?php if ($search !== '' || $per_page !== 25 || $sort !== 'name' || $direction !== 'asc') : ?>
-                <a class="pba-member-directory-btn secondary" href="<?php echo esc_url(home_url('/member-directory/')); ?>">Clear</a>
-            <?php endif; ?>
-        </form>
-
-        <div class="pba-member-directory-meta">
-            <div>
-                Showing <?php echo esc_html((string) $start_number); ?>–<?php echo esc_html((string) $end_number); ?>
-                of <?php echo esc_html((string) $total_rows); ?> active member<?php echo $total_rows === 1 ? '' : 's'; ?>.
-            </div>
-            <div>
-                Page <?php echo esc_html((string) $page); ?> of <?php echo esc_html((string) $total_pages); ?>
+    <div class="pba-member-directory-wrap pba-page-wrap pba-member-directory-list-shell">
+        <div class="pba-admin-list-hero">
+            <div class="pba-admin-list-hero-top">
+                <div>
+                    <p>Browse active PBA members and their household and committee information.</p>
+                </div>
+                <div class="pba-admin-list-badge">
+                    <?php echo esc_html(number_format_i18n($total_rows)); ?> Active Member<?php echo $total_rows === 1 ? '' : 's'; ?>
+                </div>
             </div>
         </div>
 
-        <div class="pba-member-directory-table-wrap">
-            <table
-                class="pba-member-directory-table pba-resizable-table"
-                id="pba-member-directory-table"
-                data-resize-key="pbaMemberDirectoryColumnWidthsV1"
-                data-min-col-width="120"
-            >
-                <thead>
-                    <tr>
-                        <?php echo pba_render_member_directory_sortable_th('Name', 'name', $sort, $direction, $search, $per_page); ?>
-                        <?php echo pba_render_member_directory_sortable_th('Email', 'email', $sort, $direction, $search, $per_page); ?>
-                        <?php echo pba_render_member_directory_sortable_th('Household', 'household', $sort, $direction, $search, $per_page); ?>
-                        <?php echo pba_render_member_directory_sortable_th('Committees', 'committees', $sort, $direction, $search, $per_page); ?>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($page_rows)) : ?>
-                        <tr>
-                            <td colspan="4">No members found.</td>
-                        </tr>
-                    <?php else : ?>
-                        <?php foreach ($page_rows as $row) : ?>
-                            <?php
-                            $name = trim($row['first_name'] . ' ' . $row['last_name']);
-                            $email = trim((string) $row['email_address']);
-                            $household = (string) $row['household_label'];
-                            $committees = (array) $row['committee_labels'];
-                            ?>
-                            <tr>
-                                <td>
-                                    <strong><?php echo esc_html($name !== '' ? $name : 'Unnamed member'); ?></strong>
-                                </td>
-                                <td>
-                                    <?php if ($email !== '') : ?>
-                                        <a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
-                                    <?php else : ?>
-                                        <span class="pba-member-directory-muted">No email listed</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php echo esc_html($household !== '' ? $household : ''); ?>
-                                </td>
-                                <td>
-                                    <?php if (!empty($committees)) : ?>
-                                        <?php echo esc_html(implode(', ', $committees)); ?>
-                                    <?php else : ?>
-                                        <span class="pba-member-directory-muted">—</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+        <div class="pba-admin-list-card">
+            <form method="get" class="pba-admin-list-toolbar">
+                <div class="pba-admin-list-toolbar-grid pba-member-directory-toolbar-grid">
+                    <div class="pba-admin-list-field">
+                        <label for="directory_search">Search</label>
+                        <input
+                            id="directory_search"
+                            type="text"
+                            name="directory_search"
+                            value="<?php echo esc_attr($search); ?>"
+                            placeholder="Search by name, email, household, or committee"
+                        >
+                    </div>
+
+                    <div class="pba-admin-list-field">
+                        <label for="directory_per_page">Rows per page</label>
+                        <select id="directory_per_page" name="directory_per_page">
+                            <option value="25" <?php selected($per_page, 25); ?>>25</option>
+                            <option value="50" <?php selected($per_page, 50); ?>>50</option>
+                            <option value="100" <?php selected($per_page, 100); ?>>100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <input type="hidden" name="directory_page" value="1">
+
+                <div class="pba-admin-list-toolbar-actions">
+                    <button type="submit" class="pba-admin-list-btn">Apply Filters</button>
+
+                    <?php if ($search !== '' || $per_page !== 25 || $sort !== 'name' || $direction !== 'asc') : ?>
+                        <a class="pba-admin-list-btn secondary" href="<?php echo esc_url(home_url('/member-directory/')); ?>">Reset</a>
                     <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+                </div>
+            </form>
 
-        <?php echo pba_render_member_directory_pagination($page, $total_pages, $search, $per_page, $sort, $direction); ?>
+            <div class="pba-admin-list-resultsbar">
+                <div>
+                    Showing <?php echo esc_html((string) $start_number); ?>-<?php echo esc_html((string) $end_number); ?>
+                    of <?php echo esc_html((string) $total_rows); ?> active member<?php echo $total_rows === 1 ? '' : 's'; ?>.
+                </div>
+                <div class="pba-admin-list-filter-summary">
+                    <?php if ($search !== '') : ?>
+                        <span class="pba-admin-list-chip">Search: <?php echo esc_html($search); ?></span>
+                    <?php endif; ?>
+                    <span class="pba-admin-list-chip">Rows: <?php echo esc_html((string) $per_page); ?></span>
+                    <span class="pba-admin-list-chip">Page <?php echo esc_html((string) $page); ?> of <?php echo esc_html((string) $total_pages); ?></span>
+                </div>
+            </div>
+
+            <div class="pba-admin-list-grid-wrap" aria-live="polite">
+                <div class="pba-admin-list-skeleton" aria-hidden="true">
+                    <div class="pba-admin-list-skeleton-line"></div>
+                    <div class="pba-admin-list-skeleton-line"></div>
+                    <div class="pba-admin-list-skeleton-line"></div>
+                    <div class="pba-admin-list-skeleton-line"></div>
+                </div>
+
+                <table
+                    class="pba-admin-list-table pba-table pba-member-directory-table pba-resizable-table"
+                    id="pba-member-directory-table"
+                    data-resize-key="pbaMemberDirectoryColumnWidthsV2"
+                    data-min-col-width="100"
+                >
+                    <colgroup data-pba-resizable-cols="1">
+                        <col style="width: 24%;">
+                        <col style="width: 26%;">
+                        <col style="width: 25%;">
+                        <col style="width: 25%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <?php echo pba_render_member_directory_sortable_th('Name', 'name', $sort, $direction, $search, $per_page); ?>
+                            <?php echo pba_render_member_directory_sortable_th('Email', 'email', $sort, $direction, $search, $per_page); ?>
+                            <?php echo pba_render_member_directory_sortable_th('Household', 'household', $sort, $direction, $search, $per_page); ?>
+                            <?php echo pba_render_member_directory_sortable_th('Committees', 'committees', $sort, $direction, $search, $per_page); ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($page_rows)) : ?>
+                            <tr>
+                                <td colspan="4" class="pba-admin-list-empty">No members found for the current filters.</td>
+                            </tr>
+                        <?php else : ?>
+                            <?php foreach ($page_rows as $row) : ?>
+                                <?php
+                                $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                                $email = trim((string) $row['email_address']);
+                                $household = (string) $row['household_label'];
+                                $committees = (array) $row['committee_labels'];
+                                $can_show_contact_details = !empty($row['can_show_contact_details']);
+                                ?>
+                                <tr>
+                                    <td>
+                                        <div class="pba-member-directory-name"><?php echo esc_html($name !== '' ? $name : 'Unnamed member'); ?></div>
+                                    </td>
+                                    <td>
+                                        <?php if ($email !== '') : ?>
+                                            <a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
+                                        <?php else : ?>
+                                            <span class="pba-admin-list-muted"><?php echo esc_html($can_show_contact_details ? 'No email listed' : 'Not shared'); ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($household !== '') : ?>
+                                            <?php echo esc_html($household); ?>
+                                        <?php else : ?>
+                                            <span class="pba-admin-list-muted"><?php echo esc_html($can_show_contact_details ? '-' : 'Not shared'); ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($committees)) : ?>
+                                            <div class="pba-member-directory-committee-list"><?php echo esc_html(implode(', ', $committees)); ?></div>
+                                        <?php else : ?>
+                                            <span class="pba-admin-list-muted"><?php echo esc_html($can_show_contact_details ? '-' : 'Not shared'); ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <?php echo pba_render_member_directory_pagination($page, $total_pages, $search, $per_page, $sort, $direction); ?>
+        </div>
     </div>
     <?php
     echo pba_admin_list_render_resizable_table_script();
 
     return ob_get_clean();
+}
+
+function pba_member_directory_normalize_visibility($row) {
+    return isset($row['directory_visibility_level'])
+        ? strtolower(trim((string) $row['directory_visibility_level']))
+        : '';
+}
+
+function pba_member_directory_is_visible($row) {
+    $visibility = pba_member_directory_normalize_visibility($row);
+
+    if ($visibility === '') {
+        return true;
+    }
+
+    $hidden_values = array(
+        'hidden',
+        'hide',
+        'hide_from_directory',
+        'hide-from-directory',
+        'private',
+        'none',
+        'no',
+        'false',
+        '0',
+        'opt_out',
+        'opt-out',
+    );
+
+    return !in_array($visibility, $hidden_values, true);
+}
+
+function pba_member_directory_can_show_contact_details($row) {
+    $visibility = pba_member_directory_normalize_visibility($row);
+
+    $name_only_values = array(
+        'name_only',
+        'name-only',
+        'show_name_only',
+        'show-name-only',
+        'name',
+    );
+
+    return !in_array($visibility, $name_only_values, true);
 }
 
 function pba_render_member_directory_sortable_th($label, $column, $current_sort, $current_direction, $search, $per_page) {
@@ -463,14 +379,14 @@ function pba_render_member_directory_pagination($current_page, $total_pages, $se
 
     ob_start();
     ?>
-    <div class="pba-member-directory-pagination">
-        <div class="pba-member-directory-muted">
+    <div class="pba-admin-list-pagination">
+        <div class="pba-admin-list-muted">
             Page <?php echo esc_html((string) $current_page); ?> of <?php echo esc_html((string) $total_pages); ?>
         </div>
 
-        <div class="pba-member-directory-page-links">
+        <div class="pba-admin-list-page-links">
             <?php if ($current_page > 1) : ?>
-                <a class="pba-member-directory-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
+                <a class="pba-admin-list-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
                     'directory_page' => $current_page - 1,
                     'directory_search' => $search,
                     'directory_per_page' => $per_page,
@@ -478,11 +394,11 @@ function pba_render_member_directory_pagination($current_page, $total_pages, $se
                     'directory_direction' => $direction,
                 ))); ?>">Previous</a>
             <?php else : ?>
-                <span class="pba-member-directory-page-link disabled">Previous</span>
+                <span class="pba-admin-list-page-link disabled">Previous</span>
             <?php endif; ?>
 
             <?php if ($start_page > 1) : ?>
-                <a class="pba-member-directory-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
+                <a class="pba-admin-list-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
                     'directory_page' => 1,
                     'directory_search' => $search,
                     'directory_per_page' => $per_page,
@@ -490,15 +406,15 @@ function pba_render_member_directory_pagination($current_page, $total_pages, $se
                     'directory_direction' => $direction,
                 ))); ?>">1</a>
                 <?php if ($start_page > 2) : ?>
-                    <span class="pba-member-directory-muted">…</span>
+                    <span class="pba-admin-list-muted">…</span>
                 <?php endif; ?>
             <?php endif; ?>
 
             <?php for ($i = $start_page; $i <= $end_page; $i++) : ?>
                 <?php if ($i === $current_page) : ?>
-                    <span class="pba-member-directory-page-link current"><?php echo esc_html((string) $i); ?></span>
+                    <span class="pba-admin-list-page-link current"><?php echo esc_html((string) $i); ?></span>
                 <?php else : ?>
-                    <a class="pba-member-directory-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
+                    <a class="pba-admin-list-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
                         'directory_page' => $i,
                         'directory_search' => $search,
                         'directory_per_page' => $per_page,
@@ -510,9 +426,9 @@ function pba_render_member_directory_pagination($current_page, $total_pages, $se
 
             <?php if ($end_page < $total_pages) : ?>
                 <?php if ($end_page < ($total_pages - 1)) : ?>
-                    <span class="pba-member-directory-muted">…</span>
+                    <span class="pba-admin-list-muted">…</span>
                 <?php endif; ?>
-                <a class="pba-member-directory-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
+                <a class="pba-admin-list-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
                     'directory_page' => $total_pages,
                     'directory_search' => $search,
                     'directory_per_page' => $per_page,
@@ -522,7 +438,7 @@ function pba_render_member_directory_pagination($current_page, $total_pages, $se
             <?php endif; ?>
 
             <?php if ($current_page < $total_pages) : ?>
-                <a class="pba-member-directory-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
+                <a class="pba-admin-list-page-link" href="<?php echo esc_url(pba_get_member_directory_url(array(
                     'directory_page' => $current_page + 1,
                     'directory_search' => $search,
                     'directory_per_page' => $per_page,
@@ -530,7 +446,7 @@ function pba_render_member_directory_pagination($current_page, $total_pages, $se
                     'directory_direction' => $direction,
                 ))); ?>">Next</a>
             <?php else : ?>
-                <span class="pba-member-directory-page-link disabled">Next</span>
+                <span class="pba-admin-list-page-link disabled">Next</span>
             <?php endif; ?>
         </div>
     </div>
