@@ -115,6 +115,16 @@ add_action('template_redirect', function() {
 });
 
 function pba_register_document_shortcodes() {
+
+    $base_url = plugin_dir_url(__FILE__) . 'css/';
+    $base_path = dirname(__FILE__) . '/css/';
+
+    wp_enqueue_style(
+        'pba-documents',
+        $base_url . 'pba-documents.css',
+        array(),
+        file_exists($base_path . 'pba-documents.css') ? (string) filemtime($base_path . 'pba-documents.css') : '1.0.0'
+    );
     add_shortcode('pba_board_documents', 'pba_render_board_documents_shortcode');
     add_shortcode('pba_committee_documents', 'pba_render_committee_documents_shortcode');
 }
@@ -1208,6 +1218,14 @@ function pba_render_documents_common_styles_and_script() {
     return ob_get_clean();
 }
 
+function pba_render_documents_storage_gauge_if_available() {
+    if (!function_exists('pba_render_document_storage_gauge')) {
+        return '';
+    }
+
+    return pba_render_document_storage_gauge();
+}
+
 function pba_render_board_documents_shortcode() {
     if (!is_user_logged_in()) {
         return '<p>Please log in to access this page.</p>';
@@ -1228,7 +1246,7 @@ function pba_render_board_documents_shortcode() {
         </p>
 
         <?php echo pba_render_documents_status_message(); ?>
-
+        <?php echo pba_render_documents_storage_gauge_if_available(); ?>
         <div class="pba-documents-section">
             <h3 class="pba-documents-section-title">Create Folder</h3>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-documents-action-bar">
@@ -1328,7 +1346,7 @@ function pba_render_committee_documents_shortcode() {
         </p>
 
         <?php echo pba_render_documents_status_message(); ?>
-
+        <?php echo pba_render_documents_storage_gauge_if_available(); ?>
         <div class="pba-documents-section">
             <h3 class="pba-documents-section-title"><?php echo $is_admin ? 'Committees' : 'My Committees'; ?></h3>
 
