@@ -617,14 +617,17 @@ function pba_render_documents_common_styles_and_script() {
         .pba-documents-settings-card { border: 1px solid #d9e2ec; border-radius: 14px; background: #fff; padding: 16px; }
         .pba-documents-settings-form { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
         .pba-documents-form-inline { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; }
-        .pba-documents-inline-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
-        .pba-documents-input, .pba-documents-upload-form input[type="file"] { width: 100%; max-width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; box-sizing: border-box; }
+        .pba-documents-inline-actions { display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; margin-top: 10px; }
+        .pba-documents-inline-actions .pba-documents-form-inline { flex-wrap: nowrap; }
+        .pba-documents-inline-actions .pba-documents-btn { white-space: nowrap; }        .pba-documents-input, .pba-documents-upload-form input[type="file"] { width: 100%; max-width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; box-sizing: border-box; }
         .pba-documents-input:focus, .pba-documents-upload-form input[type="file"]:focus { outline: none; border-color: #0d3b66; box-shadow: 0 0 0 3px rgba(13, 59, 102, 0.12); }
+        
         .pba-documents-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 9px 14px; border: 1px solid #0d3b66; background: #0d3b66; color: #ffffff; border-radius: 10px; text-decoration: none; cursor: pointer; font-weight: 600; line-height: 1.2; transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease; }
         .pba-documents-btn:hover, .pba-documents-btn:focus { background: #0b3154; border-color: #0b3154; color: #ffffff; transform: translateY(-1px); }
         .pba-documents-btn.secondary { background: #ffffff; color: #0d3b66; }
         .pba-documents-btn.secondary:hover, .pba-documents-btn.secondary:focus { background: #f7fbff; color: #0b3154; border-color: #0b3154; }
         .pba-documents-btn.secondary.is-expanded { background: #0d3b66; color: #ffffff; border-color: #0d3b66; }
+        
         .pba-documents-muted { color: #64748b; font-size: 13px; line-height: 1.5; }
         .pba-documents-title-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         .pba-documents-inline-chip { display: inline-flex; align-items: center; min-height: 26px; padding: 3px 8px; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 12px; line-height: 1.3; }
@@ -643,7 +646,17 @@ function pba_render_documents_common_styles_and_script() {
         .pba-documents-table th, .pba-documents-table td { border-bottom: 1px solid #e5edf5; padding: 12px 12px; text-align: left; vertical-align: top; font-size: 14px; line-height: 1.45; }
         .pba-documents-table thead th { position: sticky; top: 0; background: #f8fafc; color: #334155; font-weight: 700; z-index: 1; }
         .pba-documents-table tbody tr:last-child td { border-bottom: none; }
-        .pba-documents-title-cell a { font-weight: 700; text-decoration: none; }
+        .pba-documents-title-cell a {
+            color: #0d3b66;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .pba-documents-title-cell a:hover,
+        .pba-documents-title-cell a:focus {
+            color: #0b3154;
+            text-decoration: underline;
+        }        
         .pba-documents-title-cell a:hover, .pba-documents-title-cell a:focus { text-decoration: underline; }
         .pba-documents-editor-actions { margin-top: 8px; }
         .pba-documents-table-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
@@ -1093,7 +1106,7 @@ function pba_render_board_documents_shortcode() {
     ?>
     <div class="pba-documents-wrap">
         <p class="pba-documents-page-intro">
-            Browse and manage board folders for agendas, minutes, budgets, and supporting materials. Open one folder at a time to keep the page focused.
+            Browse and manage board folders for agendas, minutes, budgets, and supporting materials. Store documents in one or more folders.
         </p>
 
         <?php echo pba_render_documents_status_message(); ?>
@@ -1193,7 +1206,7 @@ function pba_render_committee_documents_shortcode() {
     ?>
     <div class="pba-documents-wrap">
         <p class="pba-documents-page-intro">
-            Browse committee folders and documents in a layout consistent with Board Documents. Your assigned committees appear first, while other active committees are shown for awareness with restricted access.
+            Browse committee folders and documents. Your assigned committees appear first, while other active committees are shown for awareness with restricted access.
         </p>
 
         <?php echo pba_render_documents_status_message(); ?>
