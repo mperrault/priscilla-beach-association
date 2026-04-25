@@ -526,12 +526,12 @@ function pba_render_members_table($data, $request_args) {
         </div>
 
         <table class="pba-admin-list-table pba-table pba-members-table pba-resizable-table" id="pba-members-admin-table" data-resize-key="pbaMembersAdminColumnWidthsV9" data-min-col-width="100">
-            <colgroup data-pba-resizable-cols="1">
-                <col style="width: 210px;">
-                <col style="width: 300px;">
-                <col style="width: 180px;">
-                <col style="width: 220px;">
-                <col style="width: 220px;">
+        <colgroup data-pba-resizable-cols="1">
+                <col style="width: 110px;">
+                <col style="width: 130px;">
+                <col style="width: 100px;">
+                <col style="width: 125px;">
+                <col style="width: 130px;">
                 <col style="width: 160px;">
             </colgroup>
             <thead>
