@@ -12,6 +12,173 @@ function pba_register_household_shortcode() {
     add_shortcode('pba_household_dashboard', 'pba_render_household_dashboard');
 }
 
+add_action('admin_post_pba_household_reinvite_expired_member', 'pba_handle_household_reinvite_expired_member');
+add_action('admin_post_pba_household_remove_expired_member', 'pba_handle_household_remove_expired_member');
+
+function pba_household_redirect_with_status($status) {
+    $redirect_url = wp_get_referer();
+
+    if (empty($redirect_url)) {
+        $redirect_url = home_url('/');
+    }
+
+    $redirect_url = remove_query_arg('pba_household_status', $redirect_url);
+    $redirect_url = add_query_arg('pba_household_status', rawurlencode((string) $status), $redirect_url);
+
+    wp_safe_redirect($redirect_url . '#pba-household-members-table');
+    exit;
+}
+
+function pba_household_get_person_for_current_household($person_id, $required_status = '') {
+    $person_id = (int) $person_id;
+    $household_id = (int) pba_get_current_household_id();
+
+    if ($person_id < 1 || $household_id < 1) {
+        return new WP_Error('missing_context', 'Household context is missing.');
+    }
+
+    $query_args = array(
+        'select'       => 'person_id,household_id,first_name,last_name,email_address,status,invited_by_person_id,wp_user_id',
+        'person_id'    => 'eq.' . $person_id,
+        'household_id' => 'eq.' . $household_id,
+        'limit'        => 1,
+    );
+
+    if ($required_status !== '') {
+        $query_args['status'] = 'eq.' . $required_status;
+    }
+
+    $rows = pba_supabase_get('Person', $query_args);
+
+    if (is_wp_error($rows)) {
+        return $rows;
+    }
+
+    if (empty($rows) || !is_array($rows) || empty($rows[0]) || !is_array($rows[0])) {
+        return new WP_Error('person_not_found', 'Person record was not found for this household.');
+    }
+
+    return $rows[0];
+}
+
+function pba_handle_household_reinvite_expired_member() {
+    if (!is_user_logged_in() || !pba_current_user_has_house_admin_access()) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    if (
+        empty($_POST['pba_household_reinvite_expired_nonce']) ||
+        !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['pba_household_reinvite_expired_nonce'])), 'pba_household_reinvite_expired_action')
+    ) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    $person_id = isset($_POST['person_id']) ? absint($_POST['person_id']) : 0;
+    $person = pba_household_get_person_for_current_household($person_id, 'Expired');
+
+    if (is_wp_error($person)) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        pba_household_redirect_with_status('remove_blocked_house_admin');
+    }
+
+    if (!function_exists('pba_supabase_update') || !function_exists('pba_send_member_invite_email')) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    $now_utc = gmdate('c');
+    $expires_at = gmdate('c', time() + (3 * DAY_IN_SECONDS));
+    $invite_token = wp_generate_password(32, false, false);
+    $inviter_person_id = (int) pba_get_current_house_admin_person_id();
+
+    set_transient('pba_invite_token_' . $invite_token, (int) $person_id, 3 * DAY_IN_SECONDS);
+    set_transient('pba_member_invite_token_' . $invite_token, array(
+        'person_id' => (int) $person_id,
+        'created_at' => $now_utc,
+    ), 3 * DAY_IN_SECONDS);
+
+    $payload = array(
+        'status'                => 'Pending',
+        'email_verified'        => 0,
+        'last_modified_at'      => $now_utc,
+        'invitation_expires_at' => $expires_at,
+    );
+
+    if ($inviter_person_id > 0) {
+        $payload['invited_by_person_id'] = $inviter_person_id;
+    }
+
+    $result = pba_supabase_update(
+        'Person',
+        $payload,
+        array(
+            'person_id'    => 'eq.' . $person_id,
+            'household_id' => 'eq.' . (int) pba_get_current_household_id(),
+            'status'       => 'eq.Expired',
+        )
+    );
+
+    if (is_wp_error($result)) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    $person['status'] = 'Pending';
+    $person['invitation_expires_at'] = $expires_at;
+
+    $email_sent = pba_send_member_invite_email($person, $invite_token);
+
+    if (!$email_sent) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    pba_household_redirect_with_status('invite_resent');
+}
+
+function pba_handle_household_remove_expired_member() {
+    if (!is_user_logged_in() || !pba_current_user_has_house_admin_access()) {
+        pba_household_redirect_with_status('remove_failed');
+    }
+
+    if (
+        empty($_POST['pba_household_remove_expired_nonce']) ||
+        !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['pba_household_remove_expired_nonce'])), 'pba_household_remove_expired_action')
+    ) {
+        pba_household_redirect_with_status('remove_failed');
+    }
+
+    $person_id = isset($_POST['person_id']) ? absint($_POST['person_id']) : 0;
+    $person = pba_household_get_person_for_current_household($person_id, 'Expired');
+
+    if (is_wp_error($person)) {
+        pba_household_redirect_with_status('remove_failed');
+    }
+
+    if (pba_household_person_has_role_name($person_id, 'PBAHouseholdAdmin')) {
+        pba_household_redirect_with_status('remove_blocked_house_admin');
+    }
+
+    if (!function_exists('pba_supabase_delete')) {
+        pba_household_redirect_with_status('remove_failed');
+    }
+
+    $result = pba_supabase_delete(
+        'Person',
+        array(
+            'person_id'    => 'eq.' . $person_id,
+            'household_id' => 'eq.' . (int) pba_get_current_household_id(),
+            'status'       => 'eq.Expired',
+        )
+    );
+
+    if (is_wp_error($result)) {
+        pba_household_redirect_with_status('remove_failed');
+    }
+
+    pba_household_redirect_with_status('member_removed');
+}
+
 function pba_household_get_status_meta($status) {
     $status = (string) $status;
 
@@ -542,12 +709,21 @@ function pba_render_household_previous_invitations_table($rows, $title, $request
                                             <button type="submit" class="pba-btn secondary pba-action-btn" data-processing-text="Cancelling...">Cancel</button>
                                         </form>
                                     <?php elseif ($status === 'Expired') : ?>
-                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
-                                            <?php wp_nonce_field('pba_household_resend_action', 'pba_household_resend_nonce'); ?>
-                                            <input type="hidden" name="action" value="pba_household_resend_invite">
-                                            <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
-                                            <button type="submit" class="pba-btn pba-action-btn" data-processing-text="Resending...">Resend</button>
-                                        </form>
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
+                                                <?php wp_nonce_field('pba_household_reinvite_expired_action', 'pba_household_reinvite_expired_nonce'); ?>
+                                                <input type="hidden" name="action" value="pba_household_reinvite_expired_member">
+                                                <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                                <button type="submit" class="pba-btn pba-action-btn" data-processing-text="ReInviting...">ReInvite</button>
+                                            </form>
+
+                                            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form" onsubmit="return confirm('Remove this expired invitation?');">
+                                                <?php wp_nonce_field('pba_household_remove_expired_action', 'pba_household_remove_expired_nonce'); ?>
+                                                <input type="hidden" name="action" value="pba_household_remove_expired_member">
+                                                <input type="hidden" name="person_id" value="<?php echo esc_attr($person_id); ?>">
+                                                <button type="submit" class="pba-btn secondary pba-action-btn" data-processing-text="Removing...">Remove</button>
+                                            </form>
+                                        </div>
                                     <?php elseif ($status === 'Disabled') : ?>
                                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-household-action-form">
@@ -631,35 +807,6 @@ function pba_render_household_invite_section() {
     return ob_get_clean();
 }
 
-function pba_household_format_address($household_id) {
-    $household_id = (int) $household_id;
-
-    if ($household_id < 1) {
-        return '';
-    }
-
-    $rows = pba_supabase_get('Household', array(
-        'select'       => 'pb_street_number,pb_street_name',
-        'household_id' => 'eq.' . $household_id,
-        'limit'        => 1,
-    ));
-
-    if (is_wp_error($rows) || empty($rows) || !is_array($rows)) {
-        return '';
-    }
-
-    $household = $rows[0];
-    $street_number = isset($household['pb_street_number']) ? trim((string) $household['pb_street_number']) : '';
-    $street_name = isset($household['pb_street_name']) ? trim((string) $household['pb_street_name']) : '';
-    $street = trim($street_number . ' ' . $street_name);
-
-    if ($street === '') {
-        return '';
-    }
-
-    return $street . ', Plymouth, MA';
-}
-
 function pba_render_household_dashboard() {
     if (!is_user_logged_in()) {
         return '<p>Please log in to access this page.</p>';
@@ -725,13 +872,6 @@ function pba_render_household_dashboard() {
     $expired_count  = count($expired_rows);
     $disabled_count = count($disabled_rows);
 
-    $household_address = pba_household_format_address($household_id);
-    $page_title = 'Manage Household Members';
-
-    if ($household_address !== '') {
-        $page_title .= ' for: ' . $household_address;
-    }
-
     ob_start();
 
     if (function_exists('pba_shared_list_ui_render_styles')) {
@@ -741,7 +881,7 @@ function pba_render_household_dashboard() {
     <div class="pba-page-wrap pba-household-wrap">
         <div class="pba-page-hero">
             <div class="pba-page-eyebrow">Household Access</div>
-            <h2 class="pba-page-title"><?php echo esc_html($page_title); ?></h2>
+            <h2 class="pba-page-title">Manage Household Members</h2>
             <p class="pba-page-intro">
                 Invite members of your household, review invitation status, and manage household access. Any Household Admin for this household can manage these records.
             </p>

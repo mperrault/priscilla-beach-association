@@ -10,6 +10,17 @@ add_action('admin_post_pba_admin_cancel_invite', 'pba_handle_admin_cancel_invite
 add_action('admin_post_pba_admin_resend_invite', 'pba_handle_admin_resend_invite');
 add_action('admin_post_pba_admin_remove_member_from_household', 'pba_handle_admin_remove_member_from_household');
 add_action('admin_post_pba_admin_hard_delete_person', 'pba_handle_admin_hard_delete_person');
+add_filter('wp_mail_from_name', 'pba_wp_mail_from_name');
+
+function pba_wp_mail_from_name($name) {
+    return 'Priscilla Beach Association';
+}
+
+add_filter('wp_mail_from', 'pba_wp_mail_from');
+
+function pba_wp_mail_from($email) {
+    return 'no-reply@priscilla-beach-association.local';
+}
 
 if (!function_exists('pba_admin_member_get_person_snapshot')) {
     function pba_admin_member_get_person_snapshot($person_id) {

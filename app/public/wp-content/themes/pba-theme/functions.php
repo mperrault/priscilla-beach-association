@@ -21,8 +21,12 @@ add_action('deprecated_function_run', function () {
     error_log(print_r(wp_debug_backtrace_summary(), true));
 });
 
-error_log('PBA TEST DEBUG LOG ENTRY');
-error_log('ACTIVE SITE URL: ' . home_url());
+error_log(
+    'PBA TEST DEBUG LOG ENTRY | CONTEXT=' .
+    ((defined('DOING_CRON') && DOING_CRON) ? 'cron' : 'web') .
+    ' | URI=' .
+    ($_SERVER['REQUEST_URI'] ?? 'unknown')
+);
 
 function pba_theme_setup() {
     add_theme_support('title-tag');

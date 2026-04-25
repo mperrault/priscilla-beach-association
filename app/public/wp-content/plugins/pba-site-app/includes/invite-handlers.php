@@ -176,6 +176,7 @@ function pba_handle_household_send_invites() {
                     'wp_user_id'           => null,
                     'status'               => 'Pending',
                     'last_modified_at'     => gmdate('c'),
+                    'invitation_expires_at' => gmdate('c', strtotime('+7 days')),
                 ),
                 array(
                     'person_id' => 'eq.' . $person_id,
@@ -195,6 +196,7 @@ function pba_handle_household_send_invites() {
                 'email_verified'       => 0,
                 'wp_user_id'           => null,
                 'invited_by_person_id' => $inviter_person_id,
+                'invitation_expires_at' => gmdate('c', strtotime('+7 days')),
             ));
 
             if (is_wp_error($person) || empty($person['person_id'])) {
@@ -742,6 +744,7 @@ function pba_handle_household_resend_invite() {
             'invited_by_person_id' => $inviter_person_id,
             'household_id'         => $household_id,
             'last_modified_at'     => gmdate('c'),
+            'invitation_expires_at' => gmdate('c', strtotime('+7 days')),
         ),
         array(
             'person_id' => 'eq.' . $person_id,
@@ -839,4 +842,44 @@ function pba_handle_household_remove_member() {
     }
 
     pba_household_redirect('member_removed');
+}
+function pba_send_member_invite_email($person_row, $invite_token) {
+    if (empty($person_row['email_address']) || empty($invite_token)) {
+        return false;
+    }
+
+    $first_name = isset($person_row['first_name']) ? $person_row['first_name'] : '';
+    $last_name  = isset($person_row['last_name']) ? $person_row['last_name'] : '';
+    $email      = $person_row['email_address'];
+
+    $link = add_query_arg(
+        array(
+            'invite_token' => rawurlencode($invite_token),
+        ),
+        home_url('/member-invite-accept/')
+    );
+
+    $subject = 'Welcome to the Priscilla Beach Association (PBA)!';
+
+    $message = "
+    <html>
+    <head>
+      <title>Complete Your PBA Member Account Setup</title>
+    </head>
+    <body>
+      <h2>Hello {$first_name} {$last_name},</h2>
+      <p>You have been invited by your Household Admin to become a site member of the Priscilla Beach Association (PBA).</p>
+      <p>To complete your account setup, please click the link below to create your password:</p>
+      <p><a href='{$link}'>Set My Password</a></p>
+      <p>This link will expire in 7 days, so please complete your setup soon.</p>
+      <p>If you did not expect this invitation or need assistance, please contact the PBA Admin.</p>
+      <p>Best regards,<br>The Priscilla Beach Association Team</p>
+      <p><strong>Contact us:</strong> info@priscillabeachassociation.com</p>
+    </body>
+    </html>
+    ";
+
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    return wp_mail($email, $subject, $message, $headers);
 }
