@@ -806,6 +806,30 @@ function pba_render_household_invite_section() {
     <?php
     return ob_get_clean();
 }
+function pba_get_current_household_display_address($household_id) {
+    $rows = pba_supabase_get('Household', array(
+        'select'       => 'pb_street_number,pb_street_name',
+        'household_id' => 'eq.' . (int) $household_id,
+        'limit'        => 1,
+    ));
+
+    if (is_wp_error($rows) || empty($rows) || !is_array($rows)) {
+        return 'Address not set';
+    }
+
+    $household = $rows[0];
+
+    $street_address = trim(
+        ((string) ($household['pb_street_number'] ?? '')) . ' ' .
+        ((string) ($household['pb_street_name'] ?? ''))
+    );
+
+    if ($street_address === '') {
+        return 'Address not set';
+    }
+
+    return $street_address . ', Plymouth, MA';
+}
 
 function pba_render_household_dashboard() {
     if (!is_user_logged_in()) {
@@ -832,6 +856,8 @@ function pba_render_household_dashboard() {
     if (empty($household_id) || empty($inviter_person_id)) {
         return '<p>Household context is missing for this account.</p>';
     }
+
+    $household_address = pba_get_current_household_display_address($household_id);
 
     pba_update_pending_household_invites_to_expired($household_id, $inviter_person_id);
 
@@ -881,7 +907,9 @@ function pba_render_household_dashboard() {
     <div class="pba-page-wrap pba-household-wrap">
         <div class="pba-page-hero">
             <div class="pba-page-eyebrow">Household Access</div>
-            <h2 class="pba-page-title">Manage Household Members</h2>
+            <h2 class="pba-page-title">
+                Manage Household Members: <?php echo esc_html($household_address); ?>
+            </h2>            
             <p class="pba-page-intro">
                 Invite members of your household, review invitation status, and manage household access. Any Household Admin for this household can manage these records.
             </p>
