@@ -6,6 +6,18 @@ if (!defined('ABSPATH')) {
 
 add_action('init', 'pba_register_member_resources_shortcode');
 
+if (!function_exists('pba_get_document_viewer_url')) {
+    function pba_get_document_viewer_url($document_item_id) {
+        $document_item_id = absint($document_item_id);
+
+        if ($document_item_id < 1) {
+            return '';
+        }
+
+        return add_query_arg('pba_document_view', $document_item_id, home_url('/'));
+    }
+}
+
 function pba_register_member_resources_shortcode() {
     add_shortcode('pba_member_resources', 'pba_render_member_resources_shortcode');
 }
@@ -361,7 +373,12 @@ function pba_render_member_resources_shortcode() {
                                     <td>
                                         <div class="pba-member-resource-title">
                                             <?php if ($url !== '') : ?>
-                                                <a href="<?php echo esc_url($url); ?>" target="_blank" rel="noopener noreferrer">
+                                                <?php
+                                                $document_item_id = isset($row['document_item_id']) ? absint($row['document_item_id']) : 0;
+                                                $viewer_url = $document_item_id > 0 ? pba_get_document_viewer_url($document_item_id) : '';
+                                                $link_url = $viewer_url !== '' ? $viewer_url : $url;
+                                                ?>
+                                                <a href="<?php echo esc_url($link_url); ?>" target="_blank" rel="noopener noreferrer">
                                                     <?php echo esc_html($title); ?>
                                                 </a>
                                             <?php else : ?>

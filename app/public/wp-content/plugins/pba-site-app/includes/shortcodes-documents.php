@@ -6,9 +6,127 @@ if (!defined('ABSPATH')) {
 
 add_action('init', 'pba_register_document_shortcodes');
 
+add_filter('query_vars', function($vars) {
+    $vars[] = 'pba_document_view';
+    return $vars;
+});
+
+add_action('template_redirect', function() {
+
+    $document_item_id = absint(get_query_var('pba_document_view'));
+
+    if ($document_item_id < 1) {
+        return;
+    }
+
+    if (!is_user_logged_in()) {
+        auth_redirect();
+        exit;
+    }
+
+    if (!function_exists('pba_supabase_get')) {
+        wp_die('Data access error.');
+    }
+
+    $rows = pba_supabase_get('Document_Item', array(
+        'select' => '*',
+        'document_item_id' => 'eq.' . $document_item_id,
+        'limit' => 1,
+    ));
+
+    if (empty($rows)) {
+        wp_die('Document not found.');
+    }
+
+    $doc = $rows[0];
+
+    $file_url  = $doc['file_url'];
+    $file_name = !empty($doc['file_name']) ? $doc['file_name'] : 'Document';
+
+    ?>
+    <!doctype html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title><?php echo esc_html($file_name); ?></title>
+
+        <?php
+        $pba_favicon_url = get_stylesheet_directory_uri() . '/assets/images/favicon-pba.png';
+        $pba_favicon_ver = file_exists(get_stylesheet_directory() . '/assets/images/favicon-pba.png')
+            ? filemtime(get_stylesheet_directory() . '/assets/images/favicon-pba.png')
+            : time();
+        ?>
+
+        <link rel="icon" type="image/png" href="<?php echo esc_url($pba_favicon_url . '?v=' . $pba_favicon_ver); ?>">
+        <link rel="shortcut icon" type="image/png" href="<?php echo esc_url($pba_favicon_url . '?v=' . $pba_favicon_ver); ?>">
+
+        <style>
+            html, body {
+                margin:0;
+                padding:0;
+                height:100%;
+                background:#f5f7f8;
+                font-family: Arial, sans-serif;
+            }
+            .pba-doc-header {
+                height:48px;
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                padding:0 16px;
+                background:#ffffff;
+                border-bottom:1px solid #d9e0e4;
+            }
+            .pba-doc-title {
+                font-weight:600;
+                font-size:14px;
+            }
+            .pba-doc-download {
+                color:#1d5f7a;
+                text-decoration:none;
+                font-weight:600;
+            }
+            iframe {
+                width:100%;
+                height:calc(100vh - 48px);
+                border:0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="pba-doc-header">
+            <div class="pba-doc-title"><?php echo esc_html($file_name); ?></div>
+            <a class="pba-doc-download" href="<?php echo esc_url($file_url); ?>" download>Download</a>
+        </div>
+        <object
+            data="<?php echo esc_url($file_url); ?>"
+            type="application/pdf"
+            style="width:100%; height:calc(100vh - 48px); border:0;"
+            aria-label="<?php echo esc_attr($file_name); ?>">
+            <p>
+                Unable to preview this document.
+                <a href="<?php echo esc_url($file_url); ?>">Open document</a>
+            </p>
+        </object>    
+    </body>
+    </html>
+    <?php
+    exit;
+});
+
 function pba_register_document_shortcodes() {
     add_shortcode('pba_board_documents', 'pba_render_board_documents_shortcode');
     add_shortcode('pba_committee_documents', 'pba_render_committee_documents_shortcode');
+}
+
+function pba_get_document_viewer_url($document_item_id) {
+    $document_item_id = absint($document_item_id);
+
+    if ($document_item_id < 1) {
+        return '';
+    }
+
+    return add_query_arg('pba_document_view', $document_item_id, home_url('/'));
 }
 
 function pba_render_documents_status_message() {
@@ -253,10 +371,10 @@ function pba_render_document_items_table($items, $page_slug, $committee_id = 0, 
                                 <td>
                                     <div class="pba-documents-title-cell">
                                         <?php if (!empty($item['file_url'])) : ?>
-                                            <a href="<?php echo esc_url($item['file_url']); ?>" target="_blank" rel="noopener noreferrer">
-                                                <?php echo esc_html($display_title); ?>
-                                            </a>
-                                        <?php else : ?>
+                                            <a href="<?php echo esc_url(pba_get_document_viewer_url($item['document_item_id'])); ?>" target="_blank" rel="noopener">
+                                                <?php echo esc_html($display_title); ?>    
+                                            </a>    
+                                       <?php else : ?>
                                             <?php echo esc_html($display_title); ?>
                                         <?php endif; ?>
                                     </div>

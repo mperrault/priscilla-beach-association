@@ -48,3 +48,4 @@ require_once __DIR__ . '/includes/shortcodes-household-map.php';
 require_once __DIR__ . '/includes/audit-log.php';
 require_once __DIR__ . '/includes/shortcodes-audit-log.php';
 require_once __DIR__ . '/includes/pba-background-jobs.php';
+require_once __DIR__ . '/includes/document-viewer.php';
