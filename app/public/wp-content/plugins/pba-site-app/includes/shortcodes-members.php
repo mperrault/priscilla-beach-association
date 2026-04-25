@@ -419,7 +419,7 @@ function pba_render_members_dynamic_content($data, $request_args) {
         <div class="pba-admin-list-hero">
             <div class="pba-admin-list-hero-top">
                 <div>
-                    <h2 style="margin:0 0 6px;">Members</h2>
+                    <h2 style="margin:0 0 6px;">PBA Members</h2>
                     <p>Manage member accounts, household assignments, and role access.</p>
                 </div>
                 <div class="pba-admin-list-badge">
