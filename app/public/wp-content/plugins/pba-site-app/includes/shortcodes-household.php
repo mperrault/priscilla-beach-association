@@ -260,11 +260,15 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
         : array(
             'type'  => 'error',
             'title' => 'Please review',
-            'text'  => str_replace('_', ' ', $status),
+            'text'  => ucfirst(str_replace('_', ' ', $status)),
         );
 
     $list_items = array();
-    if (!empty($duplicate_messages) && in_array($status, array('invite_created_with_duplicates', 'invite_created_email_partial_with_duplicates', 'already_invited'), true)) {
+    if (!empty($duplicate_messages) && in_array($status, array(
+        'invite_created_with_duplicates',
+        'invite_created_email_partial_with_duplicates',
+        'already_invited'
+    ), true)) {
         $list_items = $duplicate_messages;
     }
 
@@ -287,7 +291,7 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
             <div><?php echo esc_html($message['text']); ?></div>
 
             <?php if (!empty($list_items)) : ?>
-                <ul class="pba-duplicate-list" style="margin:10px 0 0 18px;">
+                <ul style="margin:10px 0 0 18px;">
                     <?php foreach ($list_items as $item) : ?>
                         <li><?php echo esc_html($item); ?></li>
                     <?php endforeach; ?>

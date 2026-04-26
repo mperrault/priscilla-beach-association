@@ -556,7 +556,7 @@ function pba_household_dashboard_render_shared_script() {
                         var normalizedEmail = email.toLowerCase();
 
                         if (!firstName || !lastName || !email) {
-                            return 'Please complete all fields in every row before inviting.';
+                            return 'Please XXX complete all fields in every row before inviting.';
                         }
 
                         if (!isValidName(firstName)) {

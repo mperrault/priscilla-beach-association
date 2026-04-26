@@ -329,16 +329,18 @@ function pba_shared_list_ui_render_styles() {
 
         .pba-form-error {
             display: none;
-            margin: 0 0 18px;
-            padding: 12px 14px;
-            border-radius: 8px;
-            background: #fff1f1;
-            border: 1px solid #e2a3a3;
-            color: #8a1f1f;
+            align-items: flex-start;
+            gap: 14px;
+            margin: 18px 0 24px;
+            padding: 18px 22px;
+            border: 1px solid #d93025;
+            border-radius: 10px;
+            background: #fce8e6;
+            color: #5f2120;
         }
 
         .pba-form-error.active {
-            display: block;
+            display: flex;
         }
 
         .pba-status-badge {
@@ -495,15 +497,21 @@ function pba_shared_list_ui_render_household_script() {
                 }
 
                 function showError(message) {
-                    errorBox.innerHTML = escapeHtml(message);
+                    errorBox.setAttribute('role', 'alert');
+                    errorBox.setAttribute('aria-live', 'assertive');
+                    errorBox.innerHTML =
+                        '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>' +
+                        '<div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div>' + escapeHtml(message) + '</div></div>';
                     errorBox.classList.add('active');
                 }
 
                 function clearError() {
                     errorBox.innerHTML = '';
+                    errorBox.removeAttribute('role');
+                    errorBox.removeAttribute('aria-live');
                     errorBox.classList.remove('active');
                 }
-
+                
                 function createRow() {
                     var tr = document.createElement('tr');
                     tr.innerHTML =
