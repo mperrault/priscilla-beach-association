@@ -150,22 +150,21 @@ function pba_render_members_status_message() {
     );
 
     if (isset($success_messages[$status])) {
-        if (function_exists('pba_shared_render_message')) {
-            return pba_shared_render_message('success', 'Success', $success_messages[$status]);
-        }
+        $text = $success_messages[$status];
 
-        return '<div class="pba-message success"><div class="pba-message-title">Success</div><div class="pba-message-body">' . esc_html($success_messages[$status]) . '</div></div>';
+        return '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#1e4620;">'
+            . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#34a853;color:#fff;font-weight:700;flex:0 0 auto;">✓</div>'
+            . '<div><div style="font-weight:700;margin-bottom:2px;">Success</div><div>' . esc_html($text) . '</div></div>'
+            . '</div>';
     }
 
     $text = isset($error_messages[$status]) ? $error_messages[$status] : ucfirst(str_replace('_', ' ', $status));
 
-    if (function_exists('pba_shared_render_message')) {
-        return pba_shared_render_message('error', 'Please review', $text);
-    }
-
-    return '<div class="pba-message error"><div class="pba-message-title">Please review</div><div class="pba-message-body">' . esc_html($text) . '</div></div>';
+    return '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fce8e6;color:#5f2120;">'
+        . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>'
+        . '<div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div>' . esc_html($text) . '</div></div>'
+        . '</div>';
 }
-
 function pba_get_members_base_url() {
     global $post;
 
