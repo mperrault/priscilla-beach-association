@@ -81,13 +81,21 @@ function pba_render_profile_shortcode() {
     $status = isset($_GET['pba_profile_status']) ? sanitize_text_field(wp_unslash($_GET['pba_profile_status'])) : '';
 
     if ($status === 'profile_saved') {
-        $status_message = '<div class="pba-profile-message">Profile updated successfully.</div>';
+        $status_message = '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#1e4620;">'
+            . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#34a853;color:#fff;font-weight:700;flex:0 0 auto;">✓</div>'
+            . '<div><div style="font-weight:700;margin-bottom:2px;">Success</div><div>Profile updated successfully.</div></div>'
+            . '</div>';
     } elseif ($status === 'save_failed') {
-        $status_message = '<div class="pba-profile-message error">Unable to save your profile.</div>';
+        $status_message = '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fce8e6;color:#5f2120;">'
+            . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>'
+            . '<div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div>Unable to save your profile.</div></div>'
+            . '</div>';
     } elseif ($status === 'invalid_request') {
-        $status_message = '<div class="pba-profile-message error">Invalid profile update request.</div>';
+        $status_message = '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fce8e6;color:#5f2120;">'
+            . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>'
+            . '<div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div>Invalid profile update request.</div></div>'
+            . '</div>';
     }
-
     $password_url = home_url('/change-password/');
     $status_label = trim((string) ($person['status'] ?? ''));
     $email_verified_label = !empty($person['email_verified']) ? 'Yes' : 'No';
