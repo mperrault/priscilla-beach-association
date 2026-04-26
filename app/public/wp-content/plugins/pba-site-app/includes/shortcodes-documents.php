@@ -140,66 +140,52 @@ function pba_get_document_viewer_url($document_item_id) {
 }
 
 function pba_render_documents_status_message() {
-    $status = isset($_GET['pba_documents_status']) ? sanitize_text_field(wp_unslash($_GET['pba_documents_status'])) : '';
+    $status = isset($_GET['pba_documents_status'])
+        ? sanitize_text_field(wp_unslash($_GET['pba_documents_status']))
+        : '';
 
     if ($status === '') {
         return '';
     }
 
-    $messages = array(
-        'document_uploaded'             => 'Document uploaded successfully.',
-        'document_saved'                => 'Document metadata saved successfully.',
-        'document_deleted'              => 'Document deactivated successfully.',
-        'document_restored'             => 'Document restored successfully.',
-        'document_permanently_deleted'  => 'Document permanently deleted.',
-        'folder_created'                => 'Folder created successfully.',
-        'folder_renamed'                => 'Folder renamed successfully.',
-        'folder_deleted'                => 'Folder deactivated successfully.',
-        'shared_with_members'           => 'Document is now visible in Member Resources.',
-        'removed_from_member_resources' => 'Document was removed from Member Resources.',
-        'share_failed'                  => 'The document could not be shared with members.',
-        'unshare_failed'                => 'The document could not be removed from Member Resources.',
-        'permission_denied'             => 'You do not have permission to perform that action.',
-        'missing_document_file'         => 'Please choose a file to upload.',
-        'empty_document_file'           => 'The selected file appears to be empty.',
-        'document_file_too_large'       => 'The selected file is too large. Maximum allowed size is ' . pba_get_document_upload_max_size_label() . '.',
-        'invalid_document_file_type'    => 'That file type is not allowed. Allowed types: PDF, Word, Excel, PowerPoint, TXT, CSV, JPG, JPEG, PNG.',
-        'invalid_document_date'         => 'Please enter a valid document date.',
-        'invalid_document_edit'         => 'Please choose a valid document to edit.',
-        'document_edit_failed'          => 'The document metadata could not be saved.',
-        'document_upload_failed'        => 'The file upload failed.',
-        'document_record_create_failed' => 'The file uploaded, but the document record could not be saved.',
-        'invalid_document_folder'       => 'Please choose a valid folder.',
-        'invalid_document_delete'       => 'Please choose a valid document.',
-        'invalid_document_restore'      => 'Please choose a valid document to restore.',
-        'document_not_found'            => 'The selected document could not be found.',
-        'document_delete_failed'        => 'The document could not be deleted.',
-        'document_restore_failed'       => 'The document could not be restored.',
-        'invalid_folder_input'          => 'Please enter a valid folder name.',
-        'invalid_folder_rename'         => 'Please enter a valid new folder name.',
-        'folder_create_failed'          => 'The folder could not be created.',
-        'folder_rename_failed'          => 'The folder could not be renamed.',
-        'folder_delete_failed'          => 'The folder could not be deactivated.',
+    $success_messages = array(
+        'uploaded'       => 'Document uploaded successfully.',
+        'deleted'        => 'Document deleted successfully.',
+        'folder_created' => 'Folder created successfully.',
+        'folder_updated' => 'Folder updated successfully.',
+        'folder_deleted' => 'Folder deleted successfully.',
+        'saved'          => 'Document saved successfully.',
     );
 
-    $message = isset($messages[$status]) ? $messages[$status] : ucfirst(str_replace('_', ' ', $status));
-    $success_statuses = array(
-        'document_uploaded',
-        'document_saved',
-        'document_deleted',
-        'document_restored',
-        'document_permanently_deleted',
-        'folder_created',
-        'folder_renamed',
-        'folder_deleted',
-        'shared_with_members',
-        'removed_from_member_resources',
+    $error_messages = array(
+        'invalid_request'       => 'We could not process that request.',
+        'upload_failed'         => 'We could not upload that document.',
+        'delete_failed'         => 'We could not delete that document.',
+        'folder_create_failed'  => 'We could not create that folder.',
+        'folder_update_failed'  => 'We could not update that folder.',
+        'folder_delete_failed'  => 'We could not delete that folder.',
+        'save_failed'           => 'We could not save that document.',
+        'permission_denied'     => 'You do not have permission to perform that action.',
     );
-    $class = in_array($status, $success_statuses, true) ? 'pba-documents-message' : 'pba-documents-message error';
 
-    return '<div class="' . esc_attr($class) . '">' . esc_html($message) . '</div>';
+    if (isset($success_messages[$status])) {
+        $text = $success_messages[$status];
+
+        return '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#1e4620;">'
+            . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#34a853;color:#fff;font-weight:700;flex:0 0 auto;">✓</div>'
+            . '<div><div style="font-weight:700;margin-bottom:2px;">Success</div><div>' . esc_html($text) . '</div></div>'
+            . '</div>';
+    }
+
+    $text = isset($error_messages[$status])
+        ? $error_messages[$status]
+        : ucfirst(str_replace('_', ' ', $status));
+
+    return '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fce8e6;color:#5f2120;">'
+        . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>'
+        . '<div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div>' . esc_html($text) . '</div></div>'
+        . '</div>';
 }
-
 function pba_get_document_items_for_folder($folder_id, $is_active = true) {
     $folder_id = (int) $folder_id;
 

@@ -225,35 +225,34 @@ function pba_household_render_status_badge($status) {
     );
 }
 
-function pba_household_render_message($status, $duplicate_messages) {
+function pba_household_render_message($status, $duplicate_messages = array()) {
+    $status = trim((string) $status);
+
     if ($status === '') {
         return '';
     }
 
     $messages = array(
-        'account_created'                              => array('type' => 'success', 'title' => 'Success', 'text' => 'Your House Admin account has been created.'),
-        'invite_created'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'Invitation record(s) and email(s) were created successfully.'),
-        'invite_created_email_partial'                 => array('type' => 'error',   'title' => 'Please review', 'text' => 'Invitation record(s) were created, but at least one invitation email could not be sent.'),
-        'invite_created_with_duplicates'               => array('type' => 'error',   'title' => 'Please review', 'text' => 'Some invitations were created, but one or more people had already been invited.'),
-        'invite_created_email_partial_with_duplicates' => array('type' => 'error',   'title' => 'Please review', 'text' => 'Some invitations were created, but there were duplicate invitees or email delivery failures.'),
-        'already_invited'                              => array('type' => 'error',   'title' => 'Please review', 'text' => 'No new invitations were created because the invitee(s) had already been invited.'),
-        'no_invites_created'                           => array('type' => 'error',   'title' => 'Please review', 'text' => 'No invitation records were created.'),
-        'invalid_invite_row'                           => array('type' => 'error',   'title' => 'Please review', 'text' => 'Please complete every field in each row, with no leading or trailing spaces.'),
-        'invalid_invite_name'                          => array('type' => 'error',   'title' => 'Please review', 'text' => 'Please enter valid first and last names for all invite rows.'),
-        'invalid_invite_email'                         => array('type' => 'error',   'title' => 'Please review', 'text' => 'Please enter a valid email address for all invite rows.'),
-        'duplicate_invite_email'                       => array('type' => 'error',   'title' => 'Please review', 'text' => 'The same email address was entered more than once in the invite table.'),
+        'invite_created'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was sent successfully.'),
+        'invite_created_email_partial'                 => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was created, but the email could not be sent.'),
+        'invite_created_with_duplicates'               => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was sent successfully. Some duplicate matches were found.'),
+        'invite_created_email_partial_with_duplicates' => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was created, but the email could not be sent. Some duplicate matches were found.'),
         'member_disabled'                              => array('type' => 'success', 'title' => 'Success', 'text' => 'The member was disabled successfully.'),
         'member_enabled'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The member was enabled successfully.'),
         'invite_cancelled'                             => array('type' => 'success', 'title' => 'Success', 'text' => 'The pending invitation was cancelled successfully.'),
         'invite_resent'                                => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was resent successfully.'),
         'member_removed'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The household member was removed successfully.'),
-        'disable_failed'                               => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not disable that member.'),
-        'enable_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not enable that member.'),
-        'cancel_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not cancel that invitation.'),
-        'resend_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not resend that invitation.'),
-        'remove_failed'                                => array('type' => 'error',   'title' => 'Please review', 'text' => 'We could not remove that household member.'),
-        'remove_blocked_house_admin'                   => array('type' => 'error',   'title' => 'Please review', 'text' => 'Household Admins are protected and cannot be managed from this page.'),
-        'remove_blocked_last_admin'                    => array('type' => 'error',   'title' => 'Please review', 'text' => 'The last active Household Admin cannot be removed or disabled.'),
+
+        'already_invited'                              => array('type' => 'error', 'title' => 'Please review', 'text' => 'That person already has a pending invitation.'),
+        'invite_failed'                                => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not send that invitation.'),
+        'invalid_request'                              => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not process that request.'),
+        'disable_failed'                               => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not disable that member.'),
+        'enable_failed'                                => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not enable that member.'),
+        'cancel_failed'                                => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not cancel that invitation.'),
+        'resend_failed'                                => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not resend that invitation.'),
+        'remove_failed'                                => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not remove that household member.'),
+        'remove_blocked_house_admin'                   => array('type' => 'error', 'title' => 'Please review', 'text' => 'Household Admins are protected and cannot be managed from this page.'),
+        'remove_blocked_last_admin'                    => array('type' => 'error', 'title' => 'Please review', 'text' => 'The last active Household Admin cannot be removed or disabled.'),
     );
 
     $message = isset($messages[$status])
@@ -269,28 +268,37 @@ function pba_household_render_message($status, $duplicate_messages) {
         $list_items = $duplicate_messages;
     }
 
-    if (function_exists('pba_shared_render_message')) {
-        return pba_shared_render_message($message['type'], $message['title'], $message['text'], $list_items);
-    }
+    $is_success = $message['type'] === 'success';
+
+    $border_color = $is_success ? '#34a853' : '#d93025';
+    $background   = $is_success ? '#e6f4ea' : '#fce8e6';
+    $text_color   = $is_success ? '#1e4620' : '#5f2120';
+    $icon         = $is_success ? '✓' : '×';
+    $icon_bg      = $is_success ? '#34a853' : '#d93025';
 
     ob_start();
     ?>
-    <div class="pba-message <?php echo esc_attr($message['type']); ?>">
-        <div class="pba-message-title"><?php echo esc_html($message['title']); ?></div>
-        <div class="pba-message-body"><?php echo esc_html($message['text']); ?></div>
-        <?php if (!empty($list_items)) : ?>
-            <ul class="pba-duplicate-list">
-                <?php foreach ($list_items as $item) : ?>
-                    <li><?php echo esc_html($item); ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
+    <div style="display:flex;align-items:flex-start;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid <?php echo esc_attr($border_color); ?>;border-radius:10px;background:<?php echo esc_attr($background); ?>;color:<?php echo esc_attr($text_color); ?>;">
+        <div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:<?php echo esc_attr($icon_bg); ?>;color:#fff;font-weight:700;flex:0 0 auto;">
+            <?php echo esc_html($icon); ?>
+        </div>
+        <div>
+            <div style="font-weight:700;margin-bottom:2px;"><?php echo esc_html($message['title']); ?></div>
+            <div><?php echo esc_html($message['text']); ?></div>
+
+            <?php if (!empty($list_items)) : ?>
+                <ul class="pba-duplicate-list" style="margin:10px 0 0 18px;">
+                    <?php foreach ($list_items as $item) : ?>
+                        <li><?php echo esc_html($item); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
     </div>
     <?php
 
     return ob_get_clean();
 }
-
 function pba_household_render_summary_card($label, $value, $note) {
     if (function_exists('pba_shared_render_summary_card')) {
         return pba_shared_render_summary_card($label, $value, $note);
