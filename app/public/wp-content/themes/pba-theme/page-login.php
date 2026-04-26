@@ -57,11 +57,18 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
   <div class="pba-auth-wrap">
 
     <?php if (isset($messages[$status])) : ?>
-      <div class="pba-form-notice <?php echo $is_success_message ? 'pba-form-notice-success' : 'pba-form-notice-error'; ?>">
-        <?php echo esc_html($messages[$status]); ?>
-      </div>
+      <?php if ($is_success_message) : ?>
+        <div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#1e4620;" role="status" aria-live="polite">
+          <div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#34a853;color:#fff;font-weight:700;flex:0 0 auto;">✓</div>
+          <div><div style="font-weight:700;margin-bottom:2px;">Success</div><div><?php echo esc_html($messages[$status]); ?></div></div>
+        </div>
+      <?php else : ?>
+        <div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fce8e6;color:#5f2120;" role="alert" aria-live="assertive">
+          <div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>
+          <div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div><?php echo esc_html($messages[$status]); ?></div></div>
+        </div>
+      <?php endif; ?>
     <?php endif; ?>
-
     <?php if ($show_password_setup) : ?>
       <section class="pba-auth-card">
         <h1>Set Your Password</h1>
@@ -113,9 +120,10 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
       ?>
 
       <?php if ($logged_out) : ?>
-          <div class="pba-login-message pba-login-message-success" role="status" aria-live="polite">
-              <strong>Signed out.</strong> You have been logged out successfully.
-          </div>
+        <div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#1e4620;" role="status" aria-live="polite">
+          <div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#34a853;color:#fff;font-weight:700;flex:0 0 auto;">✓</div>
+          <div><div style="font-weight:700;margin-bottom:2px;">Signed out</div><div>You have been logged out successfully.</div></div>
+        </div>
       <?php endif; ?>
       <section class="pba-auth-card" id="pba-login-section">
         <h1>Member Login</h1>
