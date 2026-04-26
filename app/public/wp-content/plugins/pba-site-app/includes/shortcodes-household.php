@@ -763,7 +763,7 @@ function pba_render_household_invite_section() {
     <div class="pba-section">
         <div class="pba-section-heading">
             <h3>Invite Household Members</h3>
-            <p class="pba-section-subtitle">Send invitations so members of your household can create site accounts and access the association website.</p>
+            <p class="pba-section-subtitle">Send invitations so members of your household can access non-public information on the association website.</p>
         </div>
 
         <div class="pba-callout">
