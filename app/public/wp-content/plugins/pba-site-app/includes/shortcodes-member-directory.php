@@ -269,7 +269,12 @@ function pba_render_member_directory_shortcode() {
                                     </td>
                                     <td>
                                         <?php if ($email !== '') : ?>
-                                            <a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
+                                            <a
+                                                href="mailto:<?php echo esc_attr($email); ?>"
+                                                class="pba-member-directory-mailto"
+                                            >
+                                            <?php echo esc_html($email); ?>
+                                            </a>
                                         <?php else : ?>
                                             <span class="pba-admin-list-muted"><?php echo esc_html($can_show_contact_details ? 'No email listed' : 'Not shared'); ?></span>
                                         <?php endif; ?>
@@ -299,9 +304,74 @@ function pba_render_member_directory_shortcode() {
         </div>
     </div>
     <?php
-    echo pba_admin_list_render_resizable_table_script();
+echo pba_admin_list_render_resizable_table_script();
+?>
+<script>
+(function () {
+    function pbaClearWaitCursor() {
+        var elements = [
+            document.documentElement,
+            document.body
+        ];
 
-    return ob_get_clean();
+        elements.forEach(function (el) {
+            if (!el) {
+                return;
+            }
+
+            el.style.cursor = '';
+
+            el.classList.remove(
+                'pba-is-loading',
+                'pba-loading',
+                'pba-page-loading',
+                'is-loading',
+                'loading'
+            );
+        });
+    }
+
+    function pbaClearWaitCursorRepeatedly() {
+        pbaClearWaitCursor();
+        window.setTimeout(pbaClearWaitCursor, 0);
+        window.setTimeout(pbaClearWaitCursor, 100);
+        window.setTimeout(pbaClearWaitCursor, 300);
+        window.setTimeout(pbaClearWaitCursor, 750);
+    }
+
+    document.addEventListener('click', function (event) {
+        var link = event.target.closest ? event.target.closest('a[href^="mailto:"]') : null;
+
+        if (!link || !link.classList.contains('pba-member-directory-mailto')) {
+            return;
+        }
+
+        event.stopPropagation();
+        pbaClearWaitCursorRepeatedly();
+    }, true);
+
+    window.addEventListener('focus', pbaClearWaitCursorRepeatedly);
+    window.addEventListener('pageshow', pbaClearWaitCursorRepeatedly);
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            pbaClearWaitCursorRepeatedly();
+        }
+    });
+
+    document.addEventListener('mousemove', function () {
+        if (document.body && document.body.style.cursor === 'wait') {
+            pbaClearWaitCursorRepeatedly();
+        }
+
+        if (document.documentElement && document.documentElement.style.cursor === 'wait') {
+            pbaClearWaitCursorRepeatedly();
+        }
+    }, { passive: true });
+    })();
+    </script>
+    <?php
+return ob_get_clean();
 }
 
 function pba_member_directory_normalize_visibility($row) {
