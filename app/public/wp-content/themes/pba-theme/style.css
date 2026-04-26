@@ -1071,6 +1071,70 @@ img {
     border-color: #a7f3d0;
     color: #166534;
 }
+.pba-account-types {
+  margin-top: 36px;
+  padding-top: 32px;
+  border-top: 1px solid #d9dde3;
+}
+
+.pba-account-types h2 {
+  margin: 0 0 6px;
+  font-size: 1.7rem;
+}
+
+.pba-account-types-intro {
+  margin: 0 0 22px;
+  color: #374151;
+}
+
+.pba-account-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.pba-account-type-card {
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  padding: 28px;
+  background: #fff;
+}
+
+.pba-account-type-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  background: #dbeafe;
+  color: #0f4c8a;
+  font-size: 28px;
+}
+
+.pba-account-type-icon-member {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pba-account-type-card h3 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+}
+
+.pba-account-type-card p {
+  margin: 0 0 16px;
+}
+
+.pba-account-type-note {
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.pba-account-type-button {
+  margin-top: 8px;
+}
 
 @media (max-width: 900px) {
   .hero-image {

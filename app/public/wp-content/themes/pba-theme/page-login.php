@@ -25,6 +25,12 @@ if ($email_token !== '') {
     }
 }
 
+$directory_visibility_options = array(
+    'hidden'    => 'Hide from directory',
+    'name_only' => 'Show name only',
+    'name_email' => 'Show name and email',
+);
+
 $messages = array(
     'missing_fields'        => 'Please complete all required fields.',
     'invalid_email'         => 'Please enter a valid email address.',
@@ -32,7 +38,7 @@ $messages = array(
     'invalid_street'        => 'Please select a valid street name.',
     'invalid_nonce'         => 'Security check failed. Please try again.',
     'lookup_failed'         => 'We could not verify your House Admin record right now.',
-    'no_match'              => 'We could not find a matching House Admin record for the information entered.',
+    'no_match'              => 'We could not find a match for the information entered.',
     'user_exists'           => 'An account already exists for that email address.',
     'check_email'           => 'We found your House Admin record. Check your email for a secure link to finish setting up your account.',
     'email_send_failed'     => 'We verified your record, but could not send the email right now.',
@@ -48,10 +54,122 @@ $messages = array(
     'person_exists'         => 'We found an existing registration for this household and email address. Please contact the PBA Admin if you need assistance.',
     'session_expired'       => 'Your session expired. Please sign in again.',
     'password_reset'        => 'Your password was reset successfully. You may now sign in.',
+    'invalid_directory_visibility' => 'Please select a valid directory visibility option.',
 );
 
 $is_success_message = in_array($status, array('account_created', 'check_email', 'password_reset'), true);
 ?>
+
+<style>
+  .pba-auth-wrap {
+    max-width: 980px;
+  }
+
+  .pba-auth-card {
+    padding-top: 8px;
+  }
+
+  .pba-auth-card h1 {
+    margin-bottom: 8px;
+  }
+
+  .pba-auth-card > p {
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
+  .pba-login-form .pba-form-row {
+    margin-bottom: 18px;
+  }
+
+  .pba-login-form .pba-form-actions {
+    margin-top: 12px;
+  }
+
+  .pba-form-help {
+    margin-top: 14px !important;
+  }
+
+  .pba-directory-visibility-help {
+    margin-top: 6px;
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .pba-account-types {
+    margin-top: 34px;
+    padding-top: 26px;
+    border-top: 1px solid #d9dde3;
+  }
+
+  .pba-account-types h2 {
+    margin: 0 0 6px;
+    font-size: clamp(1.55rem, 2.4vw, 2rem);
+    line-height: 1.15;
+  }
+
+  .pba-account-types-intro {
+    margin: 0 0 18px;
+    color: #374151;
+  }
+
+  .pba-account-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+  }
+
+  .pba-account-type-card {
+    border: 1px solid #d9dde3;
+    border-radius: 8px;
+    padding: 24px;
+    background: #fff;
+  }
+
+  .pba-account-type-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    background: #dbeafe;
+    color: #1d4fa3;
+  }
+
+  .pba-account-type-icon-member {
+    background: #dcfce7;
+    color: #166534;
+    font-size: 28px;
+  }
+
+  .pba-account-type-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    line-height: 1.25;
+  }
+
+  .pba-account-type-card p {
+    margin: 0 0 12px;
+  }
+
+  .pba-account-type-note {
+    color: #4b5563;
+    font-size: 0.95rem;
+  }
+
+  .pba-account-type-button {
+    margin-top: 6px;
+  }
+
+  @media (max-width: 760px) {
+    .pba-account-type-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 
 <main class="site-main">
   <div class="pba-auth-wrap">
@@ -69,6 +187,7 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
         </div>
       <?php endif; ?>
     <?php endif; ?>
+
     <?php if ($show_password_setup) : ?>
       <section class="pba-auth-card">
         <h1>Set Your Password</h1>
@@ -86,26 +205,26 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
 
           <div class="pba-form-row pba-field-login-password">
             <label for="pba-password">Password</label>
-            <input
-              type="password"
-              id="pba-password"
-              name="password"
-              maxlength="128"
-              autocomplete="new-password"
-              required
-            >
+            <input type="password" id="pba-password" name="password" maxlength="128" autocomplete="new-password" required>
           </div>
 
           <div class="pba-form-row pba-field-login-password">
             <label for="pba-password-verify">Verify Password</label>
-            <input
-              type="password"
-              id="pba-password-verify"
-              name="password_verify"
-              maxlength="128"
-              autocomplete="new-password"
-              required
-            >
+            <input type="password" id="pba-password-verify" name="password_verify" maxlength="128" autocomplete="new-password" required>
+          </div>
+
+          <div class="pba-form-row pba-field-directory-visibility">
+            <label for="pba-directory-visibility">Directory Visibility</label>
+            <select id="pba-directory-visibility" name="directory_visibility_level" required>
+              <?php foreach ($directory_visibility_options as $visibility_value => $visibility_label) : ?>
+                <option value="<?php echo esc_attr($visibility_value); ?>" <?php selected($visibility_value, 'hidden'); ?>>
+                  <?php echo esc_html($visibility_label); ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="pba-directory-visibility-help">
+              Choose how your information should appear in the member directory. You can change this later from your profile.
+            </div>
           </div>
 
           <div class="pba-form-actions">
@@ -125,9 +244,10 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
           <div><div style="font-weight:700;margin-bottom:2px;">Signed out</div><div>You have been logged out successfully.</div></div>
         </div>
       <?php endif; ?>
+
       <section class="pba-auth-card" id="pba-login-section">
-        <h1>Member Login</h1>
-        <p>Please sign in to access member-only content.</p>
+        <h1>Log in</h1>
+        <p>Log in to access your account.</p>
 
         <form class="pba-auth-form pba-login-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
           <input type="hidden" name="action" value="pba_member_login">
@@ -135,42 +255,53 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
 
           <div class="pba-form-row pba-field-login-email">
             <label for="pba-login-email">Email Address</label>
-            <input
-              type="email"
-              id="pba-login-email"
-              name="log"
-              maxlength="254"
-              autocomplete="username"
-              value="<?php echo esc_attr($login_email); ?>"
-              required
-            >
+            <input type="email" id="pba-login-email" name="log" maxlength="254" autocomplete="username" value="<?php echo esc_attr($login_email); ?>" required>
           </div>
 
           <div class="pba-form-row pba-field-login-password">
             <label for="pba-login-password">Password</label>
-            <input
-              type="password"
-              id="pba-login-password"
-              name="pwd"
-              maxlength="128"
-              autocomplete="current-password"
-              required
-            >
+            <input type="password" id="pba-login-password" name="pwd" maxlength="128" autocomplete="current-password" required>
           </div>
 
           <div class="pba-form-actions">
-            <button type="submit">Submit</button>
+            <button type="submit">Log in</button>
             <button type="button" onclick="window.location.href='<?php echo esc_url(home_url('/')); ?>'">Cancel</button>
           </div>
 
-          <div class="pba-form-help" style="margin-top: 12px;">
+          <div class="pba-form-help">
             <a href="<?php echo esc_url(home_url('/reset-password/')); ?>">Forgot your password?</a>
           </div>
         </form>
 
-        <div class="pba-register-toggle">
-          <p>Are you a <strong>PBA House Admin</strong> and need an account?</p>
-          <p><a href="#" id="show-pba-register">Register here</a>.</p>
+        <div class="pba-account-types">
+          <h2>Don’t have an account?</h2>
+          <p class="pba-account-types-intro">Choose the option that describes you.</p>
+
+          <div class="pba-account-type-grid">
+            <div class="pba-account-type-card">
+              <div class="pba-account-type-icon" aria-hidden="true">
+                <svg width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 21.5L24 8L40 21.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M13 20V39H35V20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M24 25.5C27.0376 25.5 29.5 23.0376 29.5 20C29.5 16.9624 27.0376 14.5 24 14.5C20.9624 14.5 18.5 16.9624 18.5 20C18.5 23.0376 20.9624 25.5 24 25.5Z" stroke="currentColor" stroke-width="3"/>
+                  <path d="M16.5 35C17.4 30.8 20.1 28.5 24 28.5C27.9 28.5 30.6 30.8 31.5 35" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <h3>PBA House Admin</h3>
+              <p>Create your account to get started.</p>
+              <button type="button" id="show-pba-register" class="pba-account-type-button">
+                Register as a PBA House Admin
+              </button>
+            </div>
+
+            <div class="pba-account-type-card">
+              <div class="pba-account-type-icon pba-account-type-icon-member" aria-hidden="true">👥</div>
+              <h3>House Member</h3>
+              <p>Contact your PBA House Admin to request access.</p>
+              <p class="pba-account-type-note">House Members are invited by their PBA House Admin.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -185,26 +316,12 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
           <div class="pba-form-row pba-form-row-inline">
             <div class="pba-field-name">
               <label for="pba-first-name">First Name</label>
-              <input
-                type="text"
-                id="pba-first-name"
-                name="first_name"
-                maxlength="50"
-                autocomplete="given-name"
-                required
-              >
+              <input type="text" id="pba-first-name" name="first_name" maxlength="50" autocomplete="given-name" required>
             </div>
 
             <div class="pba-field-name">
               <label for="pba-last-name">Last Name</label>
-              <input
-                type="text"
-                id="pba-last-name"
-                name="last_name"
-                maxlength="50"
-                autocomplete="family-name"
-                required
-              >
+              <input type="text" id="pba-last-name" name="last_name" maxlength="50" autocomplete="family-name" required>
             </div>
           </div>
 
@@ -213,22 +330,12 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
           <div class="pba-form-row pba-form-row-inline">
             <div class="pba-field-house-number">
               <label for="pba-house-number">House Number</label>
-              <input
-                type="text"
-                id="pba-house-number"
-                name="house_number"
-                maxlength="10"
-                required
-              >
+              <input type="text" id="pba-house-number" name="house_number" maxlength="10" required>
             </div>
 
             <div class="pba-field-street">
               <label for="pba-street-name">Street Name</label>
-              <select
-                id="pba-street-name"
-                name="street_name"
-                required
-              >
+              <select id="pba-street-name" name="street_name" required>
                 <option value="">Select a street name</option>
                 <option value="Arlington Rd">Arlington Rd</option>
                 <option value="Charlemont Rd">Charlemont Rd</option>
@@ -241,6 +348,7 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
                 <option value="Quaker Rd">Quaker Rd</option>
                 <option value="Robbins Hill Rd">Robbins Hill Rd</option>
                 <option value="Rocky Hill Rd">Rocky Hill Rd</option>
+                <option value="Theatre Colony Way">Theatre Colony Way</option>
                 <option value="Warrendale Rd">Warrendale Rd</option>
                 <option value="Wellington Rd">Wellington Rd</option>
               </select>
@@ -249,14 +357,7 @@ $is_success_message = in_array($status, array('account_created', 'check_email', 
 
           <div class="pba-form-row pba-field-email">
             <label for="pba-register-email">Email Address</label>
-            <input
-              type="email"
-              id="pba-register-email"
-              name="register_email"
-              maxlength="254"
-              autocomplete="email"
-              required
-            >
+            <input type="email" id="pba-register-email" name="register_email" maxlength="254" autocomplete="email" required>
           </div>
 
           <div class="pba-form-help">

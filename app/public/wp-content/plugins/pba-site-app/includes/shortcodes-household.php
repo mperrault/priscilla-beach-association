@@ -233,6 +233,8 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
     }
 
     $messages = array(
+        'account_created'                            => array('type' => 'success', 'title' => 'Success', 'text' => 'Account created successfully.'),
+
         'invite_created'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was sent successfully.'),
         'invite_created_email_partial'                 => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was created, but the email could not be sent.'),
         'invite_created_with_duplicates'               => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was sent successfully. Some duplicate matches were found.'),
@@ -255,13 +257,16 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
         'remove_blocked_last_admin'                    => array('type' => 'error', 'title' => 'Please review', 'text' => 'The last active Household Admin cannot be removed or disabled.'),
     );
 
-    $message = isset($messages[$status])
-        ? $messages[$status]
-        : array(
-            'type'  => 'error',
-            'title' => 'Please review',
-            'text'  => ucfirst(str_replace('_', ' ', $status)),
-        );
+    /*
+     * Do not render arbitrary unknown pba_household_status values as errors.
+     * This prevents unrelated redirect statuses, such as account-created flows,
+     * from showing false red error banners on the Household page.
+     */
+    if (!isset($messages[$status])) {
+        return '';
+    }
+
+    $message = $messages[$status];
 
     $list_items = array();
     if (!empty($duplicate_messages) && in_array($status, array(
@@ -303,6 +308,7 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
 
     return ob_get_clean();
 }
+
 function pba_household_render_summary_card($label, $value, $note) {
     if (function_exists('pba_shared_render_summary_card')) {
         return pba_shared_render_summary_card($label, $value, $note);
