@@ -6,6 +6,35 @@ if (!defined('ABSPATH')) {
 
 add_action('admin_post_pba_save_member_admin', 'pba_handle_save_member_admin');
 
+function pba_member_admin_current_user_can_manage_members() {
+    if (!is_user_logged_in()) {
+        return false;
+    }
+
+    /*
+     * Allow WordPress administrators.
+     */
+    if (current_user_can('manage_options')) {
+        return true;
+    }
+
+    /*
+     * Allow the custom capability if the PBA role sync has assigned it.
+     */
+    if (current_user_can('pba_manage_roles')) {
+        return true;
+    }
+
+    /*
+     * Allow the same application-level permission check used by the Members page.
+     */
+    if (function_exists('pba_user_can_manage_members') && pba_user_can_manage_members()) {
+        return true;
+    }
+
+    return false;
+}
+
 function pba_members_redirect($status = '', $member_id = 0, $view = 'list') {
     $args = array();
 
@@ -202,11 +231,170 @@ if (!function_exists('pba_member_admin_audit_log')) {
     }
 }
 
+if (!function_exists('pba_member_admin_find_wp_user_for_person_email_sync')) {
+    function pba_member_admin_find_wp_user_for_person_email_sync($person) {
+        if (!is_array($person)) {
+            return false;
+        }
+
+        $person_id = isset($person['person_id']) ? (int) $person['person_id'] : 0;
+
+        $wp_user_id = isset($person['wp_user_id']) && $person['wp_user_id'] !== null && $person['wp_user_id'] !== ''
+            ? (int) $person['wp_user_id']
+            : 0;
+
+        if ($wp_user_id > 0) {
+            $user = get_userdata($wp_user_id);
+
+            if ($user && !empty($user->ID)) {
+                return $user;
+            }
+        }
+
+        $old_email_address = isset($person['email_address']) ? sanitize_email((string) $person['email_address']) : '';
+
+        if ($old_email_address !== '') {
+            $user = get_user_by('email', $old_email_address);
+
+            if ($user && !empty($user->ID)) {
+                return $user;
+            }
+        }
+
+        if ($person_id > 0) {
+            $users = get_users(array(
+                'meta_key'   => 'pba_person_id',
+                'meta_value' => (string) $person_id,
+                'number'     => 1,
+                'fields'     => 'all',
+            ));
+
+            if (!empty($users[0]) && $users[0] instanceof WP_User) {
+                return $users[0];
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('pba_member_admin_validate_wp_email_sync')) {
+    function pba_member_admin_validate_wp_email_sync($before, $new_email_address) {
+        $new_email_address = sanitize_email((string) $new_email_address);
+
+        if ($new_email_address === '') {
+            return true;
+        }
+
+        if (!is_email($new_email_address)) {
+            return new WP_Error('invalid_member_email', 'Please provide a valid email address.');
+        }
+
+        $wp_user = pba_member_admin_find_wp_user_for_person_email_sync($before);
+
+        if (!$wp_user || empty($wp_user->ID)) {
+            return true;
+        }
+
+        $email_owner = get_user_by('email', $new_email_address);
+
+        if ($email_owner && (int) $email_owner->ID !== (int) $wp_user->ID) {
+            return new WP_Error(
+                'member_email_in_use',
+                'That email address is already associated with another WordPress user.'
+            );
+        }
+
+        return true;
+    }
+}
+
+if (!function_exists('pba_member_admin_sync_wp_user_email_after_member_save')) {
+    function pba_member_admin_sync_wp_user_email_after_member_save($member_id, $before, $new_email_address) {
+        $member_id = (int) $member_id;
+        $new_email_address = sanitize_email((string) $new_email_address);
+
+        if ($member_id < 1 || $new_email_address === '') {
+            return true;
+        }
+
+        if (!is_email($new_email_address)) {
+            return new WP_Error('invalid_member_email', 'Please provide a valid email address.');
+        }
+
+        $wp_user = pba_member_admin_find_wp_user_for_person_email_sync($before);
+
+        if (!$wp_user || empty($wp_user->ID)) {
+            return true;
+        }
+
+        $wp_user_id = (int) $wp_user->ID;
+
+        $email_owner = get_user_by('email', $new_email_address);
+
+        if ($email_owner && (int) $email_owner->ID !== $wp_user_id) {
+            return new WP_Error(
+                'member_email_in_use',
+                'That email address is already associated with another WordPress user.'
+            );
+        }
+
+        if (strtolower((string) $wp_user->user_email) !== strtolower((string) $new_email_address)) {
+            $updated_user_id = wp_update_user(array(
+                'ID'         => $wp_user_id,
+                'user_email' => $new_email_address,
+            ));
+
+            if (is_wp_error($updated_user_id)) {
+                return new WP_Error(
+                    'member_wp_email_update_failed',
+                    $updated_user_id->get_error_message()
+                );
+            }
+        }
+
+        update_user_meta($wp_user_id, 'pba_person_id', $member_id);
+
+        $household_id = isset($before['household_id']) ? (int) $before['household_id'] : 0;
+
+        if ($household_id > 0) {
+            update_user_meta($wp_user_id, 'pba_household_id', $household_id);
+        }
+
+        $before_wp_user_id = isset($before['wp_user_id']) && $before['wp_user_id'] !== null && $before['wp_user_id'] !== ''
+            ? (int) $before['wp_user_id']
+            : 0;
+
+        if ($before_wp_user_id !== $wp_user_id) {
+            $backfill = pba_supabase_update(
+                'Person',
+                array(
+                    'wp_user_id'       => $wp_user_id,
+                    'last_modified_at' => gmdate('c'),
+                ),
+                array(
+                    'person_id' => 'eq.' . $member_id,
+                )
+            );
+
+            if (is_wp_error($backfill)) {
+                return new WP_Error(
+                    'member_wp_link_update_failed',
+                    $backfill->get_error_message()
+                );
+            }
+        }
+
+        return true;
+    }
+}
 if (!function_exists('pba_member_admin_log_role_changes')) {
     function pba_member_admin_log_role_changes($member_id, $person_before, $person_after, $old_role_ids, $new_role_ids) {
         $member_id = (int) $member_id;
+
         $old_role_ids = array_values(array_unique(array_map('intval', (array) $old_role_ids)));
         $new_role_ids = array_values(array_unique(array_map('intval', (array) $new_role_ids)));
+
         sort($old_role_ids);
         sort($new_role_ids);
 
@@ -217,50 +405,64 @@ if (!function_exists('pba_member_admin_log_role_changes')) {
             return;
         }
 
-        $role_name_map = pba_member_admin_get_role_name_map();
-        $entity_label = pba_member_admin_get_person_label($person_after ?: $person_before);
-        $target_household_id = isset($person_after['household_id'])
-            ? (int) $person_after['household_id']
-            : (isset($person_before['household_id']) ? (int) $person_before['household_id'] : null);
+        $role_name_map = function_exists('pba_member_admin_get_role_name_map')
+            ? pba_member_admin_get_role_name_map()
+            : array();
+
+        $entity_label = function_exists('pba_member_admin_get_person_label')
+            ? pba_member_admin_get_person_label($person_after ?: $person_before)
+            : '';
+
+        $target_household_id = null;
+
+        if (is_array($person_after) && isset($person_after['household_id'])) {
+            $target_household_id = (int) $person_after['household_id'];
+        } elseif (is_array($person_before) && isset($person_before['household_id'])) {
+            $target_household_id = (int) $person_before['household_id'];
+        }
 
         foreach ($removed_role_ids as $role_id) {
             $role_name = isset($role_name_map[$role_id]) ? $role_name_map[$role_id] : ('Role #' . $role_id);
 
-            pba_member_admin_audit_log(
-                'role.removed',
-                'Person',
-                $member_id,
-                array(
-                    'entity_label'        => $entity_label,
-                    'target_person_id'    => $member_id,
-                    'target_household_id' => $target_household_id,
-                    'summary'             => 'Role removed from member.',
-                    'details'             => array(
-                        'role_id'   => $role_id,
-                        'role_name' => $role_name,
-                    ),
-                )
-            );
+            if (function_exists('pba_member_admin_audit_log')) {
+                pba_member_admin_audit_log(
+                    'role.removed',
+                    'Person',
+                    $member_id,
+                    array(
+                        'entity_label'        => $entity_label,
+                        'target_person_id'    => $member_id,
+                        'target_household_id' => $target_household_id,
+                        'summary'             => 'Role removed from member.',
+                        'details'             => array(
+                            'role_id'   => $role_id,
+                            'role_name' => $role_name,
+                        ),
+                    )
+                );
+            }
         }
 
         foreach ($added_role_ids as $role_id) {
             $role_name = isset($role_name_map[$role_id]) ? $role_name_map[$role_id] : ('Role #' . $role_id);
 
-            pba_member_admin_audit_log(
-                'role.assigned',
-                'Person',
-                $member_id,
-                array(
-                    'entity_label'        => $entity_label,
-                    'target_person_id'    => $member_id,
-                    'target_household_id' => $target_household_id,
-                    'summary'             => 'Role assigned to member.',
-                    'details'             => array(
-                        'role_id'   => $role_id,
-                        'role_name' => $role_name,
-                    ),
-                )
-            );
+            if (function_exists('pba_member_admin_audit_log')) {
+                pba_member_admin_audit_log(
+                    'role.assigned',
+                    'Person',
+                    $member_id,
+                    array(
+                        'entity_label'        => $entity_label,
+                        'target_person_id'    => $member_id,
+                        'target_household_id' => $target_household_id,
+                        'summary'             => 'Role assigned to member.',
+                        'details'             => array(
+                            'role_id'   => $role_id,
+                            'role_name' => $role_name,
+                        ),
+                    )
+                );
+            }
         }
     }
 }
@@ -268,72 +470,93 @@ if (!function_exists('pba_member_admin_log_role_changes')) {
 if (!function_exists('pba_member_admin_log_committee_changes')) {
     function pba_member_admin_log_committee_changes($member_id, $person_before, $person_after, $old_committees, $new_committees) {
         $member_id = (int) $member_id;
+
         $old_committees = is_array($old_committees) ? $old_committees : array();
         $new_committees = is_array($new_committees) ? $new_committees : array();
 
-        $old_committee_ids = array_map('intval', array_keys($old_committees));
-        $new_committee_ids = array_map('intval', array_keys($new_committees));
+        $old_ids = array_map('intval', array_keys($old_committees));
+        $new_ids = array_map('intval', array_keys($new_committees));
 
-        $removed_committee_ids = array_values(array_diff($old_committee_ids, $new_committee_ids));
-        $added_committee_ids = array_values(array_diff($new_committee_ids, $old_committee_ids));
+        sort($old_ids);
+        sort($new_ids);
 
-        $committee_name_map = pba_member_admin_get_committee_name_map();
-        $entity_label = pba_member_admin_get_person_label($person_after ?: $person_before);
-        $target_household_id = isset($person_after['household_id'])
-            ? (int) $person_after['household_id']
-            : (isset($person_before['household_id']) ? (int) $person_before['household_id'] : null);
+        $removed_ids = array_values(array_diff($old_ids, $new_ids));
+        $added_ids = array_values(array_diff($new_ids, $old_ids));
+        $maybe_changed_ids = array_values(array_intersect($old_ids, $new_ids));
 
-        foreach ($removed_committee_ids as $committee_id) {
+        if (empty($removed_ids) && empty($added_ids) && empty($maybe_changed_ids)) {
+            return;
+        }
+
+        $committee_name_map = function_exists('pba_member_admin_get_committee_name_map')
+            ? pba_member_admin_get_committee_name_map()
+            : array();
+
+        $entity_label = function_exists('pba_member_admin_get_person_label')
+            ? pba_member_admin_get_person_label($person_after ?: $person_before)
+            : '';
+
+        $target_household_id = null;
+
+        if (is_array($person_after) && isset($person_after['household_id'])) {
+            $target_household_id = (int) $person_after['household_id'];
+        } elseif (is_array($person_before) && isset($person_before['household_id'])) {
+            $target_household_id = (int) $person_before['household_id'];
+        }
+
+        foreach ($removed_ids as $committee_id) {
             $committee_name = isset($committee_name_map[$committee_id]) ? $committee_name_map[$committee_id] : ('Committee #' . $committee_id);
             $old_role = isset($old_committees[$committee_id]['committee_role']) ? (string) $old_committees[$committee_id]['committee_role'] : '';
 
-            pba_member_admin_audit_log(
-                'committee.member.removed',
-                'Person',
-                $member_id,
-                array(
-                    'entity_label'        => $entity_label,
-                    'target_person_id'    => $member_id,
-                    'target_household_id' => $target_household_id,
-                    'target_committee_id' => $committee_id,
-                    'summary'             => 'Member removed from committee.',
-                    'details'             => array(
-                        'committee_id'   => $committee_id,
-                        'committee_name' => $committee_name,
-                        'committee_role' => $old_role !== '' ? $old_role : null,
-                    ),
-                )
-            );
+            if (function_exists('pba_member_admin_audit_log')) {
+                pba_member_admin_audit_log(
+                    'committee.member.removed',
+                    'Person',
+                    $member_id,
+                    array(
+                        'entity_label'        => $entity_label,
+                        'target_person_id'    => $member_id,
+                        'target_household_id' => $target_household_id,
+                        'target_committee_id' => $committee_id,
+                        'summary'             => 'Member removed from committee.',
+                        'details'             => array(
+                            'committee_id'   => $committee_id,
+                            'committee_name' => $committee_name,
+                            'committee_role' => $old_role,
+                        ),
+                    )
+                );
+            }
         }
 
-        foreach ($added_committee_ids as $committee_id) {
+        foreach ($added_ids as $committee_id) {
             $committee_name = isset($committee_name_map[$committee_id]) ? $committee_name_map[$committee_id] : ('Committee #' . $committee_id);
             $new_role = isset($new_committees[$committee_id]['committee_role']) ? (string) $new_committees[$committee_id]['committee_role'] : '';
 
-            pba_member_admin_audit_log(
-                'committee.member.added',
-                'Person',
-                $member_id,
-                array(
-                    'entity_label'        => $entity_label,
-                    'target_person_id'    => $member_id,
-                    'target_household_id' => $target_household_id,
-                    'target_committee_id' => $committee_id,
-                    'summary'             => 'Member added to committee.',
-                    'details'             => array(
-                        'committee_id'   => $committee_id,
-                        'committee_name' => $committee_name,
-                        'committee_role' => $new_role !== '' ? $new_role : null,
-                    ),
-                )
-            );
+            if (function_exists('pba_member_admin_audit_log')) {
+                pba_member_admin_audit_log(
+                    'committee.member.added',
+                    'Person',
+                    $member_id,
+                    array(
+                        'entity_label'        => $entity_label,
+                        'target_person_id'    => $member_id,
+                        'target_household_id' => $target_household_id,
+                        'target_committee_id' => $committee_id,
+                        'summary'             => 'Member added to committee.',
+                        'details'             => array(
+                            'committee_id'   => $committee_id,
+                            'committee_name' => $committee_name,
+                            'committee_role' => $new_role,
+                        ),
+                    )
+                );
+            }
         }
 
-        $common_committee_ids = array_values(array_intersect($old_committee_ids, $new_committee_ids));
-
-        foreach ($common_committee_ids as $committee_id) {
-            $old_role = isset($old_committees[$committee_id]['committee_role']) ? trim((string) $old_committees[$committee_id]['committee_role']) : '';
-            $new_role = isset($new_committees[$committee_id]['committee_role']) ? trim((string) $new_committees[$committee_id]['committee_role']) : '';
+        foreach ($maybe_changed_ids as $committee_id) {
+            $old_role = isset($old_committees[$committee_id]['committee_role']) ? (string) $old_committees[$committee_id]['committee_role'] : '';
+            $new_role = isset($new_committees[$committee_id]['committee_role']) ? (string) $new_committees[$committee_id]['committee_role'] : '';
 
             if ($old_role === $new_role) {
                 continue;
@@ -341,49 +564,83 @@ if (!function_exists('pba_member_admin_log_committee_changes')) {
 
             $committee_name = isset($committee_name_map[$committee_id]) ? $committee_name_map[$committee_id] : ('Committee #' . $committee_id);
 
-            pba_member_admin_audit_log(
-                'committee.member.added',
-                'Person',
-                $member_id,
-                array(
-                    'entity_label'        => $entity_label,
-                    'target_person_id'    => $member_id,
-                    'target_household_id' => $target_household_id,
-                    'target_committee_id' => $committee_id,
-                    'summary'             => 'Committee role updated for member.',
-                    'details'             => array(
-                        'committee_id'        => $committee_id,
-                        'committee_name'      => $committee_name,
-                        'old_committee_role'  => $old_role !== '' ? $old_role : null,
-                        'new_committee_role'  => $new_role !== '' ? $new_role : null,
-                    ),
-                )
-            );
+            if (function_exists('pba_member_admin_audit_log')) {
+                pba_member_admin_audit_log(
+                    'committee.member.role_updated',
+                    'Person',
+                    $member_id,
+                    array(
+                        'entity_label'        => $entity_label,
+                        'target_person_id'    => $member_id,
+                        'target_household_id' => $target_household_id,
+                        'target_committee_id' => $committee_id,
+                        'summary'             => 'Member committee role updated.',
+                        'details'             => array(
+                            'committee_id'   => $committee_id,
+                            'committee_name' => $committee_name,
+                            'old_role'       => $old_role,
+                            'new_role'       => $new_role,
+                        ),
+                    )
+                );
+            }
         }
     }
 }
 
 function pba_handle_save_member_admin() {
-    if (!is_user_logged_in() || !current_user_can('pba_manage_roles')) {
-        wp_die('Unauthorized', 403);
+    if (!is_user_logged_in()) {
+        pba_members_redirect('unauthorized');
     }
 
+    if (!pba_member_admin_current_user_can_manage_members()) {
+        pba_members_redirect('forbidden');
+    }
+
+    $nonce_valid = false;
+
+    /*
+     * Current Members edit form uses:
+     * wp_nonce_field('pba_member_admin_action', 'pba_member_admin_nonce')
+     */
     if (
-        !isset($_POST['pba_member_admin_nonce']) ||
-        !wp_verify_nonce($_POST['pba_member_admin_nonce'], 'pba_member_admin_action')
+        isset($_POST['pba_member_admin_nonce']) &&
+        wp_verify_nonce(
+            sanitize_text_field(wp_unslash($_POST['pba_member_admin_nonce'])),
+            'pba_member_admin_action'
+        )
     ) {
-        wp_die('Invalid nonce', 403);
+        $nonce_valid = true;
     }
 
-    $member_id       = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
-    $household_id    = isset($_POST['household_id']) ? absint($_POST['household_id']) : 0;
-    $first_name      = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
-    $last_name       = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
-    $email_address   = isset($_POST['email_address']) ? sanitize_email(wp_unslash($_POST['email_address'])) : '';
-    $status          = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : 'Unregistered';
+    /*
+     * Backward-compatible fallback in case another version of the form uses:
+     * wp_nonce_field('pba_save_member_admin')
+     */
+    if (
+        !$nonce_valid &&
+        isset($_POST['_wpnonce']) &&
+        wp_verify_nonce(
+            sanitize_text_field(wp_unslash($_POST['_wpnonce'])),
+            'pba_save_member_admin'
+        )
+    ) {
+        $nonce_valid = true;
+    }
 
-    $role_ids        = isset($_POST['role_ids']) ? array_map('absint', (array) $_POST['role_ids']) : array();
-    $committee_ids   = isset($_POST['committee_ids']) ? array_map('absint', (array) $_POST['committee_ids']) : array();
+    if (!$nonce_valid) {
+        pba_members_redirect('invalid_nonce');
+    }
+
+    $member_id = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
+    $household_id = isset($_POST['household_id']) ? absint($_POST['household_id']) : 0;
+    $first_name = isset($_POST['first_name']) ? sanitize_text_field(wp_unslash($_POST['first_name'])) : '';
+    $last_name = isset($_POST['last_name']) ? sanitize_text_field(wp_unslash($_POST['last_name'])) : '';
+    $email_address = isset($_POST['email_address']) ? sanitize_email(wp_unslash($_POST['email_address'])) : '';
+    $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : 'Unregistered';
+
+    $role_ids = isset($_POST['role_ids']) ? array_map('absint', (array) $_POST['role_ids']) : array();
+    $committee_ids = isset($_POST['committee_ids']) ? array_map('absint', (array) $_POST['committee_ids']) : array();
     $committee_roles = isset($_POST['committee_roles']) ? (array) $_POST['committee_roles'] : array();
 
     $role_ids = array_values(array_unique(array_filter($role_ids, function ($id) {
@@ -411,6 +668,13 @@ function pba_handle_save_member_admin() {
     }
 
     $before = pba_member_admin_get_person_snapshot($member_id);
+
+    $wp_email_validation = pba_member_admin_validate_wp_email_sync($before, $email_address);
+
+    if (is_wp_error($wp_email_validation)) {
+        pba_members_redirect($wp_email_validation->get_error_code(), $member_id, 'edit');
+    }
+
     $old_role_ids = pba_member_admin_get_existing_role_ids($member_id);
     $old_committees = pba_member_admin_get_existing_committees($member_id);
 
@@ -450,6 +714,30 @@ function pba_handle_save_member_admin() {
         );
 
         pba_members_redirect('member_update_failed', $member_id, 'edit');
+    }
+
+    $wp_email_sync = pba_member_admin_sync_wp_user_email_after_member_save($member_id, $before, $email_address);
+
+    if (is_wp_error($wp_email_sync)) {
+        pba_member_admin_audit_log(
+            'member.updated',
+            'Person',
+            $member_id,
+            array(
+                'entity_label'        => pba_member_admin_get_person_label($before),
+                'target_person_id'    => $member_id,
+                'target_household_id' => isset($before['household_id']) ? (int) $before['household_id'] : null,
+                'result_status'       => 'failure',
+                'summary'             => 'Member record saved but linked WordPress user email sync failed.',
+                'before'              => $before,
+                'details'             => array(
+                    'error_code'    => $wp_email_sync->get_error_code(),
+                    'error_message' => $wp_email_sync->get_error_message(),
+                ),
+            )
+        );
+
+        pba_members_redirect($wp_email_sync->get_error_code(), $member_id, 'edit');
     }
 
     if (!pba_member_admin_replace_roles($member_id, $role_ids)) {

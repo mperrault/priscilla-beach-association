@@ -145,8 +145,11 @@ function pba_render_members_status_message() {
         'member_update_failed'                       => 'We could not save that member.',
         'invalid_member_input'                       => 'Please provide the required member fields.',
         'invalid_member_email'                       => 'Please provide a valid email address.',
+        'member_email_in_use'                        => 'That email address is already associated with another WordPress user.',
+        'member_wp_email_update_failed'              => 'The member was saved, but the linked WordPress user email could not be updated.',
+        'member_wp_link_update_failed'               => 'The member was saved, but the linked WordPress user link could not be updated.',
         'cancel_failed'                              => 'We could not cancel that invitation.',
-        'resend_failed'                              => 'We could not resend that invitation.',
+        'resend_failed'                              => 'We could not resend that invitation.',    
     );
 
     if (isset($success_messages[$status])) {
