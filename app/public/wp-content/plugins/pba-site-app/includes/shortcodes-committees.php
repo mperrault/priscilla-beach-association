@@ -362,18 +362,51 @@ if (!function_exists('pba_render_committees_shared_styles')) {
 }
 
 if (!function_exists('pba_render_committees_status_message')) {
-    function pba_render_committees_status_message() {
-        $status = isset($_GET['pba_committees_status']) ? sanitize_text_field(wp_unslash($_GET['pba_committees_status'])) : '';
+function pba_render_committees_status_message() {
+    $status = isset($_GET['pba_committees_status'])
+        ? sanitize_text_field(wp_unslash($_GET['pba_committees_status']))
+        : '';
 
-        if ($status === '') {
-            return '';
-        }
-
-        $message = str_replace('_', ' ', $status);
-        $class = ($status === 'committee_saved') ? 'pba-committees-message' : 'pba-committees-message error';
-
-        return '<div class="' . esc_attr($class) . '">' . esc_html(ucfirst($message)) . '</div>';
+    if ($status === '') {
+        return '';
     }
+
+    $success_messages = array(
+        'committee_saved'   => 'Board/Committee saved successfully.',
+        'committee_deleted' => 'Board/Committee deleted successfully.',
+        'member_added'      => 'Board/Committee member added successfully.',
+        'member_removed'    => 'Board/Committee member removed successfully.',
+        'member_updated'    => 'Board/Committee member updated successfully.',
+    );
+
+    $error_messages = array(
+        'invalid_request'          => 'We could not process that request.',
+        'committee_save_failed'    => 'We could not save that Board/Committee.',
+        'committee_delete_failed'  => 'We could not delete that Board/Committee.',
+        'member_add_failed'        => 'We could not add that Board/Committee member.',
+        'member_remove_failed'     => 'We could not remove that Board/Committee member.',
+        'member_update_failed'     => 'We could not update that Board/Committee member.',
+        'protected_committee'      => 'That Board/Committee is protected and cannot be changed with this action.',
+    );
+
+    if (isset($success_messages[$status])) {
+        $text = $success_messages[$status];
+
+        return '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #34a853;border-radius:10px;background:#e6f4ea;color:#1e4620;">'
+            . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#34a853;color:#fff;font-weight:700;flex:0 0 auto;">✓</div>'
+            . '<div><div style="font-weight:700;margin-bottom:2px;">Success</div><div>' . esc_html($text) . '</div></div>'
+            . '</div>';
+    }
+
+    $text = isset($error_messages[$status])
+        ? $error_messages[$status]
+        : ucfirst(str_replace('_', ' ', $status));
+
+    return '<div style="display:flex;align-items:center;gap:14px;margin:18px 0 24px;padding:18px 22px;border:1px solid #d93025;border-radius:10px;background:#fce8e6;color:#5f2120;">'
+        . '<div style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;background:#d93025;color:#fff;font-weight:700;flex:0 0 auto;">×</div>'
+        . '<div><div style="font-weight:700;margin-bottom:2px;">Please review</div><div>' . esc_html($text) . '</div></div>'
+        . '</div>';
+}
 }
 
 if (!function_exists('pba_sort_committees_for_display')) {
