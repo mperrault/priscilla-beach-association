@@ -50,3 +50,4 @@ require_once __DIR__ . '/includes/shortcodes-audit-log.php';
 require_once __DIR__ . '/includes/pba-background-jobs.php';
 require_once __DIR__ . '/includes/document-viewer.php';
 require_once __DIR__ . '/includes/document-storage.php';
+require_once __DIR__ . '/includes/member-announcements.php';

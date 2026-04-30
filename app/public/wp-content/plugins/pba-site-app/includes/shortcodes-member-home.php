@@ -149,6 +149,18 @@ function pba_render_member_home_shortcode() {
                 </div>
             <?php endforeach; ?>
         </div>
+
+        <?php
+        /*
+         * Member announcements are rendered below the member-home navigation cards.
+         *
+         * The function_exists guard prevents a fatal error if member-announcements.php
+         * has not been included yet during rollout.
+         */
+        if (function_exists('pba_render_member_announcements_panel')) {
+            echo pba_render_member_announcements_panel();
+        }
+        ?>
     </div>
     <?php
 
