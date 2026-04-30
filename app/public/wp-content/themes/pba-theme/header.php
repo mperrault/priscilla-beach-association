@@ -58,11 +58,11 @@
                     $logout_url = wp_nonce_url($logout_url, 'pba_member_logout_action');
                     ?>
                     <a class="pba-logout-link" href="<?php echo esc_url($logout_url); ?>">
-                        Logout
+                        Log out
                     </a>
                 <?php else : ?>
                     <a class="header-login-btn pba-login-button" href="<?php echo esc_url(home_url('/login/')); ?>">
-                        Login
+                        Log in
                     </a>
                 <?php endif; ?>
             </div>
