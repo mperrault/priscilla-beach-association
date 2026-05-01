@@ -15,6 +15,8 @@ function pba_get_menu_visibility_state() {
 
     $is_logged_in = is_user_logged_in();
 
+    $is_admin = $is_logged_in && current_user_can('pba_manage_roles');
+
     $state = array(
         'is_logged_in'             => $is_logged_in,
         'can_see_household'        => $is_logged_in && function_exists('pba_current_user_has_house_admin_access') && pba_current_user_has_house_admin_access(),
@@ -24,7 +26,18 @@ function pba_get_menu_visibility_state() {
         'can_see_member_resources' => function_exists('pba_current_person_can_view_member_resources')
             ? pba_current_person_can_view_member_resources()
             : $is_logged_in,
-        'is_admin'                 => $is_logged_in && current_user_can('pba_manage_roles'),
+
+        /*
+         * Photos:
+         * - Public users can view /photos/.
+         * - Logged-in users can access /photo-upload/.
+         * - PBAAdmins can access /photo-admin/.
+         */
+        'can_see_photos'           => true,
+        'can_upload_photos'        => $is_logged_in,
+        'can_manage_photos'        => $is_admin,
+
+        'is_admin'                 => $is_admin,
     );
 
     return $state;
@@ -42,11 +55,44 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
     $audit_log_url = trailingslashit(home_url('/audit-log/'));
     $profile_url = trailingslashit(home_url('/profile/'));
 
+    $photos_url = trailingslashit(home_url('/photos/'));
+    $photo_upload_url = trailingslashit(home_url('/photo-upload/'));
+    $photo_admin_url = trailingslashit(home_url('/photo-admin/'));
+
     $state = pba_get_menu_visibility_state();
 
     foreach ($items as $index => $item) {
         $item_url = isset($item->url) ? trailingslashit($item->url) : '';
         $title = isset($item->title) ? trim((string) $item->title) : '';
+
+        /*
+         * Photos is public. Do not hide this item.
+         */
+        if ($item_url === $photos_url || strcasecmp($title, 'Photos') === 0) {
+            continue;
+        }
+
+        /*
+         * Photo Upload is for logged-in users only.
+         * In the preferred UX, this does not need to be a main menu item;
+         * the /photos/ page can show an Upload Photo button when logged in.
+         */
+        if ($item_url === $photo_upload_url || strcasecmp($title, 'Upload Photo') === 0) {
+            if (!$state['can_upload_photos']) {
+                unset($items[$index]);
+            }
+            continue;
+        }
+
+        /*
+         * Photo Admin is PBAAdmin only.
+         */
+        if ($item_url === $photo_admin_url || strcasecmp($title, 'Photo Admin') === 0) {
+            if (!$state['can_manage_photos']) {
+                unset($items[$index]);
+            }
+            continue;
+        }
 
         if ($item_url === $profile_url || strcasecmp($title, 'Profile') === 0) {
             if (!$state['is_logged_in']) {
@@ -138,6 +184,10 @@ function pba_get_logged_in_menu_items() {
             'label' => 'Directory',
             'url'   => home_url('/member-directory/'),
         ),
+        array(
+            'label' => 'Photos',
+            'url'   => home_url('/photos/'),
+        ),
     );
 
     if ($state['can_see_household']) {
@@ -199,6 +249,10 @@ function pba_get_logged_in_menu_items() {
         $admin_children[] = array(
             'label' => 'Board/Committees',
             'url'   => home_url('/committees/'),
+        );
+        $admin_children[] = array(
+            'label' => 'Photo Admin',
+            'url'   => home_url('/photo-admin/'),
         );
         $admin_children[] = array(
             'label' => 'Audit Log',

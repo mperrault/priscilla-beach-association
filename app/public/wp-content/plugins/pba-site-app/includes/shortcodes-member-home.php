@@ -37,6 +37,11 @@ function pba_render_member_home_shortcode() {
         'description' => 'Browse the member directory.',
         'url' => home_url('/member-directory/'),
     );
+    $cards[] = array(
+        'title' => 'Photos',
+        'description' => 'View community photos and submit photos for review.',
+        'url' => home_url('/photos/'),
+    );
 
     if (
         (function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBABoardMember')) ||
@@ -107,7 +112,11 @@ function pba_render_member_home_shortcode() {
             'description' => 'Manage committees and committee rosters.',
             'url' => home_url('/committees/'),
         );
-
+        $cards[] = array(
+            'title' => 'Photo Admin',
+            'description' => 'Review uploaded photos and manage photo collections.',
+            'url' => home_url('/photo-admin/'),
+        );
         $cards[] = array(
             'title' => 'Audit Log',
             'description' => 'Review audited user actions and investigate changes across the application.',
