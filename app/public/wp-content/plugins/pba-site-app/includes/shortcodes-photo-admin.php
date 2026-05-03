@@ -111,8 +111,10 @@ function pba_photo_admin_get_status_counts() {
 
     return $counts;
 }
-function pba_photo_admin_get_photos_by_status($status, $limit = 60) {
+function pba_photo_admin_get_photos_by_status($status, $limit = 60, $offset = 0) {
     $status = pba_photo_sanitize_status($status);
+    $limit = max(1, (int) $limit);
+    $offset = max(0, (int) $offset);
 
     $order = 'created_at.desc';
 
@@ -130,7 +132,8 @@ function pba_photo_admin_get_photos_by_status($status, $limit = 60) {
         'select' => '*',
         'status' => 'eq.' . $status,
         'order'  => $order,
-        'limit'  => max(1, (int) $limit),
+        'limit'  => $limit,
+        'offset' => $offset,
     ));
 
     if (is_wp_error($rows) || !is_array($rows)) {
@@ -138,6 +141,109 @@ function pba_photo_admin_get_photos_by_status($status, $limit = 60) {
     }
 
     return $rows;
+}
+
+function pba_photo_admin_get_page_size_for_status($status) {
+
+    $status = pba_photo_sanitize_status($status);
+
+    if ($status === 'pending') {
+        return 20;
+    }
+
+    return 30;
+}
+
+function pba_photo_admin_get_current_page_number() {
+    $page_num = isset($_GET['photo_page'])
+        ? absint($_GET['photo_page'])
+        : 1;
+
+    return max(1, $page_num);
+}
+
+function pba_photo_admin_get_total_count_for_status($status) {
+    $status = pba_photo_sanitize_status($status);
+
+    $rows = pba_photo_supabase_select('Photo', array(
+        'select' => 'photo_id',
+        'status' => 'eq.' . $status,
+    ));
+
+    if (is_wp_error($rows) || !is_array($rows)) {
+        return 0;
+    }
+
+    return count($rows);
+}
+
+function pba_photo_admin_build_pagination_url($status, $page_num) {
+    return add_query_arg(
+        array(
+            'tab'        => pba_photo_sanitize_status($status),
+            'photo_page' => max(1, (int) $page_num),
+        ),
+        home_url('/photo-admin/')
+    );
+}
+
+function pba_photo_render_admin_pagination($status, $current_page, $page_size, $total_count) {
+    $status = pba_photo_sanitize_status($status);
+    $current_page = max(1, (int) $current_page);
+    $page_size = max(1, (int) $page_size);
+    $total_count = max(0, (int) $total_count);
+
+    if ($total_count <= $page_size) {
+        return '';
+    }
+
+    $total_pages = (int) ceil($total_count / $page_size);
+    $current_page = min($current_page, $total_pages);
+
+    $start = (($current_page - 1) * $page_size) + 1;
+    $end = min($total_count, $current_page * $page_size);
+
+    $previous_page = max(1, $current_page - 1);
+    $next_page = min($total_pages, $current_page + 1);
+
+    ob_start();
+    ?>
+    <div class="pba-photo-admin-pagination">
+        <div class="pba-photo-admin-pagination-summary">
+            Showing <?php echo esc_html(number_format($start)); ?>–<?php echo esc_html(number_format($end)); ?>
+            of <?php echo esc_html(number_format($total_count)); ?>
+        </div>
+
+        <div class="pba-photo-admin-pagination-actions">
+            <?php if ($current_page > 1) : ?>
+                <a class="pba-button pba-button-secondary" href="<?php echo esc_url(pba_photo_admin_build_pagination_url($status, $previous_page)); ?>">
+                    Previous
+                </a>
+            <?php else : ?>
+                <span class="pba-button pba-button-secondary is-disabled" aria-disabled="true">
+                    Previous
+                </span>
+            <?php endif; ?>
+
+            <span class="pba-photo-admin-page-indicator">
+                Page <?php echo esc_html(number_format($current_page)); ?>
+                of <?php echo esc_html(number_format($total_pages)); ?>
+            </span>
+
+            <?php if ($current_page < $total_pages) : ?>
+                <a class="pba-button pba-button-secondary" href="<?php echo esc_url(pba_photo_admin_build_pagination_url($status, $next_page)); ?>">
+                    Next
+                </a>
+            <?php else : ?>
+                <span class="pba-button pba-button-secondary is-disabled" aria-disabled="true">
+                    Next
+                </span>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+
+    return ob_get_clean();
 }
 
 function pba_photo_admin_get_active_collections() {
@@ -285,7 +391,12 @@ function pba_photo_render_admin_tabs($active_tab, $counts) {
     <div class="pba-photo-admin-tabs">
         <?php foreach ($tabs as $tab => $label) : ?>
             <?php
-            $url = add_query_arg(array('tab' => $tab), home_url('/photo-admin/'));
+            $url = add_query_arg(
+                array(
+                    'tab' => $tab,
+                ),
+                home_url('/photo-admin/')
+            );            
             $class = $tab === $active_tab ? 'pba-photo-admin-tab is-active' : 'pba-photo-admin-tab';
             $count = isset($counts[$tab]) ? (int) $counts[$tab] : 0;
             ?>
@@ -301,7 +412,39 @@ function pba_photo_render_admin_tabs($active_tab, $counts) {
 }
 
 function pba_photo_render_admin_photo_list($status) {
-    $photos = pba_photo_admin_get_photos_by_status($status);
+    $status = pba_photo_sanitize_status($status);
+    $page_size = pba_photo_admin_get_page_size_for_status($status);
+    $current_page = pba_photo_admin_get_current_page_number();
+    $total_count = pba_photo_admin_get_total_count_for_status($status);
+
+    $total_pages = $page_size > 0 ? (int) ceil($total_count / $page_size) : 1;
+    $total_pages = max(1, $total_pages);
+
+    if ($current_page > $total_pages) {
+        $current_page = $total_pages;
+    }
+
+    $offset = ($current_page - 1) * $page_size;
+
+    $photos = pba_photo_admin_get_photos_by_status($status, $page_size, $offset);
+
+    if (empty($photos)) {
+        return '<div class="pba-photo-empty-state">No photos found for this status.</div>';
+    }
+
+    if (in_array($status, array('denied', 'deleted'), true)) {
+        ob_start();
+        ?>
+        <?php echo pba_photo_render_admin_pagination($status, $current_page, $page_size, $total_count); ?>
+
+        <?php echo pba_photo_render_admin_history_table($photos, $status); ?>
+
+        <?php echo pba_photo_render_admin_pagination($status, $current_page, $page_size, $total_count); ?>
+        <?php
+
+        return ob_get_clean();
+    }
+
     $collections = pba_photo_admin_get_active_collections();
 
     $photo_ids = array();
@@ -314,17 +457,17 @@ function pba_photo_render_admin_photo_list($status) {
 
     $collection_map = pba_photo_admin_get_photo_collection_map($photo_ids);
 
-    if (empty($photos)) {
-        return '<div class="pba-photo-empty-state">No photos found for this status.</div>';
-    }
-
     ob_start();
     ?>
+    <?php echo pba_photo_render_admin_pagination($status, $current_page, $page_size, $total_count); ?>
+
     <div class="pba-photo-admin-list">
         <?php foreach ($photos as $photo) : ?>
             <?php echo pba_photo_render_admin_photo_card($photo, $status, $collections, $collection_map); ?>
         <?php endforeach; ?>
     </div>
+
+    <?php echo pba_photo_render_admin_pagination($status, $current_page, $page_size, $total_count); ?>
     <?php
 
     return ob_get_clean();
@@ -351,17 +494,25 @@ function pba_photo_render_admin_photo_card($photo, $status, $collections, $colle
     if (empty($selected_collection_ids) && !empty($photo['suggested_collection_id'])) {
         $selected_collection_ids = array((int) $photo['suggested_collection_id']);
     }
-
     $image_url = '';
 
     if (!empty($photo['storage_path']) && empty($photo['storage_deleted_at'])) {
-        $signed_url = pba_photo_storage_create_signed_url($photo['storage_path'], 3600, !empty($photo['storage_bucket']) ? $photo['storage_bucket'] : PBA_PHOTO_STORAGE_BUCKET);
+        $bucket = !empty($photo['storage_bucket']) ? $photo['storage_bucket'] : PBA_PHOTO_STORAGE_BUCKET;
 
-        if (!is_wp_error($signed_url)) {
-            $image_url = $signed_url;
+        /*
+        * Admin review should use the display image, not the thumbnail.
+        * This lets PBAAdmins review the actual approved-quality photo.
+        */
+        if (function_exists('pba_photo_storage_get_public_url')) {
+            $image_url = pba_photo_storage_get_public_url($photo['storage_path'], $bucket);
+        } else {
+            $signed_url = pba_photo_storage_create_signed_url($photo['storage_path'], 3600, $bucket);
+
+            if (!is_wp_error($signed_url)) {
+                $image_url = $signed_url;
+            }
         }
     }
-
     ob_start();
     ?>
     <article class="pba-photo-admin-card">
@@ -1358,4 +1509,133 @@ function pba_photo_audit_compact_json($value) {
     }
 
     return wp_json_encode($clean, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+}
+function pba_photo_render_admin_history_table($photos, $status) {
+    $status = pba_photo_sanitize_status($status);
+
+    $title = $status === 'deleted'
+        ? 'Deleted Photos'
+        : 'Denied Photos';
+
+    $description = $status === 'deleted'
+        ? 'These records are retained for administrative history. The stored image files have been removed.'
+        : 'These submissions were denied and their stored image files were removed.';
+
+    ob_start();
+    ?>
+    <section class="pba-photo-history-card">
+        <div class="pba-photo-history-header">
+            <div>
+                <h2><?php echo esc_html($title); ?></h2>
+                <p><?php echo esc_html($description); ?></p>
+            </div>
+        </div>
+
+        <div class="pba-photo-history-table-wrap">
+            <table class="pba-photo-history-table">
+                <thead>
+                    <tr>
+                        <th><?php echo esc_html($status === 'deleted' ? 'Deleted At' : 'Denied At'); ?></th>
+                        <th>Photo</th>
+                        <th>Uploaded By</th>
+                        <th><?php echo esc_html($status === 'deleted' ? 'Deleted By' : 'Denied By'); ?></th>
+                        <th>Reason</th>
+                        <th>Storage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($photos as $photo) : ?>
+                        <?php echo pba_photo_render_admin_history_row($photo, $status); ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <?php
+
+    return ob_get_clean();
+}
+
+function pba_photo_render_admin_history_row($photo, $status) {
+    $status = pba_photo_sanitize_status($status);
+
+    $action_at_key = $status === 'deleted' ? 'deleted_at' : 'denied_at';
+    $action_wp_user_key = $status === 'deleted' ? 'deleted_by_wp_user_id' : 'denied_by_wp_user_id';
+    $action_person_key = $status === 'deleted' ? 'deleted_by_person_id' : 'denied_by_person_id';
+    $reason_key = $status === 'deleted' ? 'delete_reason' : 'denial_reason';
+
+    $action_at = !empty($photo[$action_at_key])
+        ? pba_photo_format_admin_date($photo[$action_at_key])
+        : '—';
+
+    $title = !empty($photo['title']) ? $photo['title'] : 'Untitled photo';
+    $filename = !empty($photo['original_filename']) ? $photo['original_filename'] : '';
+    $photo_id = !empty($photo['photo_id']) ? (int) $photo['photo_id'] : 0;
+
+    $uploader_parts = array();
+
+    if (!empty($photo['uploader_name'])) {
+        $uploader_parts[] = $photo['uploader_name'];
+    }
+
+    if (!empty($photo['uploader_email'])) {
+        $uploader_parts[] = $photo['uploader_email'];
+    }
+
+    $uploader = !empty($uploader_parts) ? implode(' · ', $uploader_parts) : '—';
+
+    $action_by_parts = array();
+
+    if (!empty($photo[$action_wp_user_key])) {
+        $action_by_parts[] = 'WP #' . (int) $photo[$action_wp_user_key];
+    }
+
+    if (!empty($photo[$action_person_key])) {
+        $action_by_parts[] = 'Person #' . (int) $photo[$action_person_key];
+    }
+
+    $action_by = !empty($action_by_parts) ? implode(' · ', $action_by_parts) : '—';
+
+    $reason = !empty($photo[$reason_key]) ? $photo[$reason_key] : '—';
+
+    $storage_status = !empty($photo['storage_deleted_at'])
+        ? 'Removed ' . pba_photo_format_admin_date($photo['storage_deleted_at'])
+        : 'Not marked removed';
+
+    ob_start();
+    ?>
+    <tr>
+        <td data-label="<?php echo esc_attr($status === 'deleted' ? 'Deleted At' : 'Denied At'); ?>">
+            <?php echo esc_html($action_at); ?>
+        </td>
+
+        <td data-label="Photo">
+            <div class="pba-photo-history-photo-cell">
+                <strong><?php echo esc_html($title); ?></strong>
+                <span>Photo #<?php echo esc_html($photo_id); ?></span>
+                <?php if ($filename !== '') : ?>
+                    <span><?php echo esc_html($filename); ?></span>
+                <?php endif; ?>
+            </div>
+        </td>
+
+        <td data-label="Uploaded By">
+            <?php echo esc_html($uploader); ?>
+        </td>
+
+        <td data-label="<?php echo esc_attr($status === 'deleted' ? 'Deleted By' : 'Denied By'); ?>">
+            <?php echo esc_html($action_by); ?>
+        </td>
+
+        <td data-label="Reason">
+            <?php echo esc_html($reason); ?>
+        </td>
+
+        <td data-label="Storage">
+            <?php echo esc_html($storage_status); ?>
+        </td>
+    </tr>
+    <?php
+
+    return ob_get_clean();
 }

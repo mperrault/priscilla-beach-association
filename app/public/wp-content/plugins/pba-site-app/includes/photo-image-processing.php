@@ -3,10 +3,19 @@
  * PBA Photo Feature - Image Processing
  *
  * Resizes and compresses uploaded photos before they are stored.
+ * Produces a display image and a smaller thumbnail image.
  */
 
 if (!defined('ABSPATH')) {
     exit;
+}
+
+if (!defined('PBA_PHOTO_THUMBNAIL_MAX_DIMENSION')) {
+    define('PBA_PHOTO_THUMBNAIL_MAX_DIMENSION', 600);
+}
+
+if (!defined('PBA_PHOTO_THUMBNAIL_JPEG_QUALITY')) {
+    define('PBA_PHOTO_THUMBNAIL_JPEG_QUALITY', 76);
 }
 
 function pba_photo_validate_uploaded_file_array($file) {
@@ -116,13 +125,66 @@ function pba_photo_process_uploaded_photo($file) {
 
     $source_image = pba_photo_maybe_fix_jpeg_orientation($source_image, $tmp_path, $source_mime);
 
-    $oriented_width = imagesx($source_image);
-    $oriented_height = imagesy($source_image);
+    $display = pba_photo_create_resized_jpeg(
+        $source_image,
+        PBA_PHOTO_MAX_PROCESSED_DIMENSION,
+        PBA_PHOTO_JPEG_QUALITY,
+        'pba-photo-display-'
+    );
+
+    if (is_wp_error($display)) {
+        imagedestroy($source_image);
+        return $display;
+    }
+
+    $thumbnail = pba_photo_create_resized_jpeg(
+        $source_image,
+        PBA_PHOTO_THUMBNAIL_MAX_DIMENSION,
+        PBA_PHOTO_THUMBNAIL_JPEG_QUALITY,
+        'pba-photo-thumb-'
+    );
+
+    imagedestroy($source_image);
+
+    if (is_wp_error($thumbnail)) {
+        if (!empty($display['path']) && file_exists($display['path'])) {
+            @unlink($display['path']);
+        }
+
+        return $thumbnail;
+    }
+
+    return array(
+        'processed_path'              => $display['path'],
+        'processed_size_bytes'        => $display['size_bytes'],
+        'processed_width'             => $display['width'],
+        'processed_height'            => $display['height'],
+        'processed_mime_type'         => 'image/jpeg',
+        'processed_extension'         => 'jpg',
+
+        'thumbnail_path'              => $thumbnail['path'],
+        'thumbnail_size_bytes'        => $thumbnail['size_bytes'],
+        'thumbnail_width'             => $thumbnail['width'],
+        'thumbnail_height'            => $thumbnail['height'],
+        'thumbnail_mime_type'         => 'image/jpeg',
+        'thumbnail_extension'         => 'jpg',
+
+        'original_filename'           => $original_filename,
+        'original_file_size_bytes'    => (int) $original_size_bytes,
+        'original_mime_type'          => $source_mime,
+        'original_width'              => $source_width,
+        'original_height'             => $source_height,
+    );
+}
+
+function pba_photo_create_resized_jpeg($source_image, $max_dimension, $jpeg_quality, $temp_prefix) {
+    $source_width = imagesx($source_image);
+    $source_height = imagesy($source_image);
 
     $target = pba_photo_calculate_target_dimensions(
-        $oriented_width,
-        $oriented_height,
-        PBA_PHOTO_MAX_PROCESSED_DIMENSION
+        $source_width,
+        $source_height,
+        $max_dimension
     );
 
     $target_width = $target['width'];
@@ -131,14 +193,9 @@ function pba_photo_process_uploaded_photo($file) {
     $processed_image = imagecreatetruecolor($target_width, $target_height);
 
     if (!$processed_image) {
-        imagedestroy($source_image);
         return new WP_Error('pba_photo_processing_failed', 'The server could not prepare the photo for processing.');
     }
 
-    /*
-     * JPEG output has no alpha channel. Fill with white so transparent PNG/WebP
-     * images render predictably.
-     */
     $white = imagecolorallocate($processed_image, 255, 255, 255);
     imagefill($processed_image, 0, 0, $white);
 
@@ -151,53 +208,43 @@ function pba_photo_process_uploaded_photo($file) {
         0,
         $target_width,
         $target_height,
-        $oriented_width,
-        $oriented_height
+        $source_width,
+        $source_height
     );
 
-    $processed_path = wp_tempnam('pba-photo-processed-');
+    $temp_path = wp_tempnam($temp_prefix);
 
-    if (!$processed_path) {
-        imagedestroy($source_image);
+    if (!$temp_path) {
         imagedestroy($processed_image);
         return new WP_Error('pba_photo_temp_file_failed', 'The server could not create a temporary processed photo file.');
     }
 
-    $processed_jpeg_path = $processed_path . '.jpg';
+    $jpeg_path = $temp_path . '.jpg';
 
-    if (file_exists($processed_path)) {
-        @unlink($processed_path);
+    if (file_exists($temp_path)) {
+        @unlink($temp_path);
     }
 
-    $saved = imagejpeg($processed_image, $processed_jpeg_path, PBA_PHOTO_JPEG_QUALITY);
+    $saved = imagejpeg($processed_image, $jpeg_path, (int) $jpeg_quality);
 
-    imagedestroy($source_image);
     imagedestroy($processed_image);
 
-    if (!$saved || !file_exists($processed_jpeg_path)) {
+    if (!$saved || !file_exists($jpeg_path)) {
         return new WP_Error('pba_photo_save_failed', 'The server could not save the processed photo.');
     }
 
-    $processed_size_bytes = filesize($processed_jpeg_path);
+    $size_bytes = filesize($jpeg_path);
 
-    if (!$processed_size_bytes || $processed_size_bytes <= 0) {
-        @unlink($processed_jpeg_path);
+    if (!$size_bytes || $size_bytes <= 0) {
+        @unlink($jpeg_path);
         return new WP_Error('pba_photo_processed_empty', 'The processed photo is empty.');
     }
 
     return array(
-        'processed_path'              => $processed_jpeg_path,
-        'processed_size_bytes'        => (int) $processed_size_bytes,
-        'processed_width'             => $target_width,
-        'processed_height'            => $target_height,
-        'processed_mime_type'         => 'image/jpeg',
-        'processed_extension'         => 'jpg',
-
-        'original_filename'           => $original_filename,
-        'original_file_size_bytes'    => (int) $original_size_bytes,
-        'original_mime_type'          => $source_mime,
-        'original_width'              => $source_width,
-        'original_height'             => $source_height,
+        'path'       => $jpeg_path,
+        'size_bytes' => (int) $size_bytes,
+        'width'      => (int) $target_width,
+        'height'     => (int) $target_height,
     );
 }
 
@@ -309,13 +356,23 @@ function pba_photo_maybe_fix_jpeg_orientation($image, $path, $mime_type) {
 }
 
 function pba_photo_cleanup_processed_file($processed) {
-    if (!is_array($processed) || empty($processed['processed_path'])) {
+    if (!is_array($processed)) {
         return;
     }
 
-    $path = $processed['processed_path'];
+    $paths = array();
 
-    if (is_string($path) && file_exists($path)) {
-        @unlink($path);
+    if (!empty($processed['processed_path'])) {
+        $paths[] = $processed['processed_path'];
+    }
+
+    if (!empty($processed['thumbnail_path'])) {
+        $paths[] = $processed['thumbnail_path'];
+    }
+
+    foreach ($paths as $path) {
+        if (is_string($path) && file_exists($path)) {
+            @unlink($path);
+        }
     }
 }

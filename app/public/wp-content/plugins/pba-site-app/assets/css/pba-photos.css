@@ -603,9 +603,13 @@
     gap: 18px;
 }
 
+/* =========================================================
+   Photo Admin Review Image Standardization
+   ========================================================= */
+
 .pba-photo-admin-card {
     display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: 360px minmax(0, 1fr);
     gap: 20px;
     background: #ffffff;
     border: 1px solid #d7e0ea;
@@ -615,27 +619,36 @@
 }
 
 .pba-photo-admin-card-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    min-height: 190px;
+    width: 100%;
+    min-height: 280px;
+    height: 280px;
+    border: 1px solid #d7e0ea;
     border-radius: 14px;
-    background: #f1f5f9;
+    background: #0f172a;
 }
 
 .pba-photo-admin-card-media img {
     display: block;
     width: 100%;
     height: 100%;
-    min-height: 190px;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background: #0f172a;
 }
 
 .pba-photo-admin-image-missing {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 190px;
+    min-height: 280px;
+    width: 100%;
     padding: 16px;
-    color: #64748b;
+    color: #cbd5e1;
     font-weight: 800;
     text-align: center;
 }
@@ -830,27 +843,157 @@
 .pba-photo-admin-readonly strong {
     color: #1f2937;
 }
-
 @media (max-width: 900px) {
     .pba-photo-storage-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
     .pba-photo-admin-card {
         grid-template-columns: 1fr;
     }
-
-    .pba-photo-admin-card-media img,
-    .pba-photo-admin-image-missing {
-        max-height: 340px;
+    .pba-photo-admin-card-media {
+        height: 340px;
+        min-height: 340px;
     }
 
+    .pba-photo-admin-card-media img {
+        object-fit: contain;
+    }
+    .pba-photo-admin-image-missing {
+        max-height: 320px;
+    }
     .pba-photo-admin-field-grid {
         grid-template-columns: 1fr;
     }
 
     .pba-photo-admin-field-full {
         grid-column: auto;
+    }
+}
+/* =========================================================
+   Photo Admin Denied / Deleted History Tables
+   ========================================================= */
+
+.pba-photo-history-card {
+    background: #ffffff;
+    border: 1px solid #d7e0ea;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+
+.pba-photo-history-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.pba-photo-history-header h2 {
+    margin: 0 0 5px;
+    color: #111827;
+    font-size: 1.2rem;
+    line-height: 1.25;
+}
+
+.pba-photo-history-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.94rem;
+    line-height: 1.5;
+}
+
+.pba-photo-history-table-wrap {
+    overflow-x: auto;
+}
+
+.pba-photo-history-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.pba-photo-history-table th,
+.pba-photo-history-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    vertical-align: top;
+}
+
+.pba-photo-history-table th {
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.pba-photo-history-table tbody tr:hover {
+    background: #fbfcfe;
+}
+
+.pba-photo-history-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.pba-photo-history-photo-cell {
+    display: grid;
+    gap: 3px;
+}
+
+.pba-photo-history-photo-cell strong {
+    color: #111827;
+    font-weight: 900;
+}
+
+.pba-photo-history-photo-cell span {
+    color: #64748b;
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+@media (max-width: 760px) {
+    .pba-photo-history-table {
+        min-width: 0;
+    }
+
+    .pba-photo-history-table thead {
+        display: none;
+    }
+
+    .pba-photo-history-table,
+    .pba-photo-history-table tbody,
+    .pba-photo-history-table tr,
+    .pba-photo-history-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .pba-photo-history-table tr {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 0;
+    }
+
+    .pba-photo-history-table tr:last-child {
+        border-bottom: 0;
+    }
+
+    .pba-photo-history-table td {
+        border-bottom: 0;
+        padding: 7px 14px;
+    }
+
+    .pba-photo-history-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 3px;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
     }
 }
 
@@ -1042,16 +1185,6 @@
     background: rgba(2, 6, 23, 0.78);
 }
 
-.pba-photo-lightbox-dialog {
-    position: relative;
-    z-index: 1;
-    width: min(1040px, 100%);
-    max-height: calc(100vh - 56px);
-    overflow: hidden;
-    border-radius: 20px;
-    background: #ffffff;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-}
 
 .pba-photo-lightbox-close {
     position: absolute;
@@ -1077,20 +1210,33 @@
     background: #0f172a;
     outline: none;
 }
+.pba-photo-lightbox-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(1080px, calc(100vw - 56px));
+    max-height: calc(100vh - 56px);
+    overflow: hidden;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
 
 .pba-photo-lightbox-media {
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: calc(100vh - 230px);
+    width: 100%;
+    max-height: calc(100vh - 220px);
     background: #020617;
+    overflow: hidden;
 }
 
 .pba-photo-lightbox-media img {
     display: block;
-    width: auto;
+    width: 100%;
+    height: auto;
     max-width: 100%;
-    max-height: calc(100vh - 230px);
+    max-height: calc(100vh - 220px);
     object-fit: contain;
 }
 
@@ -1129,33 +1275,32 @@ html.pba-photo-lightbox-open body {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
-
 @media (max-width: 640px) {
-    .pba-public-photo-grid {
-        grid-template-columns: 1fr;
-    }
-
     .pba-photo-lightbox {
         padding: 14px;
     }
 
     .pba-photo-lightbox-dialog {
+        width: calc(100vw - 28px);
         max-height: calc(100vh - 28px);
         border-radius: 16px;
     }
 
     .pba-photo-lightbox-media {
-        max-height: calc(100vh - 230px);
+        max-height: calc(100vh - 220px);
     }
 
     .pba-photo-lightbox-media img {
-        max-height: calc(100vh - 230px);
+        width: 100%;
+        height: auto;
+        max-height: calc(100vh - 220px);
     }
 
     .pba-photo-lightbox-content {
         padding: 16px;
     }
 }
+
 /* =========================================================
    Photo Collection Admin
    ========================================================= */
@@ -1575,5 +1720,129 @@ html.pba-photo-lightbox-open body {
 
     .pba-photo-audit-filter-actions .pba-button {
         width: 100%;
+    }
+}
+/* =========================================================
+   Photo Admin Pagination
+   ========================================================= */
+
+.pba-photo-admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    border: 1px solid #d7e0ea;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.pba-photo-admin-list + .pba-photo-admin-pagination {
+    margin: 16px 0 0;
+}
+
+.pba-photo-admin-pagination-summary {
+    color: #4b5563;
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.pba-photo-admin-pagination-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pba-photo-admin-page-indicator {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pba-button.is-disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+}
+
+@media (max-width: 720px) {
+    .pba-photo-admin-pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pba-photo-admin-pagination-actions {
+        justify-content: space-between;
+    }
+
+    .pba-photo-admin-page-indicator {
+        text-align: center;
+    }
+}
+/* =========================================================
+   Public Photo Pagination
+   ========================================================= */
+
+.pba-public-photo-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid #d7e0ea;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.pba-public-photo-grid + .pba-public-photo-pagination {
+    margin: 18px 0 0;
+}
+
+.pba-public-photo-pagination-summary {
+    color: #4b5563;
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.pba-public-photo-pagination-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pba-public-photo-page-indicator {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pba-button.is-disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+}
+
+@media (max-width: 720px) {
+    .pba-public-photo-pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pba-public-photo-pagination-actions {
+        justify-content: space-between;
+    }
+
+    .pba-public-photo-page-indicator {
+        text-align: center;
     }
 }

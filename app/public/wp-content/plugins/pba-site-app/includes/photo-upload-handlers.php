@@ -107,6 +107,7 @@ function pba_handle_photo_upload() {
     }
 
     $storage_path = pba_photo_generate_storage_path('jpg');
+    $thumbnail_storage_path = str_replace('/photo-', '/thumb-', $storage_path);
 
     $upload_result = pba_photo_storage_upload_file(
         $processed['processed_path'],
@@ -135,7 +136,36 @@ function pba_handle_photo_upload() {
         ));
         exit;
     }
+    $thumbnail_upload_result = pba_photo_storage_upload_file(
+        $processed['thumbnail_path'],
+        $thumbnail_storage_path,
+        $processed['thumbnail_mime_type']
+    );
 
+    if (is_wp_error($thumbnail_upload_result)) {
+        pba_photo_storage_delete_file($storage_path, PBA_PHOTO_STORAGE_BUCKET);
+
+        pba_photo_audit_storage_upload_failure(
+            $thumbnail_upload_result->get_error_message(),
+            array(
+                'error_code'             => $thumbnail_upload_result->get_error_code(),
+                'storage_path'           => $storage_path,
+                'thumbnail_storage_path' => $thumbnail_storage_path,
+                'original_file'          => isset($processed['original_filename']) ? $processed['original_filename'] : null,
+                'error_data'             => $thumbnail_upload_result->get_error_data(),
+            )
+        );
+
+        pba_photo_cleanup_processed_file($processed);
+
+        wp_safe_redirect(add_query_arg(
+            array(
+                'pba_photo_message' => 'storage_failed',
+            ),
+            $redirect_url
+        ));
+        exit;
+    }
     $current_user = wp_get_current_user();
 
     $photo_row = array(
@@ -164,6 +194,11 @@ function pba_handle_photo_upload() {
         'visibility'                => 'public',
         'is_featured'               => false,
         'sort_order'                => 0,
+        'thumbnail_storage_path'     => $thumbnail_storage_path,
+        'thumbnail_file_size_bytes'  => isset($processed['thumbnail_size_bytes']) ? (int) $processed['thumbnail_size_bytes'] : null,
+        'thumbnail_width'            => isset($processed['thumbnail_width']) ? (int) $processed['thumbnail_width'] : null,
+        'thumbnail_height'           => isset($processed['thumbnail_height']) ? (int) $processed['thumbnail_height'] : null,
+        'thumbnail_mime_type'        => isset($processed['thumbnail_mime_type']) ? $processed['thumbnail_mime_type'] : 'image/jpeg',
     );
 
     $insert_result = pba_photo_supabase_insert('Photo', $photo_row);
@@ -176,7 +211,7 @@ function pba_handle_photo_upload() {
          * do not consume Supabase Storage capacity.
          */
         pba_photo_storage_delete_file($storage_path, PBA_PHOTO_STORAGE_BUCKET);
-
+        pba_photo_storage_delete_file($thumbnail_storage_path, PBA_PHOTO_STORAGE_BUCKET);
         pba_photo_audit_upload_failure(
             'Photo database insert failed after storage upload.',
             array(
@@ -213,7 +248,7 @@ function pba_handle_photo_upload() {
          * Remove the uploaded storage file so we do not leave an orphan.
          */
         pba_photo_storage_delete_file($storage_path, PBA_PHOTO_STORAGE_BUCKET);
-
+        pba_photo_storage_delete_file($thumbnail_storage_path, PBA_PHOTO_STORAGE_BUCKET);
         pba_photo_audit_upload_failure(
             'Photo database insert succeeded but no photo_id was returned.',
             array(

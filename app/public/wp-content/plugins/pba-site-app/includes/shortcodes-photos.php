@@ -20,6 +20,9 @@ function pba_render_photos_shortcode() {
         ? sanitize_title(wp_unslash($_GET['collection']))
         : '';
 
+    $current_page = pba_photo_public_get_current_gallery_page();
+    $page_size = pba_photo_public_get_gallery_page_size();
+
     $collections = pba_photo_public_get_active_collections();
     $selected_collection = null;
 
@@ -32,7 +35,16 @@ function pba_render_photos_shortcode() {
         }
     }
 
-    $photos = pba_photo_public_get_approved_photos($selected_collection);
+    $total_count = pba_photo_public_get_approved_photo_count($selected_collection);
+    $total_pages = max(1, (int) ceil($total_count / $page_size));
+
+    if ($current_page > $total_pages) {
+        $current_page = $total_pages;
+    }
+
+    $offset = ($current_page - 1) * $page_size;
+
+    $photos = pba_photo_public_get_approved_photos($selected_collection, $page_size, $offset);
 
     ob_start();
     ?>
@@ -71,13 +83,29 @@ function pba_render_photos_shortcode() {
             </div>
         <?php endif; ?>
 
+        <?php echo pba_photo_public_render_pagination($selected_collection_slug, $current_page, $page_size, $total_count); ?>
+
         <?php echo pba_photo_public_render_grid($photos); ?>
+
+        <?php echo pba_photo_public_render_pagination($selected_collection_slug, $current_page, $page_size, $total_count); ?>
 
         <?php echo pba_photo_public_render_lightbox(); ?>
     </div>
     <?php
 
     return ob_get_clean();
+}
+
+function pba_photo_public_get_gallery_page_size() {
+    return 24;
+}
+
+function pba_photo_public_get_current_gallery_page() {
+    $page = isset($_GET['gallery_page'])
+        ? absint($_GET['gallery_page'])
+        : 1;
+
+    return max(1, $page);
 }
 
 function pba_photo_public_get_active_collections() {
@@ -94,11 +122,76 @@ function pba_photo_public_get_active_collections() {
     return $rows;
 }
 
-function pba_photo_public_get_approved_photos($selected_collection = null, $limit = 120) {
+function pba_photo_public_get_approved_photo_count($selected_collection = null) {
+    if (is_array($selected_collection) && !empty($selected_collection['collection_id'])) {
+        return pba_photo_public_get_approved_photo_count_for_collection((int) $selected_collection['collection_id']);
+    }
+
+    $rows = pba_photo_supabase_select('Photo', array(
+        'select'             => 'photo_id',
+        'status'             => 'eq.approved',
+        'visibility'         => 'eq.public',
+        'storage_deleted_at' => 'is.null',
+    ));
+
+    if (is_wp_error($rows) || !is_array($rows)) {
+        return 0;
+    }
+
+    return count($rows);
+}
+
+function pba_photo_public_get_approved_photo_count_for_collection($collection_id) {
+    $collection_id = (int) $collection_id;
+
+    if ($collection_id <= 0) {
+        return 0;
+    }
+
+    $joins = pba_photo_supabase_select('PhotoCollectionPhoto', array(
+        'select'        => 'photo_id',
+        'collection_id' => 'eq.' . $collection_id,
+    ));
+
+    if (is_wp_error($joins) || !is_array($joins) || empty($joins)) {
+        return 0;
+    }
+
+    $photo_ids = array();
+
+    foreach ($joins as $join) {
+        if (is_array($join) && !empty($join['photo_id'])) {
+            $photo_ids[] = (int) $join['photo_id'];
+        }
+    }
+
+    $photo_ids = array_values(array_unique($photo_ids));
+
+    if (empty($photo_ids)) {
+        return 0;
+    }
+
+    $rows = pba_photo_supabase_select('Photo', array(
+        'select'             => 'photo_id',
+        'photo_id'           => 'in.(' . implode(',', $photo_ids) . ')',
+        'status'             => 'eq.approved',
+        'visibility'         => 'eq.public',
+        'storage_deleted_at' => 'is.null',
+    ));
+
+    if (is_wp_error($rows) || !is_array($rows)) {
+        return 0;
+    }
+
+    return count($rows);
+}
+
+function pba_photo_public_get_approved_photos($selected_collection = null, $limit = 24, $offset = 0) {
     if (is_array($selected_collection) && !empty($selected_collection['collection_id'])) {
         return pba_photo_public_get_approved_photos_for_collection(
             (int) $selected_collection['collection_id'],
-            $limit
+            $limit,
+            $offset
         );
     }
 
@@ -109,6 +202,7 @@ function pba_photo_public_get_approved_photos($selected_collection = null, $limi
         'storage_deleted_at' => 'is.null',
         'order'              => 'is_featured.desc,sort_order.asc,approved_at.desc,created_at.desc',
         'limit'              => max(1, (int) $limit),
+        'offset'             => max(0, (int) $offset),
     ));
 
     if (is_wp_error($rows) || !is_array($rows)) {
@@ -118,8 +212,10 @@ function pba_photo_public_get_approved_photos($selected_collection = null, $limi
     return pba_photo_public_prepare_photos_for_display($rows);
 }
 
-function pba_photo_public_get_approved_photos_for_collection($collection_id, $limit = 120) {
+function pba_photo_public_get_approved_photos_for_collection($collection_id, $limit = 24, $offset = 0) {
     $collection_id = (int) $collection_id;
+    $limit = max(1, (int) $limit);
+    $offset = max(0, (int) $offset);
 
     if ($collection_id <= 0) {
         return array();
@@ -129,7 +225,8 @@ function pba_photo_public_get_approved_photos_for_collection($collection_id, $li
         'select'        => 'photo_id,sort_order,created_at',
         'collection_id' => 'eq.' . $collection_id,
         'order'         => 'sort_order.asc,created_at.desc',
-        'limit'         => max(1, (int) $limit),
+        'limit'         => $limit,
+        'offset'        => $offset,
     ));
 
     if (is_wp_error($joins) || !is_array($joins) || empty($joins)) {
@@ -165,7 +262,7 @@ function pba_photo_public_get_approved_photos_for_collection($collection_id, $li
         'status'             => 'eq.approved',
         'visibility'         => 'eq.public',
         'storage_deleted_at' => 'is.null',
-        'limit'              => max(1, (int) $limit),
+        'limit'              => $limit,
     ));
 
     if (is_wp_error($rows) || !is_array($rows)) {
@@ -223,17 +320,39 @@ function pba_photo_public_prepare_photos_for_display($rows) {
             continue;
         }
 
-        $signed_url = pba_photo_storage_create_signed_url(
-            $row['storage_path'],
-            3600,
-            !empty($row['storage_bucket']) ? $row['storage_bucket'] : PBA_PHOTO_STORAGE_BUCKET
-        );
+        $bucket = !empty($row['storage_bucket']) ? $row['storage_bucket'] : PBA_PHOTO_STORAGE_BUCKET;
 
-        if (is_wp_error($signed_url)) {
-            continue;
+        if (function_exists('pba_photo_storage_get_public_url')) {
+            $display_url = pba_photo_storage_get_public_url($row['storage_path'], $bucket);
+
+            $thumbnail_url = '';
+            if (!empty($row['thumbnail_storage_path'])) {
+                $thumbnail_url = pba_photo_storage_get_public_url($row['thumbnail_storage_path'], $bucket);
+            }
+
+            if ($thumbnail_url === '') {
+                $thumbnail_url = $display_url;
+            }
+
+            $row['_display_url'] = $display_url;
+            $row['_thumbnail_url'] = $thumbnail_url;
+            $row['_signed_url'] = $display_url;
+        } else {
+            $signed_url = pba_photo_storage_create_signed_url(
+                $row['storage_path'],
+                3600,
+                $bucket
+            );
+
+            if (is_wp_error($signed_url)) {
+                continue;
+            }
+
+            $row['_display_url'] = $signed_url;
+            $row['_thumbnail_url'] = $signed_url;
+            $row['_signed_url'] = $signed_url;
         }
 
-        $row['_signed_url'] = $signed_url;
         $photos[] = $row;
     }
 
@@ -299,7 +418,9 @@ function pba_photo_public_render_card($photo) {
     $photographer = !empty($photo['photographer_name']) ? $photo['photographer_name'] : '';
     $uploaded_by = !empty($photo['uploader_name']) ? $photo['uploader_name'] : '';
     $approved_at = !empty($photo['approved_at']) ? $photo['approved_at'] : '';
-    $image_url = !empty($photo['_signed_url']) ? $photo['_signed_url'] : '';
+
+    $display_url = !empty($photo['_display_url']) ? $photo['_display_url'] : (!empty($photo['_signed_url']) ? $photo['_signed_url'] : '');
+    $thumbnail_url = !empty($photo['_thumbnail_url']) ? $photo['_thumbnail_url'] : $display_url;
 
     $meta_parts = array();
 
@@ -327,7 +448,7 @@ function pba_photo_public_render_card($photo) {
             type="button"
             data-pba-lightbox-open
             data-photo-id="<?php echo esc_attr($photo_id); ?>"
-            data-photo-src="<?php echo esc_url($image_url); ?>"
+            data-photo-src="<?php echo esc_url($display_url); ?>"
             data-photo-title="<?php echo esc_attr($title); ?>"
             data-photo-caption="<?php echo esc_attr($caption); ?>"
             data-photo-meta="<?php echo esc_attr($meta); ?>"
@@ -335,7 +456,7 @@ function pba_photo_public_render_card($photo) {
         >
             <span class="pba-public-photo-image-wrap">
                 <img
-                    src="<?php echo esc_url($image_url); ?>"
+                    src="<?php echo esc_url($thumbnail_url); ?>"
                     alt="<?php echo esc_attr($title); ?>"
                     loading="lazy"
                 >
@@ -359,6 +480,80 @@ function pba_photo_public_render_card($photo) {
     <?php
 
     return ob_get_clean();
+}
+
+function pba_photo_public_render_pagination($selected_collection_slug, $current_page, $page_size, $total_count) {
+    $current_page = max(1, (int) $current_page);
+    $page_size = max(1, (int) $page_size);
+    $total_count = max(0, (int) $total_count);
+
+    if ($total_count <= $page_size) {
+        return '';
+    }
+
+    $total_pages = max(1, (int) ceil($total_count / $page_size));
+    $current_page = min($current_page, $total_pages);
+
+    $start = (($current_page - 1) * $page_size) + 1;
+    $end = min($total_count, $current_page * $page_size);
+
+    $previous_page = max(1, $current_page - 1);
+    $next_page = min($total_pages, $current_page + 1);
+
+    ob_start();
+    ?>
+    <div class="pba-public-photo-pagination">
+        <div class="pba-public-photo-pagination-summary">
+            Showing <?php echo esc_html(number_format($start)); ?>–<?php echo esc_html(number_format($end)); ?>
+            of <?php echo esc_html(number_format($total_count)); ?> photos
+        </div>
+
+        <div class="pba-public-photo-pagination-actions">
+            <?php if ($current_page > 1) : ?>
+                <a class="pba-button pba-button-secondary" href="<?php echo esc_url(pba_photo_public_build_pagination_url($selected_collection_slug, $previous_page)); ?>">
+                    Previous
+                </a>
+            <?php else : ?>
+                <span class="pba-button pba-button-secondary is-disabled" aria-disabled="true">
+                    Previous
+                </span>
+            <?php endif; ?>
+
+            <span class="pba-public-photo-page-indicator">
+                Page <?php echo esc_html(number_format($current_page)); ?>
+                of <?php echo esc_html(number_format($total_pages)); ?>
+            </span>
+
+            <?php if ($current_page < $total_pages) : ?>
+                <a class="pba-button pba-button-secondary" href="<?php echo esc_url(pba_photo_public_build_pagination_url($selected_collection_slug, $next_page)); ?>">
+                    Next
+                </a>
+            <?php else : ?>
+                <span class="pba-button pba-button-secondary is-disabled" aria-disabled="true">
+                    Next
+                </span>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+
+    return ob_get_clean();
+}
+
+function pba_photo_public_build_pagination_url($selected_collection_slug, $page) {
+    $args = array();
+
+    $selected_collection_slug = sanitize_title((string) $selected_collection_slug);
+
+    if ($selected_collection_slug !== '') {
+        $args['collection'] = $selected_collection_slug;
+    }
+
+    if ((int) $page > 1) {
+        $args['gallery_page'] = max(1, (int) $page);
+    }
+
+    return add_query_arg($args, home_url('/photos/'));
 }
 
 function pba_photo_public_render_lightbox() {
