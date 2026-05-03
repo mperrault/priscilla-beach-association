@@ -60,6 +60,47 @@ function pba_household_get_person_for_current_household($person_id, $required_st
 
     return $rows[0];
 }
+function pba_get_household_invite_policy($household_id) {
+    $household_id = (int) $household_id;
+
+    if ($household_id < 1) {
+        return 'Allowed';
+    }
+
+    $rows = pba_supabase_get('Household', array(
+        'select'       => 'household_id,invite_policy',
+        'household_id' => 'eq.' . $household_id,
+        'limit'        => 1,
+    ));
+
+    if (is_wp_error($rows) || empty($rows) || !is_array($rows)) {
+        return 'Allowed';
+    }
+
+    $policy = isset($rows[0]['invite_policy']) ? trim((string) $rows[0]['invite_policy']) : 'Allowed';
+
+    if (!in_array($policy, array('Allowed', 'Restricted', 'Blocked'), true)) {
+        return 'Allowed';
+    }
+
+    return $policy;
+}
+
+function pba_household_invites_are_allowed($household_id) {
+    return pba_get_household_invite_policy($household_id) === 'Allowed';
+}
+
+function pba_get_household_invite_policy_message($policy) {
+    if ($policy === 'Restricted') {
+        return 'Invitations are restricted for this household. Please contact a PBA Admin to review or add household members.';
+    }
+
+    if ($policy === 'Blocked') {
+        return 'Invitations are disabled for this household.';
+    }
+
+    return '';
+}
 
 function pba_handle_household_reinvite_expired_member() {
     if (!is_user_logged_in() || !pba_current_user_has_house_admin_access()) {
@@ -92,6 +133,13 @@ function pba_handle_household_reinvite_expired_member() {
     $expires_at = gmdate('c', time() + (3 * DAY_IN_SECONDS));
     $invite_token = wp_generate_password(32, false, false);
     $inviter_person_id = (int) pba_get_current_house_admin_person_id();
+
+    $household_id = (int) pba_get_current_household_id();
+    $invite_policy = pba_get_household_invite_policy($household_id);
+
+    if ($invite_policy !== 'Allowed') {
+        pba_household_redirect_with_status($invite_policy === 'Restricted' ? 'invites_restricted' : 'invites_blocked');
+    }
 
     set_transient('pba_invite_token_' . $invite_token, (int) $person_id, 3 * DAY_IN_SECONDS);
     set_transient('pba_member_invite_token_' . $invite_token, array(
@@ -245,7 +293,8 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
         'invite_resent'                                => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was resent successfully.'),
         'member_removed'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The household member was removed successfully.'),
 
-        'already_invited'                              => array('type' => 'error', 'title' => 'Please review', 'text' => 'That person already has a pending invitation.'),
+        'invites_restricted' => array('type' => 'error', 'title' => 'Please review', 'text' => 'Invitations are restricted for this household. Please contact a PBA Admin to review or add household members.'),
+        'invites_blocked'    => array('type' => 'error', 'title' => 'Please review', 'text' => 'Invitations are disabled for this household.'),        'already_invited'                              => array('type' => 'error', 'title' => 'Please review', 'text' => 'That person already has a pending invitation.'),
         'invite_failed'                                => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not send that invitation.'),
         'invalid_request'                              => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not process that request.'),
         'disable_failed'                               => array('type' => 'error', 'title' => 'Please review', 'text' => 'We could not disable that member.'),
@@ -775,7 +824,7 @@ function pba_render_household_previous_invitations_table($rows, $title, $request
     return ob_get_clean();
 }
 
-function pba_render_household_invite_section() {
+function pba_render_household_invite_section($invites_allowed = true, $invite_policy_message = '') {
     ob_start();
     ?>
     <div class="pba-section">
@@ -784,42 +833,51 @@ function pba_render_household_invite_section() {
             <p class="pba-section-subtitle">Send invitations so members of your household can access non-public information on the association website.</p>
         </div>
 
-        <div class="pba-callout">
-            <strong>Tip:</strong> Any Household Admin for this household can manage invitations and member access. Each person should have a unique email address.
-        </div>
+        <?php if (!$invites_allowed) : ?>
+            <div class="pba-callout" style="border-color:#d93025;background:#fce8e6;color:#5f2120;">
+                <strong>Invitations unavailable:</strong>
+                <?php echo esc_html($invite_policy_message); ?>
+            </div>
+        <?php else : ?>
 
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="pba-household-invite-form" class="pba-auth-form" novalidate>
-            <?php wp_nonce_field('pba_household_invite_action', 'pba_household_invite_nonce'); ?>
-            <input type="hidden" name="action" value="pba_household_send_invites">
-
-            <div id="pba-household-form-error" class="pba-form-error"></div>
-
-            <div class="pba-table-wrap">
-                <table class="pba-table" id="pba-household-invite-table">
-                    <thead>
-                        <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email Address</th>
-                            <th>Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><div class="pba-field"><input type="text" name="invite_first_name[]" required></div></td>
-                            <td><div class="pba-field"><input type="text" name="invite_last_name[]" required></div></td>
-                            <td><div class="pba-field"><input type="email" name="invite_email[]" required></div></td>
-                            <td><button type="button" class="pba-btn remove pba-row-remove-btn">Remove</button></td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="pba-callout">
+                <strong>Tip:</strong> Any Household Admin for this household can manage invitations and member access. Each person should have a unique email address.
             </div>
 
-            <div class="pba-actions">
-                <button type="button" class="pba-btn secondary" id="pba-household-add-row">Add More</button>
-                <button type="submit" class="pba-btn" id="pba-household-invite-all" data-processing-text="Inviting...">Invite All</button>
-            </div>
-        </form>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="pba-household-invite-form" class="pba-auth-form" novalidate>
+                <?php wp_nonce_field('pba_household_invite_action', 'pba_household_invite_nonce'); ?>
+                <input type="hidden" name="action" value="pba_household_send_invites">
+
+                <div id="pba-household-form-error" class="pba-form-error"></div>
+
+                <div class="pba-table-wrap">
+                    <table class="pba-table" id="pba-household-invite-table">
+                        <thead>
+                            <tr>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email Address</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="pba-field"><input type="text" name="invite_first_name[]" required></div></td>
+                                <td><div class="pba-field"><input type="text" name="invite_last_name[]" required></div></td>
+                                <td><div class="pba-field"><input type="email" name="invite_email[]" required></div></td>
+                                <td><button type="button" class="pba-btn remove pba-row-remove-btn">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pba-actions">
+                    <button type="button" class="pba-btn secondary" id="pba-household-add-row">Add More</button>
+                    <button type="submit" class="pba-btn" id="pba-household-invite-all" data-processing-text="Inviting...">Invite All</button>
+                </div>
+            </form>
+
+        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();
@@ -868,18 +926,19 @@ function pba_render_household_dashboard() {
         file_exists($base_path . 'pba-admin-list-styles.css') ? (string) filemtime($base_path . 'pba-admin-list-styles.css') : '1.0.0'
     );
 
-    $household_id      = (int) pba_get_current_household_id();
+ $household_id      = (int) pba_get_current_household_id();
     $inviter_person_id = (int) pba_get_current_house_admin_person_id();
 
     if (empty($household_id) || empty($inviter_person_id)) {
         return '<p>Household context is missing for this account.</p>';
     }
 
+    $invite_policy = pba_get_household_invite_policy($household_id);
+    $invites_allowed = ($invite_policy === 'Allowed');
+    $invite_policy_message = pba_get_household_invite_policy_message($invite_policy);
     $household_address = pba_get_current_household_display_address($household_id);
 
-    pba_update_pending_household_invites_to_expired($household_id, $inviter_person_id);
-
-    $accepted_rows = pba_get_people_for_household_by_status($household_id, 0, 'Active');
+    pba_update_pending_household_invites_to_expired($household_id, $inviter_person_id);    $accepted_rows = pba_get_people_for_household_by_status($household_id, 0, 'Active');
     $pending_rows  = pba_get_people_for_household_by_status($household_id, 0, 'Pending');
     $expired_rows  = pba_get_people_for_household_by_status($household_id, 0, 'Expired');
     $disabled_rows = pba_get_people_for_household_by_status($household_id, 0, 'Disabled');
@@ -942,8 +1001,7 @@ function pba_render_household_dashboard() {
             <?php echo pba_household_render_summary_card('Disabled', $disabled_count, 'People whose access is turned off'); ?>
         </div>
 
-        <?php echo pba_render_household_invite_section(); ?>
-        <?php echo pba_render_household_previous_invitations_table($page_rows, 'Household Members and Invitations', $request_args, $pagination); ?>
+        <?php echo pba_render_household_invite_section($invites_allowed, $invite_policy_message); ?>        <?php echo pba_render_household_previous_invitations_table($page_rows, 'Household Members and Invitations', $request_args, $pagination); ?>
     </div>
     <?php
 

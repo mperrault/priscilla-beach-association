@@ -31,6 +31,11 @@ function pba_handle_household_send_invites() {
     $emails      = isset($_POST['invite_email']) ? array_values((array) wp_unslash($_POST['invite_email'])) : array();
 
     $household_id      = (int) pba_get_current_household_id();
+    $invite_policy = pba_get_household_invite_policy($household_id);
+
+    if ($invite_policy !== 'Allowed') {
+        pba_household_redirect_with_status($invite_policy === 'Restricted' ? 'invites_restricted' : 'invites_blocked');
+    }
     $inviter_person_id = (int) pba_get_current_house_admin_person_id();
 
     if (empty($household_id) || empty($inviter_person_id)) {

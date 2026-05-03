@@ -1052,6 +1052,40 @@ function pba_render_household_admin_edit_view($household_id) {
                         </div>
                     </div>
 
+                    <div class="pba-form-grid" style="margin-top:18px;">
+                    <div class="pba-field">
+                        <label for="pba-household-invite-policy">Invite Policy</label>
+                        <select id="pba-household-invite-policy" name="invite_policy">
+                            <?php
+                            $current_invite_policy = (string) ($household['invite_policy'] ?? 'Allowed');
+
+                            $invite_policy_options = array(
+                                'Allowed'    => 'Allowed',
+                                'Restricted' => 'Restricted',
+                                'Blocked'    => 'Blocked',
+                            );
+
+                            if (!array_key_exists($current_invite_policy, $invite_policy_options)) {
+                                $current_invite_policy = 'Allowed';
+                            }
+
+                            foreach ($invite_policy_options as $invite_policy_value => $invite_policy_label) :
+                                ?>
+                                <option value="<?php echo esc_attr($invite_policy_value); ?>" <?php selected($current_invite_policy, $invite_policy_value); ?>>
+                                    <?php echo esc_html($invite_policy_label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+
+                        <div class="pba-admin-list-muted" style="margin-top:6px;">
+                            Allowed: Household Admin may invite members normally. Restricted: only PBA Admins may add or invite members after review. Blocked: invitations are disabled for this household.
+                        </div>
+                    </div>
+                        <div class="pba-field" style="grid-column:1 / -1;">
+                            <label for="pba-household-notes">Notes</label>
+                            <textarea id="pba-household-notes" name="notes" rows="5"><?php echo esc_textarea((string) ($household['notes'] ?? '')); ?></textarea>
+                        </div>
+                    </div>
                     <p class="pba-maintenance-actions">
                         <button type="submit" class="pba-btn">Save Household</button>
                     </p>
@@ -1115,9 +1149,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section" open>
+        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
             <summary>Association &amp; Ownership</summary>
             <div class="pba-household-detail-body">
+                <?php echo pba_render_household_admin_gis_source_note(); ?>
                 <table class="pba-table pba-household-display-table">
                     <tbody>
                         <tr>
@@ -1128,18 +1163,15 @@ function pba_render_household_admin_edit_view($household_id) {
                             <th>Owner Occupied</th>
                             <td><?php echo pba_render_households_admin_owner_occupied_badge($household['owner_occupied'] ?? null); ?></td>
                         </tr>
-                        <tr>
-                            <th>Invite Policy</th>
-                            <td><?php echo esc_html('Allowed'); ?></td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section" open>
+        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
             <summary>Property Identifiers</summary>
             <div class="pba-household-detail-body">
+                <?php echo pba_render_household_admin_gis_source_note(); ?>
                 <table class="pba-household-display-table pba-table">
                     <tbody>
                         <tr><th>Assessor Book Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_book_raw'] ?? '')); ?></td></tr>
@@ -1151,9 +1183,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section" open>
+        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
             <summary>Correspondence</summary>
             <div class="pba-household-detail-body">
+                <?php echo pba_render_household_admin_gis_source_note(); ?>
                 <table class="pba-table pba-household-display-table">
                     <tbody>
                         <tr>
@@ -1169,9 +1202,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section">
+        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
             <summary>Valuation</summary>
             <div class="pba-household-detail-body">
+                <?php echo pba_render_household_admin_gis_source_note(); ?>
                 <table class="pba-household-display-table pba-table">
                     <tbody>
                         <tr><th>Building Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['building_value'] ?? null)); ?></td></tr>
@@ -1184,9 +1218,10 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section">
+        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
             <summary>Property Details</summary>
             <div class="pba-household-detail-body">
+                <?php echo pba_render_household_admin_gis_source_note(); ?>
                 <table class="pba-household-display-table pba-table">
                     <tbody>
                         <tr><th>Lot Size Acres</th><td><?php echo esc_html((string) ($household['lot_size_acres'] ?? '')); ?></td></tr>
@@ -1199,20 +1234,254 @@ function pba_render_household_admin_edit_view($household_id) {
             </div>
         </details>
 
-        <details class="pba-household-detail-section pba-section">
-            <summary>Mailing &amp; Notes</summary>
-            <div class="pba-household-detail-body">
-                <table class="pba-household-display-table pba-table">
-                    <tbody>
-                        <tr><th>Notes</th><td><?php echo nl2br(esc_html((string) ($household['notes'] ?? ''))); ?></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </details>
     </div>
     <?php
+    echo pba_render_household_admin_gis_disclaimer_assets();
     echo pba_admin_list_render_resizable_table_script();
 
+    return ob_get_clean();
+}
+
+function pba_render_household_admin_gis_source_note() {
+    return '<div class="pba-gis-source-note">Source: Public assessor / MassGIS reference data. Verify with official municipal or Registry records before relying on this information.</div>';
+}
+
+function pba_render_household_admin_gis_disclaimer_assets() {
+    ob_start();
+    ?>
+    <style>
+        .pba-gis-source-note {
+            margin: 0 0 16px;
+            padding: 10px 12px;
+            border: 1px solid #d8e6f2;
+            border-radius: 10px;
+            background: #f7fbff;
+            color: #50657a;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .pba-gis-disclaimer-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+        }
+
+        .pba-gis-disclaimer-modal.active {
+            display: block;
+        }
+
+        .pba-gis-disclaimer-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 32, 48, 0.48);
+        }
+
+        .pba-gis-disclaimer-dialog {
+            position: relative;
+            max-width: 640px;
+            margin: 10vh auto 0;
+            background: #ffffff;
+            border: 1px solid #d8e6f2;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(13, 32, 48, 0.24);
+            padding: 28px;
+            color: #17324d;
+        }
+
+        .pba-gis-disclaimer-dialog h2 {
+            margin: 0 0 14px;
+            font-size: 24px;
+            line-height: 1.25;
+            color: #17324d;
+        }
+
+        .pba-gis-disclaimer-dialog p {
+            margin: 0 0 14px;
+            font-size: 15px;
+            line-height: 1.55;
+            color: #334e68;
+        }
+
+        .pba-gis-disclaimer-checkbox {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 18px 0 0;
+            font-size: 14px;
+            color: #334e68;
+        }
+
+        .pba-gis-disclaimer-checkbox input {
+            margin: 0;
+        }
+
+        .pba-gis-disclaimer-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .pba-gis-disclaimer-btn {
+            border: 1px solid #0d3b66;
+            background: #0d3b66;
+            color: #ffffff;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .pba-gis-disclaimer-btn.secondary {
+            background: #ffffff;
+            color: #0d3b66;
+        }
+
+        @media (max-width: 700px) {
+            .pba-gis-disclaimer-dialog {
+                margin: 24px 16px 0;
+                padding: 22px;
+            }
+
+            .pba-gis-disclaimer-actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+        }
+    </style>
+
+    <div class="pba-gis-disclaimer-modal" id="pba-gis-disclaimer-modal" aria-hidden="true">
+        <div class="pba-gis-disclaimer-backdrop" data-pba-gis-cancel></div>
+
+        <div class="pba-gis-disclaimer-dialog" role="dialog" aria-modal="true" aria-labelledby="pba-gis-disclaimer-title">
+            <h2 id="pba-gis-disclaimer-title">Public Property Data Notice</h2>
+
+            <p>
+                Some property information shown on this page is derived from publicly available assessor,
+                municipal, or MassGIS records. This information is provided for PBA administrative reference
+                only and may be incomplete, outdated, or inconsistent with official records.
+            </p>
+
+            <p>
+                PBA Admins should verify ownership, addresses, parcel details, valuation, and mailing
+                information with the Town Assessor, Registry of Deeds, or other official source before
+                relying on it for notices, billing, membership decisions, or record updates.
+            </p>
+
+            <p>
+                Do not copy, export, or redistribute this information except as needed for authorized PBA
+                administrative purposes.
+            </p>
+
+            <label class="pba-gis-disclaimer-checkbox">
+                <input type="checkbox" id="pba-gis-disclaimer-remember" checked>
+                Do not show this again on this browser
+            </label>
+
+            <div class="pba-gis-disclaimer-actions">
+                <button type="button" class="pba-gis-disclaimer-btn secondary" data-pba-gis-cancel>Cancel</button>
+                <button type="button" class="pba-gis-disclaimer-btn" id="pba-gis-disclaimer-accept">I understand</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var storageKey = 'pba_gis_property_data_notice_accepted_v1';
+        var modal = document.getElementById('pba-gis-disclaimer-modal');
+        var acceptBtn = document.getElementById('pba-gis-disclaimer-accept');
+        var rememberCheckbox = document.getElementById('pba-gis-disclaimer-remember');
+
+        if (!modal || !acceptBtn) {
+            return;
+        }
+
+        var pendingDetails = null;
+        var lastFocusedElement = null;
+
+        function hasAcceptedNotice() {
+            try {
+                return window.localStorage.getItem(storageKey) === '1';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function saveAcceptedNotice() {
+            if (!rememberCheckbox || !rememberCheckbox.checked) {
+                return;
+            }
+
+            try {
+                window.localStorage.setItem(storageKey, '1');
+            } catch (e) {
+                // Ignore storage failures.
+            }
+        }
+
+        function openModal(details) {
+            pendingDetails = details;
+            lastFocusedElement = document.activeElement;
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            acceptBtn.focus();
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            pendingDetails = null;
+
+            if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus();
+            }
+        }
+
+        function acceptAndContinue() {
+            var details = pendingDetails;
+            saveAcceptedNotice();
+            closeModal();
+
+            if (details) {
+                details.open = true;
+            }
+        }
+
+        document.addEventListener('click', function (event) {
+            var summary = event.target.closest('details[data-pba-gis-section] > summary');
+
+            if (!summary) {
+                return;
+            }
+
+            var details = summary.parentElement;
+
+            if (!details || details.open || hasAcceptedNotice()) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            openModal(details);
+        }, true);
+
+        acceptBtn.addEventListener('click', acceptAndContinue);
+
+        modal.querySelectorAll('[data-pba-gis-cancel]').forEach(function (button) {
+            button.addEventListener('click', closeModal);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    })();
+    </script>
+    <?php
     return ob_get_clean();
 }
 
@@ -1231,14 +1500,33 @@ function pba_handle_save_household_admin() {
         exit;
     }
 
-    $payload = array(
-        'household_admin_first_name' => isset($_POST['household_admin_first_name']) ? sanitize_text_field(wp_unslash($_POST['household_admin_first_name'])) : '',
-        'household_admin_last_name' => isset($_POST['household_admin_last_name']) ? sanitize_text_field(wp_unslash($_POST['household_admin_last_name'])) : '',
-        'household_admin_email_address' => isset($_POST['household_admin_email_address']) ? sanitize_email(wp_unslash($_POST['household_admin_email_address'])) : '',
-        'household_status' => isset($_POST['household_status']) ? sanitize_text_field(wp_unslash($_POST['household_status'])) : 'Active',
-        'last_modified_at' => gmdate('c'),
-    );
+$invite_policy = isset($_POST['invite_policy'])
+    ? sanitize_text_field(wp_unslash($_POST['invite_policy']))
+    : 'Allowed';
 
+$allowed_invite_policies = array('Allowed', 'Restricted', 'Blocked');
+
+if (!in_array($invite_policy, $allowed_invite_policies, true)) {
+    $invite_policy = 'Allowed';
+}
+$invite_policy = isset($_POST['invite_policy'])
+    ? sanitize_text_field(wp_unslash($_POST['invite_policy']))
+    : 'Allowed';
+
+$allowed_invite_policies = array('Allowed', 'Restricted', 'Blocked');
+
+if (!in_array($invite_policy, $allowed_invite_policies, true)) {
+    $invite_policy = 'Allowed';
+}
+$payload = array(
+    'household_admin_first_name' => isset($_POST['household_admin_first_name']) ? sanitize_text_field(wp_unslash($_POST['household_admin_first_name'])) : '',
+    'household_admin_last_name' => isset($_POST['household_admin_last_name']) ? sanitize_text_field(wp_unslash($_POST['household_admin_last_name'])) : '',
+    'household_admin_email_address' => isset($_POST['household_admin_email_address']) ? sanitize_email(wp_unslash($_POST['household_admin_email_address'])) : '',
+    'household_status' => isset($_POST['household_status']) ? sanitize_text_field(wp_unslash($_POST['household_status'])) : 'Active',
+    'invite_policy' => $invite_policy,
+    'notes' => isset($_POST['notes']) ? sanitize_textarea_field(wp_unslash($_POST['notes'])) : '',
+    'last_modified_at' => gmdate('c'),
+);
     $result = pba_supabase_update('Household', $payload, array(
         'household_id' => 'eq.' . $household_id,
     ));
