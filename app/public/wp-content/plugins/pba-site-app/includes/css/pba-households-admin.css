@@ -370,6 +370,109 @@
 .pba-massgis-ajax-message[data-type="canceled"] {
     color: #765500;
 }
+.pba-massgis-review-intro {
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid #d8e6f2;
+    border-radius: 12px;
+    background: #f7fbff;
+    color: #17324a;
+}
+
+.pba-massgis-review-warning {
+    margin-top: 6px;
+    color: #765500;
+    font-weight: 700;
+}
+
+.pba-massgis-review-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.pba-massgis-review-card {
+    min-width: 0;
+}
+
+.pba-massgis-review-card h3 {
+    margin: 0 0 10px;
+    color: #17324a;
+    font-size: 16px;
+}
+
+.pba-massgis-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.pba-massgis-review-actions form {
+    margin: 0;
+}
+.pba-massgis-schedule-note {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5edf5;
+    background: #f7fbff;
+    color: #52697d;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pba-massgis-schedule-text {
+    line-height: 1.35;
+}
+
+.pba-massgis-batch-form {
+    margin: 0;
+}
+
+.pba-massgis-batch-form .pba-admin-list-btn.secondary {
+    min-height: 34px;
+    padding: 7px 12px;
+    font-size: 13px;
+}
+.pba-massgis-batch-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pba-massgis-batch-message {
+    font-size: 12px;
+    font-weight: 700;
+    color: #5d7185;
+}
+
+.pba-massgis-batch-message[data-type="success"] {
+    color: #245c24;
+}
+
+.pba-massgis-batch-message[data-type="error"] {
+    color: #8a1f1f;
+}
+
+.pba-massgis-batch-message[data-type="canceled"] {
+    color: #765500;
+}
+
+.pba-massgis-batch-cancel-btn {
+    margin-left: 4px;
+}
+
+@media (max-width: 900px) {
+    .pba-massgis-review-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 /* Responsive */
 @media (max-width: 1100px) {

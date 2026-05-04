@@ -28,7 +28,7 @@ if (!defined('PBA_MASSGIS_LOOKUP_CITY')) {
 
 add_action('init', 'pba_massgis_schedule_household_currency_check');
 add_action('pba_massgis_household_currency_check', 'pba_massgis_check_households_batch');
-
+add_action('wp_ajax_pba_massgis_run_household_batch_ajax', 'pba_massgis_handle_run_household_batch_ajax');
 /*
  * Keep the admin-post handler as a no-JS fallback, but normal clicks should use AJAX.
  */
@@ -36,6 +36,7 @@ add_action('admin_post_pba_massgis_check_household_now', 'pba_massgis_handle_che
 
 add_action('wp_ajax_pba_massgis_check_household_ajax', 'pba_massgis_handle_check_household_ajax');
 add_action('wp_footer', 'pba_massgis_render_ajax_script');
+add_action('admin_post_pba_massgis_resolve_household', 'pba_massgis_handle_resolve_household');
 
 /**
  * Schedules a daily batch check. WP-Cron runs when the site receives traffic.
@@ -398,7 +399,12 @@ function pba_massgis_compare_household_to_parcel($household, $parcel) {
     if ($local_address !== '' && $massgis_address !== '' && $local_address !== $massgis_address) {
         $warnings[] = 'MassGIS site address differs: ' . pba_massgis_string($parcel['SITE_ADDR'] ?? '') . '.';
     }
+    $local_owner = pba_massgis_normalize_owner_compare($household['owner_name_raw'] ?? '');
+    $massgis_owner = pba_massgis_normalize_owner_compare($parcel['OWNER1'] ?? '');
 
+    if ($local_owner !== '' && $massgis_owner !== '' && $local_owner !== $massgis_owner) {
+        $warnings[] = 'MassGIS owner differs: ' . pba_massgis_string($parcel['OWNER1'] ?? '') . '.';
+    }
     $old_hash = pba_massgis_string($household['massgis_snapshot_hash'] ?? '');
     if ($old_hash !== '') {
         $snapshot = array(
@@ -574,6 +580,30 @@ function pba_render_household_massgis_status($household_id) {
 
     return pba_render_household_massgis_status_from_row($row);
 }
+function pba_massgis_normalize_owner_compare($value) {
+    $value = strtoupper(pba_massgis_string($value));
+
+    if ($value === '') {
+        return '';
+    }
+
+    $value = str_replace('&', ' AND ', $value);
+
+    $value = preg_replace('/[.,]/', ' ', $value);
+    $value = preg_replace('/\s+/', ' ', $value);
+
+    /*
+     * Normalize common ownership suffixes/titles enough to reduce simple
+     * punctuation/abbreviation false positives, but do not remove them entirely.
+     */
+    $value = preg_replace('/\bTRUSTEE\b/', 'TR', $value);
+    $value = preg_replace('/\bTRUSTEES\b/', 'TR', $value);
+    $value = preg_replace('/\bTRUST\b/', 'TR', $value);
+    $value = preg_replace('/\bREVOCABLE\b/', 'REV', $value);
+    $value = preg_replace('/\bLIVING\b/', 'LIV', $value);
+
+    return trim($value);
+}
 
 function pba_massgis_normalize_compare($value) {
     $value = strtoupper(pba_massgis_string($value));
@@ -639,6 +669,9 @@ function pba_massgis_render_admin_household_badge($household) {
     } elseif ($status === 'not_found') {
         $label = 'No MassGIS match';
         $class = 'warning';
+    } elseif ($status === 'disabled') {
+        $label = 'Check disabled';
+        $class = 'neutral';
     }
 
     ob_start();
@@ -814,7 +847,116 @@ function pba_massgis_render_ajax_script() {
             button.dataset.readyText = 'Check';
             return 'Check';
         }
+        document.addEventListener('submit', function (event) {
+            const form = event.target.closest('.pba-massgis-batch-form');
 
+            if (!form) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const button = form.querySelector('button[type="submit"]');
+            const messageEl = form.querySelector('.pba-massgis-batch-message');
+            const scheduleTextEl = document.querySelector('.pba-massgis-schedule-text');
+
+            if (!button) {
+                return;
+            }
+
+            const readyText = button.dataset.readyText || 'Run next batch now';
+            const controller = new AbortController();
+
+            button.disabled = true;
+            button.textContent = 'Running...';
+
+            if (messageEl) {
+                messageEl.textContent = 'Checking next MassGIS batch...';
+                messageEl.dataset.type = 'info';
+            }
+
+            let cancelButton = form.querySelector('.pba-massgis-batch-cancel-btn');
+            if (!cancelButton) {
+                cancelButton = document.createElement('button');
+                cancelButton.type = 'button';
+                cancelButton.className = button.className + ' pba-massgis-batch-cancel-btn';
+                cancelButton.textContent = 'Cancel';
+                button.insertAdjacentElement('afterend', cancelButton);
+            }
+
+            cancelButton.disabled = false;
+
+            cancelButton.addEventListener('click', function () {
+                controller.abort();
+
+                button.disabled = false;
+                button.textContent = readyText;
+                cancelButton.remove();
+
+                if (messageEl) {
+                    messageEl.textContent = 'Batch check canceled.';
+                    messageEl.dataset.type = 'canceled';
+                }
+            }, { once: true });
+
+            const formData = new FormData(form);
+            formData.set('action', 'pba_massgis_run_household_batch_ajax');
+
+            fetch(<?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData,
+                signal: controller.signal
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (payload) {
+                if (!payload || !payload.success) {
+                    const message = payload && payload.data && payload.data.message
+                        ? payload.data.message
+                        : 'MassGIS batch check failed.';
+
+                    throw new Error(message);
+                }
+
+                button.disabled = false;
+                button.textContent = readyText;
+
+                if (cancelButton) {
+                    cancelButton.remove();
+                }
+
+                if (messageEl) {
+                    messageEl.textContent = payload.data && payload.data.message
+                        ? payload.data.message
+                        : 'MassGIS batch check completed.';
+                    messageEl.dataset.type = 'success';
+                }
+
+                if (scheduleTextEl && payload.data && payload.data.scheduleText) {
+                    scheduleTextEl.textContent = payload.data.scheduleText;
+                }
+            })
+            .catch(function (error) {
+                if (error.name === 'AbortError') {
+                    return;
+                }
+
+                button.disabled = false;
+                button.textContent = readyText;
+
+                if (cancelButton) {
+                    cancelButton.remove();
+                }
+
+                if (messageEl) {
+                    messageEl.textContent = error.message || 'MassGIS batch check failed.';
+                    messageEl.dataset.type = 'error';
+                }
+            });
+        }, true);
         document.addEventListener('submit', function (event) {
             const form = event.target.closest('.pba-massgis-form, .pba-massgis-admin-actions');
 
@@ -938,4 +1080,247 @@ function pba_massgis_render_ajax_script() {
     })();
     </script>
     <?php
+}
+function pba_massgis_handle_resolve_household() {
+    if (!is_user_logged_in() || (!current_user_can('pba_manage_all_households') && !current_user_can('pba_manage_roles'))) {
+        wp_safe_redirect(add_query_arg('pba_households_status', 'invalid_request', home_url('/households/')));
+        exit;
+    }
+
+    $household_id = isset($_POST['household_id']) ? absint($_POST['household_id']) : 0;
+    $resolution = isset($_POST['massgis_resolution']) ? sanitize_text_field(wp_unslash($_POST['massgis_resolution'])) : '';
+
+    if ($household_id < 1) {
+        wp_safe_redirect(add_query_arg('pba_households_status', 'invalid_request', home_url('/households/')));
+        exit;
+    }
+
+    check_admin_referer('pba_massgis_resolve_household_' . $household_id, 'pba_massgis_resolution_nonce');
+
+    $household = pba_massgis_get_household_row($household_id);
+    if (is_wp_error($household) || empty($household)) {
+        wp_safe_redirect(add_query_arg(array(
+            'household_view' => 'edit',
+            'household_id' => $household_id,
+            'pba_households_status' => 'massgis_resolution_failed',
+        ), home_url('/households/')));
+        exit;
+    }
+
+    $payload = array();
+
+    if ($resolution === 'accept_snapshot') {
+        /*
+         * Keep the PBA household record as-is.
+         * Accept the latest MassGIS snapshot as reviewed/current.
+         * PBAMembers are not changed.
+         */
+        $payload = array(
+            'massgis_status' => 'current',
+            'massgis_warning' => '',
+            'massgis_snapshot_hash' => pba_massgis_hash_latest_household_snapshot($household),
+            'massgis_last_checked_at' => !empty($household['massgis_last_checked_at'])
+                ? $household['massgis_last_checked_at']
+                : gmdate('c'),
+            'last_modified_at' => gmdate('c'),
+        );
+    } elseif ($resolution === 'restrict_invites') {
+        /*
+         * Apply a safety option without touching existing members.
+         * Existing PBAMembers stay attached.
+         * New household invites become admin-controlled.
+         */
+        $payload = array(
+            'invite_policy' => 'Restricted',
+            'notes' => pba_massgis_append_household_note(
+                (string) ($household['notes'] ?? ''),
+                'MassGIS review: invitations restricted pending household/member review.'
+            ),
+            'last_modified_at' => gmdate('c'),
+        );
+    } elseif ($resolution === 'disable_checks') {
+        /*
+         * For known MassGIS edge cases.
+         * PBAMembers are not changed.
+         */
+        $payload = array(
+            'massgis_check_enabled' => false,
+            'massgis_status' => 'disabled',
+            'massgis_warning' => 'MassGIS checks disabled for this household by admin review.',
+            'last_modified_at' => gmdate('c'),
+        );
+    } else {
+        wp_safe_redirect(add_query_arg(array(
+            'household_view' => 'edit',
+            'household_id' => $household_id,
+            'pba_households_status' => 'invalid_request',
+        ), home_url('/households/')));
+        exit;
+    }
+
+    $result = pba_massgis_update_household($household_id, $payload);
+
+    if (is_wp_error($result)) {
+        wp_safe_redirect(add_query_arg(array(
+            'household_view' => 'edit',
+            'household_id' => $household_id,
+            'pba_households_status' => 'massgis_resolution_failed',
+        ), home_url('/households/')));
+        exit;
+    }
+
+    wp_safe_redirect(add_query_arg(array(
+        'household_view' => 'edit',
+        'household_id' => $household_id,
+        'pba_households_status' => 'massgis_resolution_saved',
+    ), home_url('/households/')));
+    exit;
+}
+
+function pba_massgis_hash_latest_household_snapshot($household) {
+    $snapshot = array(
+        'MAP_PAR_ID' => $household['massgis_map_par_id'] ?? '',
+        'LOC_ID' => $household['massgis_loc_id'] ?? '',
+        'SITE_ADDR' => $household['massgis_latest_site_addr'] ?? '',
+        'CITY' => $household['massgis_latest_city'] ?? '',
+        'ZIP' => $household['massgis_latest_zip'] ?? '',
+        'OWNER1' => $household['massgis_latest_owner1'] ?? '',
+        'FY' => $household['massgis_latest_fy'] ?? '',
+        'LAST_EDIT' => $household['massgis_data_last_edit_at'] ?? '',
+    );
+
+    return md5(wp_json_encode($snapshot));
+}
+
+function pba_massgis_append_household_note($existing_notes, $new_note) {
+    $existing_notes = trim((string) $existing_notes);
+    $new_note = trim((string) $new_note);
+
+    if ($new_note === '') {
+        return $existing_notes;
+    }
+
+    $dated_note = '[' . wp_date('m/d/Y g:i A T') . '] ' . $new_note;
+
+    if ($existing_notes === '') {
+        return $dated_note;
+    }
+
+    return $existing_notes . "\n\n" . $dated_note;
+}
+
+function pba_massgis_handle_run_household_batch_now() {
+    if (!is_user_logged_in() || (!current_user_can('pba_manage_all_households') && !current_user_can('pba_manage_roles'))) {
+        wp_safe_redirect(add_query_arg('pba_households_status', 'invalid_request', home_url('/households/')));
+        exit;
+    }
+
+    check_admin_referer('pba_massgis_run_household_batch_now', 'pba_massgis_batch_nonce');
+
+    $redirect_url = wp_get_referer();
+    if (empty($redirect_url)) {
+        $redirect_url = home_url('/households/');
+    }
+
+    $redirect_url = remove_query_arg('pba_households_status', $redirect_url);
+
+    if (!function_exists('pba_massgis_check_households_batch')) {
+        wp_safe_redirect(add_query_arg('pba_households_status', 'massgis_batch_failed', $redirect_url));
+        exit;
+    }
+
+    $result = pba_massgis_check_households_batch();
+
+    if (is_wp_error($result)) {
+        wp_safe_redirect(add_query_arg('pba_households_status', 'massgis_batch_failed', $redirect_url));
+        exit;
+    }
+
+    wp_safe_redirect(add_query_arg('pba_households_status', 'massgis_batch_completed', $redirect_url));
+    exit;
+}
+function pba_massgis_get_next_scheduled_check_text() {
+    $next = wp_next_scheduled('pba_massgis_household_currency_check');
+    $batch_size = defined('PBA_MASSGIS_CHECK_BATCH_SIZE') ? (int) PBA_MASSGIS_CHECK_BATCH_SIZE : 25;
+
+    if (!$next) {
+        return sprintf(
+            'MassGIS auto-check: not currently scheduled. Batch size: %d households.',
+            $batch_size
+        );
+    }
+
+    return sprintf(
+        'MassGIS auto-check: next run %s. Batch size: %d households.',
+        wp_date('m/d/Y g:i A T', $next),
+        $batch_size
+    );
+}
+function pba_massgis_render_households_admin_schedule_controls() {
+    if (!is_user_logged_in() || (!current_user_can('pba_manage_all_households') && !current_user_can('pba_manage_roles'))) {
+        return '';
+    }
+
+    $schedule_text = function_exists('pba_massgis_get_next_scheduled_check_text')
+        ? pba_massgis_get_next_scheduled_check_text()
+        : 'MassGIS auto-check schedule unavailable.';
+
+    ob_start();
+    ?>
+    <div class="pba-massgis-schedule-note">
+        <div class="pba-massgis-schedule-text">
+            <?php echo esc_html($schedule_text); ?>
+        </div>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-massgis-batch-form">
+            <?php wp_nonce_field('pba_massgis_run_household_batch_now', 'pba_massgis_batch_nonce'); ?>
+            <input type="hidden" name="action" value="pba_massgis_run_household_batch_ajax">
+            <button type="submit" class="pba-admin-list-btn secondary" data-ready-text="Run next batch now">
+                Run next batch now
+            </button>
+            <span class="pba-massgis-batch-message" aria-live="polite"></span>
+        </form>
+    </div>
+    <?php
+
+    return ob_get_clean();
+}
+function pba_massgis_handle_run_household_batch_ajax() {
+    if (!is_user_logged_in() || (!current_user_can('pba_manage_all_households') && !current_user_can('pba_manage_roles'))) {
+        wp_send_json_error(array(
+            'message' => 'You do not have permission to run the MassGIS batch check.',
+        ), 403);
+    }
+
+    $nonce = isset($_POST['pba_massgis_batch_nonce'])
+        ? sanitize_text_field(wp_unslash($_POST['pba_massgis_batch_nonce']))
+        : '';
+
+    if (!wp_verify_nonce($nonce, 'pba_massgis_run_household_batch_now')) {
+        wp_send_json_error(array(
+            'message' => 'Security check failed. Please refresh and try again.',
+        ), 403);
+    }
+
+    if (!function_exists('pba_massgis_check_households_batch')) {
+        wp_send_json_error(array(
+            'message' => 'MassGIS batch checker is not available.',
+        ), 500);
+    }
+
+    $result = pba_massgis_check_households_batch();
+
+    if (is_wp_error($result)) {
+        wp_send_json_error(array(
+            'message' => $result->get_error_message(),
+        ), 500);
+    }
+
+    $schedule_text = function_exists('pba_massgis_get_next_scheduled_check_text')
+        ? pba_massgis_get_next_scheduled_check_text()
+        : 'MassGIS auto-check schedule unavailable.';
+
+    wp_send_json_success(array(
+        'message' => 'MassGIS batch check completed.',
+        'scheduleText' => $schedule_text,
+    ));
 }
