@@ -281,8 +281,9 @@ function pba_household_render_message($status, $duplicate_messages = array()) {
     }
 
     $messages = array(
-        'account_created'                            => array('type' => 'success', 'title' => 'Success', 'text' => 'Account created successfully.'),
-
+        'account_created'                              => array('type' => 'success', 'title' => 'Success', 'text' => 'Account created successfully.'),
+        'massgis_checked'                              => array('type' => 'success', 'title' => 'Success', 'text' => 'MassGIS check completed.'),
+        'massgis_lookup_failed'                        => array('type' => 'error', 'title' => 'Please review', 'text' => 'MassGIS lookup could not be completed.'),
         'invite_created'                               => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was sent successfully.'),
         'invite_created_email_partial'                 => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was created, but the email could not be sent.'),
         'invite_created_with_duplicates'               => array('type' => 'success', 'title' => 'Success', 'text' => 'The invitation was sent successfully. Some duplicate matches were found.'),
@@ -993,6 +994,12 @@ function pba_render_household_dashboard() {
         </div>
 
         <?php echo pba_household_render_message($status, $duplicate_messages); ?>
+
+        <?php
+        if (function_exists('pba_render_household_massgis_status')) {
+            echo pba_render_household_massgis_status($household_id);
+        }
+        ?>
 
         <div class="pba-summary-grid">
             <?php echo pba_household_render_summary_card('Accepted', $accepted_count, 'Current active household members'); ?>

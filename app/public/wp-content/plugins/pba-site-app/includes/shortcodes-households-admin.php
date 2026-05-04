@@ -95,17 +95,23 @@ function pba_households_admin_enqueue_styles() {
 function pba_render_households_admin_status_message() {
     $status = isset($_GET['pba_households_status']) ? sanitize_text_field(wp_unslash($_GET['pba_households_status'])) : '';
 
+    if ($status === '' && isset($_GET['pba_household_status'])) {
+        $status = sanitize_text_field(wp_unslash($_GET['pba_household_status']));
+    }
+
     if ($status === '') {
         return '';
     }
 
     $success_messages = array(
         'household_saved' => 'Household saved successfully.',
+        'massgis_checked' => 'MassGIS check completed.',
     );
 
     $error_messages = array(
         'invalid_request' => 'We could not process that request.',
         'save_failed'     => 'We could not save that household.',
+        'massgis_lookup_failed' => 'MassGIS lookup could not be completed.',
     );
 
     if (isset($success_messages[$status])) {
@@ -461,30 +467,31 @@ function pba_render_households_admin_table($data, $request_args) {
             <div class="pba-admin-list-skeleton-line"></div>
         </div>
 
-        <table class="pba-admin-list-table pba-table pba-households-table pba-resizable-table" id="pba-households-admin-table" data-resize-key="pbaHouseholdsAdminColumnWidthsV3" data-min-col-width="100">
-        <colgroup data-pba-resizable-cols="1">
-                <col style="width: 141px;">
-                <col style="width: 100px;">
-                <col style="width: 100px;">
-                <col style="width: 100px;">
-                <col style="width: 100px;">
-                <col style="width: 150px;">
-            </colgroup>
-            <thead>
-                <tr>
-                    <?php echo pba_render_households_admin_sortable_th('Address', 'address', $request_args); ?>
-                    <?php echo pba_render_households_admin_sortable_th('Owner', 'owner', $request_args); ?>
-                    <?php echo pba_render_households_admin_sortable_th('House Admin', 'house_admin', $request_args); ?>
-                    <?php echo pba_render_households_admin_sortable_th('Status / Members', 'status_members', $request_args); ?>
-                    <?php echo pba_render_households_admin_sortable_th('Owner Occupied', 'owner_occupied', $request_args); ?>
-                    <th data-resizable="false">Action</th>
-                </tr>
-            </thead>
-            <tbody>
+            <table class="pba-admin-list-table pba-table pba-households-table pba-resizable-table" id="pba-households-admin-table" data-resize-key="pbaHouseholdsAdminColumnWidthsV5" data-min-col-width="72">
+                <colgroup data-pba-resizable-cols="1">
+                    <col style="width: 145px;">
+                    <col style="width: 135px;">
+                    <col style="width: 120px;">
+                    <col style="width: 120px;">
+                    <col style="width: 76px;">
+                    <col style="width: 135px;">
+                    <col style="width: 175px;">
+                </colgroup>
+                    <thead>
+                    <tr>
+                        <?php echo pba_render_households_admin_sortable_th('Address', 'address', $request_args); ?>
+                        <?php echo pba_render_households_admin_sortable_th('Owner', 'owner', $request_args); ?>
+                        <?php echo pba_render_households_admin_sortable_th('House Admin', 'house_admin', $request_args); ?>
+                        <?php echo pba_render_households_admin_sortable_th('Status / Members', 'status_members', $request_args); ?>
+                        <?php echo pba_render_households_admin_sortable_th('Owner Occupied', 'owner_occupied', $request_args); ?>
+                        <th data-resizable="false">MassGIS</th>
+                        <th data-resizable="false">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <?php if (empty($page_rows)) : ?>
                     <tr>
-                        <td colspan="6" class="pba-admin-list-empty">No households found for the current filters.</td>
-                    </tr>
+                        <td colspan="7" class="pba-admin-list-empty">No households found for the current filters.</td>                    </tr>
                 <?php else : ?>
                     <?php foreach ($page_rows as $row) : ?>
                         <?php
@@ -511,6 +518,15 @@ function pba_render_households_admin_table($data, $request_args) {
                                 </div>
                             </td>
                             <td><?php echo pba_render_households_admin_owner_occupied_badge($owner_occupied); ?></td>
+                            <td>
+                                <?php
+                                if (function_exists('pba_massgis_render_admin_household_badge')) {
+                                    echo pba_massgis_render_admin_household_badge($row);
+                                } else {
+                                    echo '&mdash;';
+                                }
+                                ?>
+                            </td>
                             <td>
                                 <a class="pba-admin-list-btn secondary" href="<?php echo esc_url(add_query_arg(array(
                                     'household_view' => 'edit',
@@ -566,10 +582,9 @@ function pba_render_households_admin_pagination($pagination) {
 
 function pba_get_households_admin_list_data($request_args) {
     $household_rows = pba_supabase_get('Household', array(
-        'select' => 'household_id,pb_street_number,pb_street_name,household_admin_first_name,household_admin_last_name,household_admin_email_address,household_status,last_modified_at,owner_name_raw,owner_occupied',
+        'select' => 'household_id,pb_street_number,pb_street_name,household_admin_first_name,household_admin_last_name,household_admin_email_address,household_status,last_modified_at,owner_name_raw,owner_occupied,massgis_status,massgis_warning,massgis_last_checked_at,massgis_latest_site_addr,massgis_latest_owner1,massgis_loc_id,massgis_map_par_id',
         'limit'  => 5000,
     ));
-
     if (is_wp_error($household_rows)) {
         return $household_rows;
     }
@@ -634,7 +649,13 @@ function pba_get_households_admin_list_data($request_args) {
             'total_count' => (int) ($counts['total_count'] ?? 0),
             'owner_occupied' => $owner_occupied,
             'last_modified_raw' => (string) ($row['last_modified_at'] ?? ''),
-        );
+            'massgis_status' => (string) ($row['massgis_status'] ?? 'not_checked'),
+            'massgis_warning' => (string) ($row['massgis_warning'] ?? ''),
+            'massgis_last_checked_at' => (string) ($row['massgis_last_checked_at'] ?? ''),
+            'massgis_latest_site_addr' => (string) ($row['massgis_latest_site_addr'] ?? ''),
+            'massgis_latest_owner1' => (string) ($row['massgis_latest_owner1'] ?? ''),
+            'massgis_loc_id' => (string) ($row['massgis_loc_id'] ?? ''),
+            'massgis_map_par_id' => (string) ($row['massgis_map_par_id'] ?? ''),        );
     }
 
     $rows = pba_filter_households_admin_rows($rows, $request_args);
@@ -684,8 +705,11 @@ function pba_filter_households_admin_rows($rows, $request_args) {
                 (string) ($row['owner_name_raw'] ?? ''),
                 (string) ($row['display_house_admin'] ?? ''),
                 (string) ($row['household_status'] ?? ''),
+                (string) ($row['massgis_status'] ?? ''),
+                (string) ($row['massgis_warning'] ?? ''),
+                (string) ($row['massgis_latest_site_addr'] ?? ''),
+                (string) ($row['massgis_latest_owner1'] ?? ''),
             )));
-
             if (strpos($haystack, $search) === false) {
                 return false;
             }
@@ -1099,147 +1123,149 @@ function pba_render_household_admin_edit_view($household_id) {
                 <div class="pba-admin-list-grid-wrap">
                     <table class="pba-household-members-table pba-admin-list-table pba-table pba-resizable-table" id="pba-household-members-table" data-resize-key="pbaHouseholdMembersColumnWidthsV5" data-min-col-width="80">
                         <colgroup data-pba-resizable-cols="1">
-                            <col style="width: 170px;">
-                            <col style="width: 220px;">
-                            <col style="width: 105px;">
-                            <col style="width: 210px;">
-                            <col style="width: 150px;">
+                            <col style="width: 15%;">
+                            <col style="width: 15%;">
+                            <col style="width: 12%;">
+                            <col style="width: 12%;">
+                            <col style="width: 8%;">
+                            <col style="width: 22%;">
+                            <col style="width: 16%;">
                         </colgroup>
                         <thead>
-                            <tr>
-                                <?php echo pba_render_household_admin_members_sortable_th('Name', 'name'); ?>
-                                <?php echo pba_render_household_admin_members_sortable_th('Email', 'email'); ?>
-                                <?php echo pba_render_household_admin_members_sortable_th('Status', 'status'); ?>
-                                <?php echo pba_render_household_admin_members_sortable_th('Roles', 'roles'); ?>
-                                <th style="text-align:left;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($member_rows)) : ?>
-                                <tr>
-                                    <td colspan="5" class="pba-admin-list-empty">No members found for this household.</td>
-                                </tr>
-                            <?php else : ?>
-                                <?php foreach ($member_rows as $member) : ?>
-                                    <?php
-                                    $person_id = isset($member['person_id']) ? (int) $member['person_id'] : 0;
-                                    $name = trim(((string) ($member['first_name'] ?? '')) . ' ' . ((string) ($member['last_name'] ?? '')));
-                                    $roles = isset($member['role_names']) && is_array($member['role_names']) ? $member['role_names'] : array();
-                                    ?>
-                                    <tr>
-                                        <td>
-                                            <strong><?php echo esc_html($name !== '' ? $name : 'Unnamed member'); ?></strong>
-                                            <div class="pba-admin-list-muted">Person ID <?php echo esc_html((string) $person_id); ?></div>
-                                        </td>
-                                        <td><?php echo esc_html((string) ($member['email_address'] ?? '')); ?></td>
-                                        <td><?php echo pba_render_households_admin_status_badge($member['status'] ?? ''); ?></td>
-                                        <td><?php echo esc_html(!empty($roles) ? implode(', ', $roles) : '—'); ?></td>
-                                        <td style="text-align:left;white-space:nowrap;">
-                                            <a class="pba-households-btn pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
-                                                'member_view' => 'edit',
-                                                'person_id'   => $person_id,
-                                            ), home_url('/members/'))); ?>">Edit Member</a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </details>
+                                                    <tr>
+                                                        <?php echo pba_render_household_admin_members_sortable_th('Name', 'name'); ?>
+                                                        <?php echo pba_render_household_admin_members_sortable_th('Email', 'email'); ?>
+                                                        <?php echo pba_render_household_admin_members_sortable_th('Status', 'status'); ?>
+                                                        <?php echo pba_render_household_admin_members_sortable_th('Roles', 'roles'); ?>
+                                                        <th style="text-align:left;">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php if (empty($member_rows)) : ?>
+                                                        <tr>
+                                                            <td colspan="5" class="pba-admin-list-empty">No members found for this household.</td>
+                                                        </tr>
+                                                    <?php else : ?>
+                                                        <?php foreach ($member_rows as $member) : ?>
+                                                            <?php
+                                                            $person_id = isset($member['person_id']) ? (int) $member['person_id'] : 0;
+                                                            $name = trim(((string) ($member['first_name'] ?? '')) . ' ' . ((string) ($member['last_name'] ?? '')));
+                                                            $roles = isset($member['role_names']) && is_array($member['role_names']) ? $member['role_names'] : array();
+                                                            ?>
+                                                            <tr>
+                                                                <td>
+                                                                    <strong><?php echo esc_html($name !== '' ? $name : 'Unnamed member'); ?></strong>
+                                                                    <div class="pba-admin-list-muted">Person ID <?php echo esc_html((string) $person_id); ?></div>
+                                                                </td>
+                                                                <td><?php echo esc_html((string) ($member['email_address'] ?? '')); ?></td>
+                                                                <td><?php echo pba_render_households_admin_status_badge($member['status'] ?? ''); ?></td>
+                                                                <td><?php echo esc_html(!empty($roles) ? implode(', ', $roles) : '—'); ?></td>
+                                                                <td style="text-align:left;white-space:nowrap;">
+                                                                    <a class="pba-households-btn pba-btn secondary" href="<?php echo esc_url(add_query_arg(array(
+                                                                        'member_view' => 'edit',
+                                                                        'person_id'   => $person_id,
+                                                                    ), home_url('/members/'))); ?>">Edit Member</a>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    <?php endif; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </details>
 
-        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
-            <summary>Association &amp; Ownership</summary>
-            <div class="pba-household-detail-body">
-                <?php echo pba_render_household_admin_gis_source_note(); ?>
-                <table class="pba-table pba-household-display-table">
-                    <tbody>
-                        <tr>
-                            <th>Owner Name</th>
-                            <td><?php echo esc_html((string) ($household['owner_name_raw'] ?? '')); ?></td>
-                        </tr>
-                        <tr>
-                            <th>Owner Occupied</th>
-                            <td><?php echo pba_render_households_admin_owner_occupied_badge($household['owner_occupied'] ?? null); ?></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </details>
+                                <details class="pba-household-detail-section pba-section" data-pba-gis-section>
+                                    <summary>Association &amp; Ownership</summary>
+                                    <div class="pba-household-detail-body">
+                                        <?php echo pba_render_household_admin_gis_source_note(); ?>
+                                        <table class="pba-table pba-household-display-table">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Owner Name</th>
+                                                    <td><?php echo esc_html((string) ($household['owner_name_raw'] ?? '')); ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Owner Occupied</th>
+                                                    <td><?php echo pba_render_households_admin_owner_occupied_badge($household['owner_occupied'] ?? null); ?></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
 
-        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
-            <summary>Property Identifiers</summary>
-            <div class="pba-household-detail-body">
-                <?php echo pba_render_household_admin_gis_source_note(); ?>
-                <table class="pba-household-display-table pba-table">
-                    <tbody>
-                        <tr><th>Assessor Book Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_book_raw'] ?? '')); ?></td></tr>
-                        <tr><th>Assessor Page Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_page_raw'] ?? '')); ?></td></tr>
-                        <tr><th>Property ID</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['property_id'] ?? '')); ?></td></tr>
-                        <tr><th>Location ID</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['location_id'] ?? '')); ?></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </details>
+                                <details class="pba-household-detail-section pba-section" data-pba-gis-section>
+                                    <summary>Property Identifiers</summary>
+                                    <div class="pba-household-detail-body">
+                                        <?php echo pba_render_household_admin_gis_source_note(); ?>
+                                        <table class="pba-household-display-table pba-table">
+                                            <tbody>
+                                                <tr><th>Assessor Book Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_book_raw'] ?? '')); ?></td></tr>
+                                                <tr><th>Assessor Page Raw</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['assessor_page_raw'] ?? '')); ?></td></tr>
+                                                <tr><th>Property ID</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['property_id'] ?? '')); ?></td></tr>
+                                                <tr><th>Location ID</th><td><?php echo esc_html(pba_render_household_admin_raw_value($household['location_id'] ?? '')); ?></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
 
-        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
-            <summary>Correspondence</summary>
-            <div class="pba-household-detail-body">
-                <?php echo pba_render_household_admin_gis_source_note(); ?>
-                <table class="pba-table pba-household-display-table">
-                    <tbody>
-                        <tr>
-                            <th>Correspondence Address</th>
-                            <td><?php echo nl2br(esc_html((string) ($household['correspondence_address'] ?? ''))); ?></td>
-                        </tr>
-                        <tr>
-                            <th>Owner Address</th>
-                            <td><?php echo nl2br(esc_html((string) ($household['owner_address_text'] ?? ''))); ?></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </details>
+                                <details class="pba-household-detail-section pba-section" data-pba-gis-section>
+                                    <summary>Correspondence</summary>
+                                    <div class="pba-household-detail-body">
+                                        <?php echo pba_render_household_admin_gis_source_note(); ?>
+                                        <table class="pba-table pba-household-display-table">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Correspondence Address</th>
+                                                    <td><?php echo nl2br(esc_html((string) ($household['correspondence_address'] ?? ''))); ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Owner Address</th>
+                                                    <td><?php echo nl2br(esc_html((string) ($household['owner_address_text'] ?? ''))); ?></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
 
-        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
-            <summary>Valuation</summary>
-            <div class="pba-household-detail-body">
-                <?php echo pba_render_household_admin_gis_source_note(); ?>
-                <table class="pba-household-display-table pba-table">
-                    <tbody>
-                        <tr><th>Building Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['building_value'] ?? null)); ?></td></tr>
-                        <tr><th>Land Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['land_value'] ?? null)); ?></td></tr>
-                        <tr><th>Other Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['other_value'] ?? null)); ?></td></tr>
-                        <tr><th>Total Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['total_value'] ?? null)); ?></td></tr>
-                        <tr><th>Assessment FY</th><td><?php echo esc_html((string) ($household['assessment_fy'] ?? '')); ?></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </details>
+                                <details class="pba-household-detail-section pba-section" data-pba-gis-section>
+                                    <summary>Valuation</summary>
+                                    <div class="pba-household-detail-body">
+                                        <?php echo pba_render_household_admin_gis_source_note(); ?>
+                                        <table class="pba-household-display-table pba-table">
+                                            <tbody>
+                                                <tr><th>Building Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['building_value'] ?? null)); ?></td></tr>
+                                                <tr><th>Land Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['land_value'] ?? null)); ?></td></tr>
+                                                <tr><th>Other Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['other_value'] ?? null)); ?></td></tr>
+                                                <tr><th>Total Value</th><td><?php echo esc_html(pba_format_household_admin_currency($household['total_value'] ?? null)); ?></td></tr>
+                                                <tr><th>Assessment FY</th><td><?php echo esc_html((string) ($household['assessment_fy'] ?? '')); ?></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
 
-        <details class="pba-household-detail-section pba-section" data-pba-gis-section>
-            <summary>Property Details</summary>
-            <div class="pba-household-detail-body">
-                <?php echo pba_render_household_admin_gis_source_note(); ?>
-                <table class="pba-household-display-table pba-table">
-                    <tbody>
-                        <tr><th>Lot Size Acres</th><td><?php echo esc_html((string) ($household['lot_size_acres'] ?? '')); ?></td></tr>
-                        <tr><th>Last Sale Date</th><td><?php echo esc_html((string) ($household['last_sale_date'] ?? '')); ?></td></tr>
-                        <tr><th>Last Sale Price</th><td><?php echo esc_html((string) ($household['last_sale_price'] ?? '')); ?></td></tr>
-                        <tr><th>Year Built</th><td><?php echo esc_html((string) ($household['year_built'] ?? '')); ?></td></tr>
-                        <tr><th>Living Area Sqft</th><td><?php echo esc_html((string) ($household['living_area_sqft'] ?? '')); ?></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </details>
+                                <details class="pba-household-detail-section pba-section" data-pba-gis-section>
+                                    <summary>Property Details</summary>
+                                    <div class="pba-household-detail-body">
+                                        <?php echo pba_render_household_admin_gis_source_note(); ?>
+                                        <table class="pba-household-display-table pba-table">
+                                            <tbody>
+                                                <tr><th>Lot Size Acres</th><td><?php echo esc_html((string) ($household['lot_size_acres'] ?? '')); ?></td></tr>
+                                                <tr><th>Last Sale Date</th><td><?php echo esc_html((string) ($household['last_sale_date'] ?? '')); ?></td></tr>
+                                                <tr><th>Last Sale Price</th><td><?php echo esc_html((string) ($household['last_sale_price'] ?? '')); ?></td></tr>
+                                                <tr><th>Year Built</th><td><?php echo esc_html((string) ($household['year_built'] ?? '')); ?></td></tr>
+                                                <tr><th>Living Area Sqft</th><td><?php echo esc_html((string) ($household['living_area_sqft'] ?? '')); ?></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
 
-    </div>
-    <?php
-    echo pba_render_household_admin_gis_disclaimer_assets();
-    echo pba_admin_list_render_resizable_table_script();
+                            </div>
+                            <?php
+                            echo pba_render_household_admin_gis_disclaimer_assets();
+                            echo pba_admin_list_render_resizable_table_script();
 
-    return ob_get_clean();
+                            return ob_get_clean();
 }
 
 function pba_render_household_admin_gis_source_note() {

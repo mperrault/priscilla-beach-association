@@ -60,3 +60,4 @@ require_once __DIR__ . '/includes/photo-admin-handlers.php';
 require_once __DIR__ . '/includes/shortcodes-photos.php';
 require_once __DIR__ . '/includes/shortcodes-photo-upload.php';
 require_once __DIR__ . '/includes/shortcodes-photo-admin.php';
+require_once __DIR__ . '/includes/massgis-household-currency.php';

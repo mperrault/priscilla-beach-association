@@ -268,6 +268,108 @@
 #pba-household-members-table td:last-child .pba-households-btn {
     min-width: 130px;
 }
+/* Prevent the Households admin table from clipping the Action column */
+/* Households admin table: prevent Action column clipping */
+.pba-admin-list-table-wrap,
+.pba-households-table-wrap,
+.pba-households-admin-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: visible;
+    overflow-y: visible;
+    padding-right: 0;
+    box-sizing: border-box;
+}
+
+.pba-households-table {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+}
+
+.pba-households-table th,
+.pba-households-table td {
+    box-sizing: border-box;
+}
+
+/* MassGIS column */
+.pba-households-table th:nth-child(6),
+.pba-households-table td:nth-child(6) {
+    width: 145px;
+    max-width: 145px;
+}
+
+/* Action column */
+.pba-households-table th:nth-child(7),
+.pba-households-table td:nth-child(7) {
+    width: 130px;
+    max-width: 130px;
+    text-align: left;
+    white-space: nowrap;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.pba-households-table td:nth-child(7) .pba-admin-list-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 104px;
+    max-width: 104px;
+    padding-left: 14px;
+    padding-right: 14px;
+    white-space: nowrap;
+}
+.pba-massgis-admin-actions.is-checking,
+.pba-massgis-form.is-checking {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pba-massgis-cancel-btn {
+    margin-left: 6px;
+}
+
+.pba-massgis-ajax-message {
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.25;
+    color: #5d7185;
+}
+
+.pba-massgis-ajax-message[data-type="success"] {
+    color: #245c24;
+}
+
+.pba-massgis-ajax-message[data-type="error"] {
+    color: #8a1f1f;
+}
+
+.pba-massgis-ajax-message[data-type="canceled"] {
+    color: #765500;
+}
+.pba-massgis-ajax-message {
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.25;
+    color: #5d7185;
+    font-weight: 600;
+}
+
+.pba-massgis-ajax-message[data-type="success"] {
+    color: #245c24;
+}
+
+.pba-massgis-ajax-message[data-type="error"] {
+    color: #8a1f1f;
+}
+
+.pba-massgis-ajax-message[data-type="canceled"] {
+    color: #765500;
+}
 
 /* Responsive */
 @media (max-width: 1100px) {

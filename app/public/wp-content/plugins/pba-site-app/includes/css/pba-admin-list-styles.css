@@ -494,6 +494,104 @@ body.pba-table-resizing * {
     background: #d93025;
     color: #fff;
 }
+.pba-admin-list-table th,
+.pba-admin-list-table td {
+    vertical-align: top;
+}
+
+.pba-admin-list-table th:nth-child(5),
+.pba-admin-list-table td:nth-child(5) {
+    width: 72px;
+    max-width: 72px;
+    text-align: center;
+    white-space: normal;
+}
+
+.pba-admin-list-table td:nth-child(5) .pba-admin-badge,
+.pba-admin-list-table td:nth-child(5) .pba-status-badge {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+}
+.pba-admin-list-table th:nth-child(4) {
+    width: 72px;
+    max-width: 72px;
+    white-space: normal;
+    line-height: 1.1;
+}
+
+.pba-admin-list-table th:nth-child(4) a {
+    display: inline-block;
+    max-width: 70px;
+    white-space: normal;
+    line-height: 1.1;
+}
+
+.pba-admin-list-table td:nth-child(4) {
+    width: 72px;
+    max-width: 72px;
+    text-align: center;
+    white-space: normal;
+}/* Households admin table: compact MassGIS + owner occupied columns */
+.pba-households-table {
+    table-layout: fixed;
+}
+
+.pba-households-table th,
+.pba-households-table td {
+    vertical-align: top;
+}
+
+.pba-households-table th:nth-child(5),
+.pba-households-table td:nth-child(5) {
+    width: 76px;
+    max-width: 76px;
+    text-align: center;
+    white-space: normal;
+}
+
+.pba-households-table th:nth-child(5) .pba-admin-list-sort-link {
+    display: inline-block;
+    max-width: 72px;
+    white-space: normal;
+    line-height: 1.1;
+}
+
+.pba-households-table th:nth-child(6),
+.pba-households-table td:nth-child(6) {
+    width: 135px;
+    max-width: 135px;
+}
+
+.pba-massgis-admin-cell {
+    min-width: 0 !important;
+    max-width: 135px;
+    gap: 4px;
+}
+
+.pba-massgis-admin-badge {
+    font-size: 11px;
+    padding: 3px 7px;
+}
+
+.pba-massgis-admin-meta {
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+.pba-massgis-admin-meta br,
+.pba-massgis-admin-warning {
+    display: none;
+}
+
+.pba-massgis-admin-actions {
+    margin-top: 4px;
+}
+
+.pba-massgis-admin-actions button {
+    font-size: 11px !important;
+    padding: 4px 7px !important;
+}
 
 @media (max-width: 680px) {
     .pba-admin-list-pagination {
