@@ -401,12 +401,327 @@
     font-size: 16px;
 }
 
+.pba-massgis-review-intro {
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid #d8e6f2;
+    border-radius: 12px;
+    background: #f7fbff;
+    color: #17324a;
+}
+
+.pba-massgis-review-warning {
+    margin-top: 6px;
+    color: #765500;
+    font-weight: 700;
+}
+
+.pba-massgis-review-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.pba-massgis-review-column {
+    min-width: 0;
+}
+
+.pba-massgis-review-column h3 {
+    margin: 0 0 12px;
+    color: #17324a;
+    font-size: 16px;
+}
+
+.pba-massgis-review-field {
+    margin: 0 0 10px;
+    padding: 14px 16px;
+    border: 1px solid #e2ebf3;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.pba-massgis-review-field.is-different {
+    border-color: #e5ca76;
+    background: #fff8e5;
+}
+
+.pba-massgis-review-field-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: #607487;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pba-massgis-review-field-value {
+    color: #17324a;
+    font-size: 17px;
+    line-height: 1.45;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.pba-massgis-diff-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid #d9b94f;
+    background: #fff3bd;
+    color: #765500;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.pba-massgis-review-meta {
+    margin-top: 8px;
+    color: #607487;
+    font-size: 13px;
+    font-weight: 600;
+}
+
 .pba-massgis-review-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 18px;
 }
+
+.pba-massgis-review-actions form {
+    margin: 0;
+}
+
+.pba-massgis-review-help {
+    margin-top: 12px;
+}
+/* =========================================================
+   Shared MassGIS Review Panel
+   Used by both /household/ and /households/?household_view=edit
+   ========================================================= */
+
+.pba-massgis-review-section {
+    margin: 0 0 22px;
+    border: 1px solid #dde7f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(14, 46, 76, 0.05);
+    overflow: hidden;
+}
+
+.pba-massgis-review-section > summary {
+    list-style: none;
+    cursor: pointer;
+    position: relative;
+    margin: 0;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fbfe 100%);
+    border-bottom: 1px solid #e6eef5;
+    color: #17324a;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.pba-massgis-review-section > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pba-massgis-review-section > summary::after {
+    content: "+";
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    line-height: 1;
+    color: #607487;
+}
+
+.pba-massgis-review-section[open] > summary::after {
+    content: "−";
+}
+
+.pba-massgis-review-section[open] > summary {
+    border-bottom: 1px solid #e6eef5;
+}
+
+.pba-massgis-review-section > .pba-household-detail-body {
+    padding: 24px;
+    background: #ffffff;
+}
+
+/* My Household page spacing */
+.pba-household-wrap .pba-massgis-review-section,
+.pba-page-wrap .pba-massgis-review-section {
+    margin-top: 0;
+}
+
+/* Status intro */
+.pba-massgis-review-intro {
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid #d8e6f2;
+    border-radius: 12px;
+    background: #f7fbff;
+    color: #17324a;
+}
+
+.pba-massgis-review-warning {
+    margin-top: 6px;
+    color: #765500;
+    font-weight: 700;
+}
+
+/* Comparison cards */
+.pba-massgis-review-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.pba-massgis-review-column {
+    min-width: 0;
+}
+
+.pba-massgis-review-column h3 {
+    margin: 0 0 12px;
+    color: #17324a;
+    font-size: 16px;
+}
+
+.pba-massgis-review-field {
+    margin: 0 0 10px;
+    padding: 14px 16px;
+    border: 1px solid #e2ebf3;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.pba-massgis-review-field.is-different {
+    border-color: #e5ca76;
+    background: #fff8e5;
+}
+
+.pba-massgis-review-field-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: #607487;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pba-massgis-review-field-value {
+    color: #17324a;
+    font-size: 17px;
+    line-height: 1.45;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.pba-massgis-diff-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid #d9b94f;
+    background: #fff3bd;
+    color: #765500;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.pba-massgis-review-meta {
+    margin-top: 8px;
+    color: #607487;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Actions */
+.pba-massgis-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.pba-massgis-review-actions form {
+    margin: 0;
+}
+
+.pba-massgis-review-help {
+    margin-top: 12px;
+}
+
+/* Member-facing version should still look like the admin card */
+.pba-massgis-review-section.is-member-mode .pba-massgis-review-actions {
+    margin-top: 18px;
+}
+body.pba-massgis-is-checking,
+body.pba-massgis-is-checking * {
+    cursor: wait !important;
+}
+.pba-massgis-member-review-note {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border: 1px solid #e5ca76;
+    border-radius: 10px;
+    background: #fff8e5;
+    color: #765500;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .pba-massgis-review-compare-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .pba-massgis-review-section > summary {
+        padding: 18px 16px;
+    }
+
+    .pba-massgis-review-section > summary::after {
+        right: 16px;
+    }
+
+    .pba-massgis-review-section > .pba-household-detail-body {
+        padding: 18px 16px;
+    }
+}
+
+@media (max-width: 900px) {
+    .pba-massgis-review-compare-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
 
 .pba-massgis-review-actions form {
     margin: 0;

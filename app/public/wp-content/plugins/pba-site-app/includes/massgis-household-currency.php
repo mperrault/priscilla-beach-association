@@ -132,20 +132,27 @@ function pba_massgis_handle_check_household_ajax() {
     }
 
     $household_id = isset($_POST['household_id']) ? (int) $_POST['household_id'] : 0;
+
     if ($household_id < 1) {
         wp_send_json_error(array(
             'message' => 'Missing household ID.',
         ), 400);
     }
 
-    $nonce = isset($_POST['pba_massgis_nonce']) ? sanitize_text_field(wp_unslash($_POST['pba_massgis_nonce'])) : '';
+    $nonce = isset($_POST['pba_massgis_nonce'])
+        ? sanitize_text_field(wp_unslash($_POST['pba_massgis_nonce']))
+        : '';
+
     if (!wp_verify_nonce($nonce, 'pba_massgis_check_household_now_' . $household_id)) {
         wp_send_json_error(array(
             'message' => 'Security check failed. Please refresh and try again.',
         ), 403);
     }
 
-    $current_household_id = (int) pba_get_current_household_id();
+    $current_household_id = function_exists('pba_get_current_household_id')
+        ? (int) pba_get_current_household_id()
+        : 0;
+
     $is_admin = function_exists('pba_current_person_has_role') && pba_current_person_has_role('PBAAdmin');
 
     if (!$is_admin && $household_id !== $current_household_id) {
@@ -155,6 +162,7 @@ function pba_massgis_handle_check_household_ajax() {
     }
 
     $row = pba_massgis_get_household_row($household_id);
+
     if (is_wp_error($row) || empty($row)) {
         wp_send_json_error(array(
             'message' => 'Household could not be loaded.',
@@ -162,6 +170,7 @@ function pba_massgis_handle_check_household_ajax() {
     }
 
     $result = pba_massgis_check_one_household($row);
+
     if (is_wp_error($result)) {
         wp_send_json_error(array(
             'message' => $result->get_error_message(),
@@ -169,40 +178,48 @@ function pba_massgis_handle_check_household_ajax() {
     }
 
     /*
-    * Do not immediately re-fetch from Supabase here.
-    * The write may succeed while the immediate read still returns stale values.
-    * Instead, merge the exact payload we just wrote into the original row.
-    */
+     * Do not immediately re-fetch from Supabase here.
+     * The write may succeed while an immediate read still returns stale values.
+     * Instead, merge the exact payload we just wrote into the original row.
+     */
     $updated_row = $row;
 
     if (is_array($result)) {
         $updated_row = array_merge($updated_row, $result);
     }
-    if (is_wp_error($updated_row) || empty($updated_row)) {
-        wp_send_json_error(array(
-            'message' => 'MassGIS check completed, but the updated household could not be loaded.',
-        ), 500);
-    }
 
-    $context = isset($_POST['pba_massgis_context']) ? sanitize_text_field(wp_unslash($_POST['pba_massgis_context'])) : 'admin';
+    $context = isset($_POST['pba_massgis_context'])
+        ? sanitize_text_field(wp_unslash($_POST['pba_massgis_context']))
+        : 'admin';
 
     if ($context === 'household') {
-        if ($context === 'household') {
-            $html = pba_render_household_massgis_status_from_row($updated_row);
-        } else {
-            $html = function_exists('pba_massgis_render_admin_household_badge')
-                ? pba_massgis_render_admin_household_badge($updated_row)
-                : '';
-        }    
-    } 
-    else {
+        $html = function_exists('pba_massgis_render_household_review_panel')
+            ? pba_massgis_render_household_review_panel($updated_row, array(
+                'mode' => 'member',
+                'show_actions' => false,
+                'show_check_button' => true,
+                'open' => true,
+                'title' => 'MassGIS Review',
+            ))
+            : '';
+    } elseif ($context === 'admin_review') {
+        $html = function_exists('pba_massgis_render_household_review_panel')
+            ? pba_massgis_render_household_review_panel($updated_row, array(
+                'mode' => 'admin',
+                'show_actions' => true,
+                'show_check_button' => true,
+                'open' => true,
+                'title' => 'MassGIS Review',
+            ))
+            : '';
+    } else {
         $html = function_exists('pba_massgis_render_admin_household_badge')
             ? pba_massgis_render_admin_household_badge($updated_row)
             : '';
     }
 
     wp_send_json_success(array(
-        'message' => 'Check finished.',        
+        'message' => 'Check finished.',
         'html'    => $html,
         'status'  => (string) ($updated_row['massgis_status'] ?? ''),
     ));
@@ -276,23 +293,13 @@ function pba_massgis_check_one_household($household) {
     $status = empty($comparison['warnings']) ? 'current' : 'needs_review';
     $warning = empty($comparison['warnings']) ? '' : implode(' ', $comparison['warnings']);
 
-    $snapshot = array(
-        'MAP_PAR_ID' => $parcel['MAP_PAR_ID'] ?? '',
-        'LOC_ID'     => $parcel['LOC_ID'] ?? '',
-        'SITE_ADDR'  => $parcel['SITE_ADDR'] ?? '',
-        'CITY'       => $parcel['CITY'] ?? '',
-        'ZIP'        => $parcel['ZIP'] ?? '',
-        'OWNER1'     => $parcel['OWNER1'] ?? '',
-        'FY'         => $parcel['FY'] ?? '',
-        'LAST_EDIT'  => $parcel['LAST_EDIT'] ?? '',
-    );
-
+    $snapshot = pba_massgis_build_snapshot_from_parcel($parcel);
     $payload = array(
         'massgis_last_checked_at'    => $checked_at,
         'massgis_data_last_edit_at'  => pba_massgis_format_last_edit($parcel['LAST_EDIT'] ?? ''),
         'massgis_status'             => $status,
         'massgis_warning'            => $warning,
-        'massgis_snapshot_hash'      => md5(wp_json_encode($snapshot)),
+        'massgis_snapshot_hash'      => pba_massgis_hash_snapshot($snapshot),
         'massgis_loc_id'             => pba_massgis_string($parcel['LOC_ID'] ?? ($household['massgis_loc_id'] ?? '')),
         'massgis_map_par_id'         => pba_massgis_string($parcel['MAP_PAR_ID'] ?? ($household['massgis_map_par_id'] ?? '')),
         'massgis_latest_site_addr'   => pba_massgis_string($parcel['SITE_ADDR'] ?? ''),
@@ -407,23 +414,12 @@ function pba_massgis_compare_household_to_parcel($household, $parcel) {
     }
     $old_hash = pba_massgis_string($household['massgis_snapshot_hash'] ?? '');
     if ($old_hash !== '') {
-        $snapshot = array(
-            'MAP_PAR_ID' => $parcel['MAP_PAR_ID'] ?? '',
-            'LOC_ID'     => $parcel['LOC_ID'] ?? '',
-            'SITE_ADDR'  => $parcel['SITE_ADDR'] ?? '',
-            'CITY'       => $parcel['CITY'] ?? '',
-            'ZIP'        => $parcel['ZIP'] ?? '',
-            'OWNER1'     => $parcel['OWNER1'] ?? '',
-            'FY'         => $parcel['FY'] ?? '',
-            'LAST_EDIT'  => $parcel['LAST_EDIT'] ?? '',
-        );
-
-        $new_hash = md5(wp_json_encode($snapshot));
+        $snapshot = pba_massgis_build_snapshot_from_parcel($parcel);
+        $new_hash = pba_massgis_hash_snapshot($snapshot);        
         if ($new_hash !== $old_hash) {
             $warnings[] = 'MassGIS parcel details changed since the last accepted snapshot.';
         }
     }
-
     return array('warnings' => $warnings);
 }
 
@@ -490,96 +486,36 @@ function pba_massgis_supabase_patch($table, $payload, $query_args) {
 
     return true;
 }
-function pba_render_household_massgis_status_from_row($row) {
-    if (!is_array($row)) {
-        return '';
-    }
 
-    $household_id = isset($row['household_id']) ? (int) $row['household_id'] : 0;
-    if ($household_id < 1) {
-        return '';
-    }
-
-    $status = pba_massgis_string($row['massgis_status'] ?? 'not_checked');
-    $warning = pba_massgis_string($row['massgis_warning'] ?? '');
-    $checked_at = pba_massgis_string($row['massgis_last_checked_at'] ?? '');
-    $site_addr = pba_massgis_string($row['massgis_latest_site_addr'] ?? '');
-    $owner = pba_massgis_string($row['massgis_latest_owner1'] ?? '');
-
-    $label = 'MassGIS: Not checked';
-    $class = 'pba-massgis-status pba-massgis-status-neutral';
-
-    if ($status === 'current') {
-        $label = 'MassGIS: Current';
-        $class = 'pba-massgis-status pba-massgis-status-ok';
-    } elseif ($status === 'needs_review') {
-        $label = 'MassGIS: Needs review';
-        $class = 'pba-massgis-status pba-massgis-status-warning';
-    } elseif ($status === 'lookup_failed') {
-        $label = 'MassGIS: Lookup failed';
-        $class = 'pba-massgis-status pba-massgis-status-error';
-    } elseif ($status === 'not_found') {
-        $label = 'MassGIS: No match found';
-        $class = 'pba-massgis-status pba-massgis-status-warning';
-    }
-
-    ob_start();
-    ?>
-    <div class="<?php echo esc_attr($class); ?>">
-        <strong><?php echo esc_html($label); ?></strong>
-
-        <?php if ($warning !== '') : ?>
-            <div><?php echo esc_html($warning); ?></div>
-        <?php endif; ?>
-
-        <?php if ($site_addr !== '' || $owner !== '') : ?>
-            <div class="pba-massgis-meta">
-                <?php if ($site_addr !== '') : ?>
-                    Latest site address: <?php echo esc_html($site_addr); ?>.
-                <?php endif; ?>
-                <?php if ($owner !== '') : ?>
-                    Latest owner: <?php echo esc_html($owner); ?>.
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="pba-massgis-meta">
-            <?php if ($checked_at !== '') : ?>
-                Last checked: <?php echo esc_html(pba_format_datetime_display($checked_at)); ?>.
-            <?php else : ?>
-                This household has not been checked against MassGIS yet.
-            <?php endif; ?>
-        </div>
-
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-massgis-form">
-            <?php wp_nonce_field('pba_massgis_check_household_now_' . $household_id, 'pba_massgis_nonce'); ?>
-            <input type="hidden" name="action" value="pba_massgis_check_household_now">
-            <input type="hidden" name="household_id" value="<?php echo esc_attr($household_id); ?>">
-            <input type="hidden" name="pba_massgis_context" value="household">
-            <button type="submit" class="pba-household-btn secondary" data-processing-text="Checking...">Check MassGIS now</button>
-        </form>
-    </div>
-    <?php
-
-    return ob_get_clean();
-}
-
-/**
- * Render this near the top of My Household.
- */
 function pba_render_household_massgis_status($household_id) {
     $household_id = (int) $household_id;
+
     if ($household_id < 1 || !function_exists('pba_supabase_get')) {
         return '';
     }
 
     $row = pba_massgis_get_household_row($household_id);
+
     if (is_wp_error($row) || empty($row)) {
         return '';
     }
 
-    return pba_render_household_massgis_status_from_row($row);
+    if (!function_exists('pba_massgis_render_household_review_panel')) {
+        return '';
+    }
+
+    return pba_massgis_render_household_review_panel($row, array(
+        'mode' => 'member',
+        'show_actions' => false,
+        'show_check_button' => true,
+        'open' => false,
+        'title' => 'MassGIS Review',
+    ));
 }
+
+/**
+ * Render this near the top of My Household.
+ */
 function pba_massgis_normalize_owner_compare($value) {
     $value = strtoupper(pba_massgis_string($value));
 
@@ -785,19 +721,30 @@ function pba_massgis_render_ajax_script() {
     <script>
     (function () {
         const ajaxUrl = <?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>;
+
+        function findContainer(form) {
+            return (
+                form.closest('.pba-massgis-admin-cell') ||
+                form.closest('.pba-massgis-status') ||
+                form.closest('.pba-massgis-review-section')
+            );
+        }
+
         function setDetailsVisible(container, visible) {
             if (!container) {
                 return;
             }
 
             container.querySelectorAll(
-                '.pba-massgis-admin-meta, .pba-massgis-admin-warning'
+                '.pba-massgis-admin-meta, ' +
+                '.pba-massgis-admin-warning, ' +
+                '.pba-massgis-review-intro, ' +
+                '.pba-massgis-review-compare-grid, ' +
+                '.pba-massgis-review-meta, ' +
+                '.pba-massgis-review-help'
             ).forEach(function (el) {
                 el.style.display = visible ? '' : 'none';
             });
-        }
-        function findContainer(form) {
-            return form.closest('.pba-massgis-admin-cell') || form.closest('.pba-massgis-status');
         }
 
         function setMessage(container, message, type) {
@@ -823,6 +770,7 @@ function pba_massgis_render_ajax_script() {
             }
 
             const messageEl = container.querySelector('.pba-massgis-ajax-message');
+
             if (messageEl) {
                 messageEl.remove();
             }
@@ -847,6 +795,22 @@ function pba_massgis_render_ajax_script() {
             button.dataset.readyText = 'Check';
             return 'Check';
         }
+
+        function setGlobalCheckingState(isChecking) {
+            if (!document.body) {
+                return;
+            }
+
+            if (isChecking) {
+                document.body.classList.add('pba-massgis-is-checking');
+            } else {
+                document.body.classList.remove('pba-massgis-is-checking');
+            }
+        }
+
+        /*
+         * Run next MassGIS batch now.
+         */
         document.addEventListener('submit', function (event) {
             const form = event.target.closest('.pba-massgis-batch-form');
 
@@ -870,6 +834,7 @@ function pba_massgis_render_ajax_script() {
 
             button.disabled = true;
             button.textContent = 'Running...';
+            setGlobalCheckingState(true);
 
             if (messageEl) {
                 messageEl.textContent = 'Checking next MassGIS batch...';
@@ -877,6 +842,7 @@ function pba_massgis_render_ajax_script() {
             }
 
             let cancelButton = form.querySelector('.pba-massgis-batch-cancel-btn');
+
             if (!cancelButton) {
                 cancelButton = document.createElement('button');
                 cancelButton.type = 'button';
@@ -893,6 +859,7 @@ function pba_massgis_render_ajax_script() {
                 button.disabled = false;
                 button.textContent = readyText;
                 cancelButton.remove();
+                setGlobalCheckingState(false);
 
                 if (messageEl) {
                     messageEl.textContent = 'Batch check canceled.';
@@ -903,7 +870,7 @@ function pba_massgis_render_ajax_script() {
             const formData = new FormData(form);
             formData.set('action', 'pba_massgis_run_household_batch_ajax');
 
-            fetch(<?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>, {
+            fetch(ajaxUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
                 body: formData,
@@ -923,6 +890,7 @@ function pba_massgis_render_ajax_script() {
 
                 button.disabled = false;
                 button.textContent = readyText;
+                setGlobalCheckingState(false);
 
                 if (cancelButton) {
                     cancelButton.remove();
@@ -946,6 +914,7 @@ function pba_massgis_render_ajax_script() {
 
                 button.disabled = false;
                 button.textContent = readyText;
+                setGlobalCheckingState(false);
 
                 if (cancelButton) {
                     cancelButton.remove();
@@ -957,6 +926,14 @@ function pba_massgis_render_ajax_script() {
                 }
             });
         }, true);
+
+        /*
+         * Single-household MassGIS check.
+         * Used by:
+         * - My Household MassGIS Review panel
+         * - Manage Household MassGIS Review panel
+         * - Households table compact MassGIS cell
+         */
         document.addEventListener('submit', function (event) {
             const form = event.target.closest('.pba-massgis-form, .pba-massgis-admin-actions');
 
@@ -979,12 +956,15 @@ function pba_massgis_render_ajax_script() {
 
             clearMessage(container);
             setDetailsVisible(container, false);
+
             submitButton.disabled = true;
             submitButton.textContent = 'Checking...';
 
             form.classList.add('is-checking');
+            setGlobalCheckingState(true);
 
             let cancelButton = form.querySelector('.pba-massgis-cancel-btn');
+
             if (!cancelButton) {
                 cancelButton = document.createElement('button');
                 cancelButton.type = 'button';
@@ -1001,6 +981,7 @@ function pba_massgis_render_ajax_script() {
                 submitButton.disabled = false;
                 submitButton.textContent = readyText;
                 form.classList.remove('is-checking');
+                setGlobalCheckingState(false);
 
                 cancelButton.remove();
 
@@ -1030,34 +1011,30 @@ function pba_massgis_render_ajax_script() {
                     throw new Error(message);
                 }
 
-                /*
-                 * Replace the MassGIS cell/status box with backend-rendered HTML.
-                 * The replacement naturally includes the normal Check button again.
-                 * No "Checked" button state is shown.
-                 */
                 if (payload.data && payload.data.html) {
                     const wrapper = document.createElement('div');
                     wrapper.innerHTML = payload.data.html.trim();
 
                     const replacement = wrapper.firstElementChild;
+
                     if (replacement) {
+                        setGlobalCheckingState(false);
                         container.replaceWith(replacement);
                         return;
                     }
                 }
 
-                /*
-                 * Fallback if no replacement HTML came back.
-                 */
                 submitButton.disabled = false;
                 submitButton.textContent = readyText;
                 form.classList.remove('is-checking');
+                setGlobalCheckingState(false);
 
                 if (cancelButton) {
                     cancelButton.remove();
                 }
 
                 clearMessage(container);
+                setDetailsVisible(container, true);
             })
             .catch(function (error) {
                 if (error.name === 'AbortError') {
@@ -1067,6 +1044,7 @@ function pba_massgis_render_ajax_script() {
                 submitButton.disabled = false;
                 submitButton.textContent = readyText;
                 form.classList.remove('is-checking');
+                setGlobalCheckingState(false);
 
                 if (cancelButton) {
                     cancelButton.remove();
@@ -1081,6 +1059,7 @@ function pba_massgis_render_ajax_script() {
     </script>
     <?php
 }
+
 function pba_massgis_handle_resolve_household() {
     if (!is_user_logged_in() || (!current_user_can('pba_manage_all_households') && !current_user_can('pba_manage_roles'))) {
         wp_safe_redirect(add_query_arg('pba_households_status', 'invalid_request', home_url('/households/')));
@@ -1108,8 +1087,34 @@ function pba_massgis_handle_resolve_household() {
     }
 
     $payload = array();
+    if ($resolution === 'update_owner_from_massgis') {
+        $massgis_owner = pba_massgis_string($household['massgis_latest_owner1'] ?? '');
 
-    if ($resolution === 'accept_snapshot') {
+        if ($massgis_owner === '') {
+            wp_safe_redirect(add_query_arg(array(
+                'household_view' => 'edit',
+                'household_id' => $household_id,
+                'pba_households_status' => 'massgis_resolution_failed',
+            ), home_url('/households/')));
+            exit;
+        }
+
+        /*
+        * Update only the household-level owner field.
+        * Existing PBAMembers, Household Admin, roles, invites, and access are not changed.
+        */
+        $resolved_household = $household;
+        $resolved_household['owner_name_raw'] = $massgis_owner;
+
+        $payload = array(
+            'owner_name_raw' => $massgis_owner,
+            'massgis_status' => 'current',
+            'massgis_warning' => '',
+            'massgis_snapshot_hash' => pba_massgis_hash_latest_household_snapshot($resolved_household),
+            'last_modified_at' => gmdate('c'),
+        );    
+        } 
+        elseif ($resolution === 'accept_snapshot') {
         /*
          * Keep the PBA household record as-is.
          * Accept the latest MassGIS snapshot as reviewed/current.
@@ -1178,18 +1183,9 @@ function pba_massgis_handle_resolve_household() {
 }
 
 function pba_massgis_hash_latest_household_snapshot($household) {
-    $snapshot = array(
-        'MAP_PAR_ID' => $household['massgis_map_par_id'] ?? '',
-        'LOC_ID' => $household['massgis_loc_id'] ?? '',
-        'SITE_ADDR' => $household['massgis_latest_site_addr'] ?? '',
-        'CITY' => $household['massgis_latest_city'] ?? '',
-        'ZIP' => $household['massgis_latest_zip'] ?? '',
-        'OWNER1' => $household['massgis_latest_owner1'] ?? '',
-        'FY' => $household['massgis_latest_fy'] ?? '',
-        'LAST_EDIT' => $household['massgis_data_last_edit_at'] ?? '',
+    return pba_massgis_hash_snapshot(
+        pba_massgis_build_snapshot_from_household($household)
     );
-
-    return md5(wp_json_encode($snapshot));
 }
 
 function pba_massgis_append_household_note($existing_notes, $new_note) {
@@ -1323,4 +1319,317 @@ function pba_massgis_handle_run_household_batch_ajax() {
         'message' => 'MassGIS batch check completed.',
         'scheduleText' => $schedule_text,
     ));
+}
+function pba_massgis_build_snapshot_from_parcel($parcel) {
+    if (!is_array($parcel)) {
+        return array();
+    }
+
+    return array(
+        'MAP_PAR_ID' => pba_massgis_string($parcel['MAP_PAR_ID'] ?? ''),
+        'LOC_ID'     => pba_massgis_string($parcel['LOC_ID'] ?? ''),
+        'SITE_ADDR'  => pba_massgis_string($parcel['SITE_ADDR'] ?? ''),
+        'CITY'       => pba_massgis_string($parcel['CITY'] ?? ''),
+        'ZIP'        => pba_massgis_string($parcel['ZIP'] ?? ''),
+        'OWNER1'     => pba_massgis_string($parcel['OWNER1'] ?? ''),
+        'FY'         => pba_massgis_string($parcel['FY'] ?? ''),
+        'LAST_EDIT'  => pba_massgis_format_last_edit($parcel['LAST_EDIT'] ?? ''),
+    );
+}
+
+function pba_massgis_build_snapshot_from_household($household) {
+    if (!is_array($household)) {
+        return array();
+    }
+
+    return array(
+        'MAP_PAR_ID' => pba_massgis_string($household['massgis_map_par_id'] ?? ''),
+        'LOC_ID'     => pba_massgis_string($household['massgis_loc_id'] ?? ''),
+        'SITE_ADDR'  => pba_massgis_string($household['massgis_latest_site_addr'] ?? ''),
+        'CITY'       => pba_massgis_string($household['massgis_latest_city'] ?? ''),
+        'ZIP'        => pba_massgis_string($household['massgis_latest_zip'] ?? ''),
+        'OWNER1'     => pba_massgis_string($household['massgis_latest_owner1'] ?? ''),
+        'FY'         => pba_massgis_string($household['massgis_latest_fy'] ?? ''),
+        'LAST_EDIT'  => pba_massgis_format_last_edit($household['massgis_data_last_edit_at'] ?? ''),
+    );
+}
+
+function pba_massgis_hash_snapshot($snapshot) {
+    if (!is_array($snapshot)) {
+        $snapshot = array();
+    }
+
+    ksort($snapshot);
+
+    return md5(wp_json_encode($snapshot));
+}
+function pba_massgis_render_household_review_panel($household, $args = array()) {
+    if (!is_array($household)) {
+        return '';
+    }
+
+    $defaults = array(
+        'mode' => 'member', // member or admin
+        'show_actions' => false,
+        'show_check_button' => true,
+        'open' => true,
+        'title' => 'MassGIS Review',
+    );
+
+    $args = array_merge($defaults, is_array($args) ? $args : array());
+
+    $household_id = isset($household['household_id']) ? (int) $household['household_id'] : 0;
+    if ($household_id < 1) {
+        return '';
+    }
+
+    $status = trim((string) ($household['massgis_status'] ?? 'not_checked'));
+    $warning = trim((string) ($household['massgis_warning'] ?? ''));
+
+    $pba_address = trim(
+        ((string) ($household['pb_street_number'] ?? '')) . ' ' .
+        ((string) ($household['pb_street_name'] ?? ''))
+    );
+
+    $pba_owner = trim((string) ($household['owner_name_raw'] ?? ''));
+
+    $massgis_address = trim((string) ($household['massgis_latest_site_addr'] ?? ''));
+    $massgis_owner = trim((string) ($household['massgis_latest_owner1'] ?? ''));
+    $massgis_fy = trim((string) ($household['massgis_latest_fy'] ?? ''));
+    $last_checked = trim((string) ($household['massgis_last_checked_at'] ?? ''));
+
+    $status_label = 'Not checked';
+    $status_class = 'neutral';
+
+    if ($status === 'current') {
+        $status_label = 'Current';
+        $status_class = 'ok';
+    } elseif ($status === 'needs_review') {
+        $status_label = 'Needs review';
+        $status_class = 'warning';
+    } elseif ($status === 'lookup_failed') {
+        $status_label = 'Lookup failed';
+        $status_class = 'error';
+    } elseif ($status === 'not_found') {
+        $status_label = 'No MassGIS match';
+        $status_class = 'warning';
+    } elseif ($status === 'disabled') {
+        $status_label = 'Check disabled';
+        $status_class = 'neutral';
+    }
+
+    $address_differs = false;
+    if (function_exists('pba_massgis_normalize_compare')) {
+        $address_differs = (
+            pba_massgis_normalize_compare($pba_address) !== '' &&
+            pba_massgis_normalize_compare($massgis_address) !== '' &&
+            pba_massgis_normalize_compare($pba_address) !== pba_massgis_normalize_compare($massgis_address)
+        );
+    } else {
+        $address_differs = (
+            strtoupper(trim($pba_address)) !== '' &&
+            strtoupper(trim($massgis_address)) !== '' &&
+            strtoupper(trim($pba_address)) !== strtoupper(trim($massgis_address))
+        );
+    }
+
+    $owner_differs = false;
+    if (function_exists('pba_massgis_normalize_owner_compare')) {
+        $owner_differs = (
+            pba_massgis_normalize_owner_compare($pba_owner) !== '' &&
+            pba_massgis_normalize_owner_compare($massgis_owner) !== '' &&
+            pba_massgis_normalize_owner_compare($pba_owner) !== pba_massgis_normalize_owner_compare($massgis_owner)
+        );
+    } else {
+        $owner_differs = (
+            strtoupper(trim($pba_owner)) !== '' &&
+            strtoupper(trim($massgis_owner)) !== '' &&
+            strtoupper(trim($pba_owner)) !== strtoupper(trim($massgis_owner))
+        );
+    }
+
+    $last_checked_display = '—';
+    if ($last_checked !== '') {
+        $last_checked_display = function_exists('pba_format_datetime_display')
+            ? pba_format_datetime_display($last_checked)
+            : $last_checked;
+    }
+
+    $meta_parts = array();
+
+    if ($massgis_fy !== '') {
+        $meta_parts[] = 'MassGIS FY ' . $massgis_fy;
+    }
+
+    if ($last_checked_display !== '—') {
+        $meta_parts[] = 'Last checked ' . $last_checked_display;
+    }
+
+    $meta_text = implode(' · ', $meta_parts);
+
+    $details_open = !empty($args['open']) ? 'open' : '';
+    $mode_class = $args['mode'] === 'admin' ? 'is-admin-mode' : 'is-member-mode';
+
+    ob_start();
+    ?>
+    <details class="pba-household-detail-section pba-section pba-massgis-review-section <?php echo esc_attr($mode_class); ?>" <?php echo $details_open; ?>>
+        <summary><?php echo esc_html((string) $args['title']); ?></summary>
+
+        <div class="pba-household-detail-body">
+            <div class="pba-massgis-review-intro pba-massgis-status-<?php echo esc_attr($status_class); ?>">
+                <strong>Status: <?php echo esc_html($status_label); ?></strong>
+
+                <?php if ($warning !== '') : ?>
+                    <div class="pba-massgis-review-warning">
+                        <?php echo esc_html($warning); ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($args['mode'] === 'member' && $status === 'needs_review') : ?>
+                    <div class="pba-massgis-member-review-note">
+                        Please contact your PBA Admin to review and resolve this MassGIS difference.
+                    </div>
+                <?php endif; ?>
+
+                <div class="pba-admin-list-muted">
+                    MassGIS review actions do not remove, move, disable, or otherwise modify associated PBAMembers.
+                </div>
+                                
+            </div>
+
+            <div class="pba-massgis-review-compare-grid">
+                <div class="pba-massgis-review-column">
+                    <h3>PBA Household Record</h3>
+
+                    <div class="pba-massgis-review-field <?php echo $address_differs ? 'is-different' : ''; ?>">
+                        <div class="pba-massgis-review-field-label">
+                            Address
+                            <?php if ($address_differs) : ?>
+                                <span class="pba-massgis-diff-pill">Differs</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="pba-massgis-review-field-value">
+                            <?php echo esc_html($pba_address !== '' ? $pba_address : '—'); ?>
+                        </div>
+                    </div>
+
+                    <div class="pba-massgis-review-field <?php echo $owner_differs ? 'is-different' : ''; ?>">
+                        <div class="pba-massgis-review-field-label">
+                            Owner
+                            <?php if ($owner_differs) : ?>
+                                <span class="pba-massgis-diff-pill">Differs</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="pba-massgis-review-field-value">
+                            <?php echo esc_html($pba_owner !== '' ? $pba_owner : '—'); ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pba-massgis-review-column">
+                    <h3>Latest MassGIS Snapshot</h3>
+
+                    <div class="pba-massgis-review-field <?php echo $address_differs ? 'is-different' : ''; ?>">
+                        <div class="pba-massgis-review-field-label">
+                            Address
+                            <?php if ($address_differs) : ?>
+                                <span class="pba-massgis-diff-pill">Differs</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="pba-massgis-review-field-value">
+                            <?php echo esc_html($massgis_address !== '' ? $massgis_address : '—'); ?>
+                        </div>
+                    </div>
+
+                    <div class="pba-massgis-review-field <?php echo $owner_differs ? 'is-different' : ''; ?>">
+                        <div class="pba-massgis-review-field-label">
+                            Owner
+                            <?php if ($owner_differs) : ?>
+                                <span class="pba-massgis-diff-pill">Differs</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="pba-massgis-review-field-value">
+                            <?php echo esc_html($massgis_owner !== '' ? $massgis_owner : '—'); ?>
+                        </div>
+                    </div>
+
+                    <?php if ($meta_text !== '') : ?>
+                        <div class="pba-massgis-review-meta">
+                            <?php echo esc_html($meta_text); ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="pba-massgis-review-actions">
+                <?php if (!empty($args['show_check_button'])) : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pba-massgis-form">
+                        <?php wp_nonce_field('pba_massgis_check_household_now_' . $household_id, 'pba_massgis_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_massgis_check_household_now">
+                        <input type="hidden" name="household_id" value="<?php echo esc_attr((string) $household_id); ?>">
+                        <input type="hidden" name="pba_massgis_context" value="<?php echo esc_attr($args['mode'] === 'admin' ? 'admin_review' : 'household'); ?>">
+                        <button type="submit" class="pba-btn secondary" data-processing-text="Checking...">
+                            Check MassGIS now
+                        </button>
+                    </form>
+                <?php endif; ?>
+
+                <?php if (!empty($args['show_actions']) && $args['mode'] === 'admin') : ?>
+                    <?php if ($massgis_owner !== '') : ?>
+                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                            <?php wp_nonce_field('pba_massgis_resolve_household_' . $household_id, 'pba_massgis_resolution_nonce'); ?>
+                            <input type="hidden" name="action" value="pba_massgis_resolve_household">
+                            <input type="hidden" name="household_id" value="<?php echo esc_attr((string) $household_id); ?>">
+                            <input type="hidden" name="massgis_resolution" value="update_owner_from_massgis">
+                            <button type="submit" class="pba-btn">
+                                Update Household Owner from MassGIS
+                            </button>
+                        </form>
+                    <?php endif; ?>
+
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <?php wp_nonce_field('pba_massgis_resolve_household_' . $household_id, 'pba_massgis_resolution_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_massgis_resolve_household">
+                        <input type="hidden" name="household_id" value="<?php echo esc_attr((string) $household_id); ?>">
+                        <input type="hidden" name="massgis_resolution" value="accept_snapshot">
+                        <button type="submit" class="pba-btn secondary">
+                            Accept Difference / Keep PBA Record
+                        </button>
+                    </form>
+
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <?php wp_nonce_field('pba_massgis_resolve_household_' . $household_id, 'pba_massgis_resolution_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_massgis_resolve_household">
+                        <input type="hidden" name="household_id" value="<?php echo esc_attr((string) $household_id); ?>">
+                        <input type="hidden" name="massgis_resolution" value="restrict_invites">
+                        <button type="submit" class="pba-btn secondary">
+                            Restrict New Invites
+                        </button>
+                    </form>
+
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <?php wp_nonce_field('pba_massgis_resolve_household_' . $household_id, 'pba_massgis_resolution_nonce'); ?>
+                        <input type="hidden" name="action" value="pba_massgis_resolve_household">
+                        <input type="hidden" name="household_id" value="<?php echo esc_attr((string) $household_id); ?>">
+                        <input type="hidden" name="massgis_resolution" value="disable_checks">
+                        <button type="submit" class="pba-btn secondary">
+                            Disable MassGIS Checks
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($args['show_actions']) && $args['mode'] === 'admin') : ?>
+                <div class="pba-admin-list-muted pba-massgis-review-help">
+                    Recommended use: use <strong>Update Household Owner from MassGIS</strong> when the MassGIS owner is correct and should replace the PBA owner field.
+                    Use <strong>Accept Difference / Keep PBA Record</strong> when you reviewed the difference but want to keep the PBA value.
+                    Use <strong>Restrict New Invites</strong> only when ownership looks uncertain.
+                    Use <strong>Disable MassGIS Checks</strong> only for known MassGIS matching edge cases.
+                </div>
+            <?php endif; ?>
+        </div>
+    </details>
+    <?php
+
+    return ob_get_clean();
 }

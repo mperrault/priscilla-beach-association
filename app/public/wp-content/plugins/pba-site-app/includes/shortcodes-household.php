@@ -701,7 +701,7 @@ function pba_render_household_previous_invitations_table($rows, $title, $request
                     </select>
                 </div>
             </div>
-
+            <input type="hidden" name="pba_massgis_context" value="household">
             <input type="hidden" name="household_members_sort" value="<?php echo esc_attr($request_args['sort']); ?>">
             <input type="hidden" name="household_members_direction" value="<?php echo esc_attr($request_args['direction']); ?>">
             <input type="hidden" name="household_members_page" value="1">
@@ -925,6 +925,12 @@ function pba_render_household_dashboard() {
         $base_url . 'pba-admin-list-styles.css',
         array(),
         file_exists($base_path . 'pba-admin-list-styles.css') ? (string) filemtime($base_path . 'pba-admin-list-styles.css') : '1.0.0'
+    );
+    wp_enqueue_style(
+        'pba-households-admin',
+        $base_url . 'pba-households-admin.css',
+        array(),
+        file_exists($base_path . 'pba-households-admin.css') ? (string) filemtime($base_path . 'pba-households-admin.css') : '1.0.0'
     );
 
  $household_id      = (int) pba_get_current_household_id();
