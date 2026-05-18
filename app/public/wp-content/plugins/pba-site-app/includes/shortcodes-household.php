@@ -125,27 +125,37 @@ function pba_handle_household_reinvite_expired_member() {
         pba_household_redirect_with_status('remove_blocked_house_admin');
     }
 
-    if (!function_exists('pba_supabase_update') || !function_exists('pba_send_member_invite_email')) {
+    if (
+        !function_exists('pba_supabase_update') ||
+        !function_exists('pba_send_member_invite_email') ||
+        !function_exists('pba_store_member_invite_token')
+    ) {
         pba_household_redirect_with_status('resend_failed');
     }
 
-    $now_utc = gmdate('c');
-    $expires_at = gmdate('c', time() + (3 * DAY_IN_SECONDS));
-    $invite_token = wp_generate_password(32, false, false);
-    $inviter_person_id = (int) pba_get_current_house_admin_person_id();
-
     $household_id = (int) pba_get_current_household_id();
+
+    if ($household_id < 1) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
     $invite_policy = pba_get_household_invite_policy($household_id);
 
     if ($invite_policy !== 'Allowed') {
         pba_household_redirect_with_status($invite_policy === 'Restricted' ? 'invites_restricted' : 'invites_blocked');
     }
 
-    set_transient('pba_invite_token_' . $invite_token, (int) $person_id, 3 * DAY_IN_SECONDS);
-    set_transient('pba_member_invite_token_' . $invite_token, array(
-        'person_id' => (int) $person_id,
-        'created_at' => $now_utc,
-    ), 3 * DAY_IN_SECONDS);
+    $email_address = isset($person['email_address']) ? sanitize_email($person['email_address']) : '';
+    $first_name    = isset($person['first_name']) ? sanitize_text_field($person['first_name']) : '';
+    $last_name     = isset($person['last_name']) ? sanitize_text_field($person['last_name']) : '';
+
+    if ($email_address === '') {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    $now_utc = gmdate('c');
+    $expires_at = gmdate('c', time() + (7 * DAY_IN_SECONDS));
+    $inviter_person_id = (int) pba_get_current_house_admin_person_id();
 
     $payload = array(
         'status'                => 'Pending',
@@ -163,17 +173,52 @@ function pba_handle_household_reinvite_expired_member() {
         $payload,
         array(
             'person_id'    => 'eq.' . $person_id,
-            'household_id' => 'eq.' . (int) pba_get_current_household_id(),
+            'household_id' => 'eq.' . $household_id,
             'status'       => 'eq.Expired',
         )
     );
 
-    if (is_wp_error($result)) {
+    /*
+     * pba_supabase_update() should update exactly one expired person row.
+     * A WP_Error means the request failed.
+     * An empty, false, or non-array result may mean no row was updated.
+     */
+    if (is_wp_error($result) || empty($result) || !is_array($result)) {
+        pba_household_redirect_with_status('resend_failed');
+    }
+
+    /*
+     * Remove any previous invite-token transients for this person before creating
+     * the new token. This prevents old expired/revoked links from hanging around.
+     */
+    if (function_exists('pba_delete_member_invite_transients')) {
+        pba_delete_member_invite_transients($person_id);
+    }
+
+    /*
+     * Use the same helper as the normal member invite/resend flow.
+     * This is important because the accept-password handler expects the transient
+     * to include person_id, household_id, email, first_name, last_name, and role.
+     */
+    $invite_token = pba_store_member_invite_token(
+        $person_id,
+        $household_id,
+        $email_address,
+        $first_name,
+        $last_name,
+        'PBAMember'
+    );
+
+    if (empty($invite_token)) {
         pba_household_redirect_with_status('resend_failed');
     }
 
     $person['status'] = 'Pending';
+    $person['email_verified'] = 0;
     $person['invitation_expires_at'] = $expires_at;
+    $person['email_address'] = $email_address;
+    $person['first_name'] = $first_name;
+    $person['last_name'] = $last_name;
 
     $email_sent = pba_send_member_invite_email($person, $invite_token);
 
