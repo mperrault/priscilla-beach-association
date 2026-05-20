@@ -1,0 +1,388 @@
+.pba-pickleball {
+    --pba-pickleball-ink: #17323b;
+    --pba-pickleball-muted: #5c6f76;
+    --pba-pickleball-line: #d8e2e4;
+    --pba-pickleball-surface: #ffffff;
+    --pba-pickleball-wash: #f4f8f7;
+    --pba-pickleball-accent: #0f766e;
+    --pba-pickleball-accent-dark: #115e59;
+    --pba-pickleball-warm: #f2b84b;
+    color: var(--pba-pickleball-ink);
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.pba-pickleball * {
+    box-sizing: border-box;
+}
+
+.pba-pickleball-hero {
+    background: linear-gradient(135deg, #e6f3ef 0%, #fff9ec 100%);
+    border: 1px solid var(--pba-pickleball-line);
+    border-radius: 8px;
+    padding: 32px;
+    margin: 0 0 24px;
+}
+
+.pba-pickleball-admin-hero {
+    background: linear-gradient(135deg, #eef7f5 0%, #f8fbfb 100%);
+}
+
+.pba-pickleball-kicker,
+.pba-pickleball-section-label {
+    display: block;
+    color: var(--pba-pickleball-accent-dark);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+}
+
+.pba-pickleball h1,
+.pba-pickleball h2,
+.pba-pickleball h3 {
+    color: var(--pba-pickleball-ink);
+    letter-spacing: 0;
+    margin: 0;
+}
+
+.pba-pickleball h1 {
+    font-size: clamp(34px, 4vw, 56px);
+    line-height: 1.05;
+    margin-bottom: 14px;
+}
+
+.pba-pickleball h2 {
+    font-size: 24px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.pba-pickleball h3 {
+    font-size: 18px;
+    line-height: 1.25;
+    margin-bottom: 8px;
+}
+
+.pba-pickleball p {
+    color: var(--pba-pickleball-muted);
+    font-size: 16px;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.pba-pickleball-status,
+.pba-pickleball-panel {
+    background: var(--pba-pickleball-surface);
+    border: 1px solid var(--pba-pickleball-line);
+    border-radius: 8px;
+    margin: 0 0 22px;
+    padding: 24px;
+}
+
+.pba-pickleball-status {
+    border-left: 6px solid var(--pba-pickleball-accent);
+}
+
+.pba-pickleball-status-cancelled_weather,
+.pba-pickleball-status-courts_unavailable {
+    border-left-color: #c2410c;
+}
+
+.pba-pickleball-status-delayed {
+    border-left-color: var(--pba-pickleball-warm);
+}
+
+.pba-pickleball-status-season_not_started,
+.pba-pickleball-status-season_ended {
+    border-left-color: #64748b;
+}
+
+.pba-pickleball-grid,
+.pba-pickleball-admin-grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pba-pickleball-guidelines {
+    display: grid;
+    gap: 10px;
+    margin: 10px 0 0;
+    padding-left: 20px;
+}
+
+.pba-pickleball-guidelines li {
+    color: var(--pba-pickleball-muted);
+    line-height: 1.5;
+}
+
+.pba-pickleball-section-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.pba-pickleball-announcements,
+.pba-pickleball-admin-announcements {
+    display: grid;
+    gap: 14px;
+}
+
+.pba-pickleball-admin-announcements {
+    margin-top: 22px;
+}
+
+.pba-pickleball-announcement {
+    background: var(--pba-pickleball-wash);
+    border: 1px solid var(--pba-pickleball-line);
+    border-radius: 8px;
+    padding: 18px;
+}
+
+.pba-pickleball-announcement footer {
+    align-items: center;
+    color: var(--pba-pickleball-muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.pba-pickleball-empty {
+    color: var(--pba-pickleball-muted);
+}
+
+.pba-pickleball-alert {
+    align-items: center;
+    border-radius: 8px;
+    display: flex;
+    gap: 10px;
+    margin: 0 0 22px;
+    padding: 14px 16px;
+}
+
+.pba-pickleball-alert-success {
+    background: #e7f6ed;
+    border: 1px solid #84c99b;
+    color: #184b2a;
+}
+
+.pba-pickleball-alert-error {
+    background: #fff1ec;
+    border: 1px solid #f2a77b;
+    color: #73310d;
+}
+
+.pba-pickleball-form {
+    display: grid;
+    gap: 14px;
+}
+
+.pba-pickleball-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pba-pickleball-inline-form {
+    align-items: end;
+    grid-template-columns: minmax(220px, 1fr) 160px auto auto;
+}
+
+.pba-pickleball-form label {
+    color: var(--pba-pickleball-ink);
+    display: grid;
+    font-weight: 700;
+    gap: 6px;
+}
+
+.pba-pickleball input[type="text"],
+.pba-pickleball input[type="email"],
+.pba-pickleball input[type="tel"],
+.pba-pickleball select,
+.pba-pickleball textarea {
+    border: 1px solid #cbd8db;
+    border-radius: 6px;
+    color: var(--pba-pickleball-ink);
+    font: inherit;
+    min-height: 42px;
+    padding: 9px 11px;
+    width: 100%;
+}
+
+.pba-pickleball textarea {
+    resize: vertical;
+}
+
+.pba-pickleball-checkbox {
+    align-items: center;
+    display: flex !important;
+    flex-direction: row;
+    font-weight: 700;
+    gap: 8px;
+}
+
+.pba-pickleball-checkbox input {
+    margin: 0;
+}
+
+.pba-pickleball-full {
+    grid-column: 1 / -1;
+}
+
+.pba-pickleball-form-actions {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+}
+
+.pba-pickleball-button,
+.pba-pickleball-text-button {
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
+.pba-pickleball-button {
+    align-items: center;
+    background: var(--pba-pickleball-accent);
+    border-radius: 6px;
+    color: #ffffff;
+    display: inline-flex;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 16px;
+    text-decoration: none;
+}
+
+.pba-pickleball-button:hover,
+.pba-pickleball-button:focus {
+    background: var(--pba-pickleball-accent-dark);
+    color: #ffffff;
+}
+
+.pba-pickleball-button-secondary {
+    background: #23444d;
+}
+
+.pba-pickleball-button-secondary:hover,
+.pba-pickleball-button-secondary:focus {
+    background: #17323b;
+}
+
+.pba-pickleball-text-button,
+.pba-pickleball-link {
+    background: transparent;
+    color: var(--pba-pickleball-accent-dark);
+    padding: 0;
+    text-decoration: underline;
+}
+
+.pba-pickleball-remove-button {
+    color: #a23b12;
+}
+
+.pba-pickleball-table-wrap {
+    overflow-x: auto;
+}
+
+.pba-pickleball-table {
+    border-collapse: collapse;
+    min-width: 820px;
+    width: 100%;
+}
+
+.pba-pickleball-table th,
+.pba-pickleball-table td {
+    border-bottom: 1px solid var(--pba-pickleball-line);
+    padding: 12px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.pba-pickleball-table th {
+    color: var(--pba-pickleball-ink);
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.pba-pickleball-row-form {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.pba-pickleball-row-form select {
+    min-height: 36px;
+    width: auto;
+}
+
+.pba-pickleball-row-checkbox {
+    font-size: 14px;
+}
+
+.pba-pickleball-email-list {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    margin: 12px 0;
+}
+
+@media (max-width: 780px) {
+    .pba-pickleball-hero,
+    .pba-pickleball-status,
+    .pba-pickleball-panel {
+        padding: 20px;
+    }
+
+    .pba-pickleball-grid,
+    .pba-pickleball-admin-grid,
+    .pba-pickleball-form-grid,
+    .pba-pickleball-inline-form {
+        grid-template-columns: 1fr;
+    }
+
+    .pba-pickleball-section-header {
+        display: grid;
+    }
+
+    .pba-pickleball-table {
+        min-width: 0;
+    }
+
+    .pba-pickleball-table thead {
+        display: none;
+    }
+
+    .pba-pickleball-table tr,
+    .pba-pickleball-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .pba-pickleball-table tr {
+        border: 1px solid var(--pba-pickleball-line);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 6px 0;
+    }
+
+    .pba-pickleball-table td {
+        border: 0;
+        padding: 8px 12px;
+    }
+
+    .pba-pickleball-table td::before {
+        color: var(--pba-pickleball-muted);
+        content: attr(data-label);
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+    }
+}

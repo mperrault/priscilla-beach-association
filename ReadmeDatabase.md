@@ -58,3 +58,13 @@ CREATE TABLE public.Role (
 );
 
 ```
+
+## Pickleball module schema
+
+The pickleball module uses additional Supabase tables for current status, approved guests, participants, and pickleball-only announcements.
+
+Run the schema in:
+
+```text
+housedata/pickleball_schema.sql
+```

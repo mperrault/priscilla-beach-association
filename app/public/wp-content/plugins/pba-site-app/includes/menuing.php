@@ -19,10 +19,17 @@ function pba_get_menu_visibility_state() {
 
     $state = array(
         'is_logged_in'             => $is_logged_in,
+        'can_see_member_home'      => $is_logged_in && current_user_can('pba_view_member_home'),
+        'can_see_calendar'         => $is_logged_in && current_user_can('pba_view_calendar'),
+        'can_see_directory'        => $is_logged_in && current_user_can('pba_view_directory'),
         'can_see_household'        => $is_logged_in && function_exists('pba_current_user_has_house_admin_access') && pba_current_user_has_house_admin_access(),
         'can_see_board'            => $is_logged_in && current_user_can('pba_view_board_docs'),
         'can_see_committee'        => $is_logged_in && current_user_can('pba_view_committee_docs'),
         'can_see_governing'        => $is_logged_in && current_user_can('pba_view_governing_documents'),
+        'can_see_pickleball'       => $is_logged_in && current_user_can('pba_view_pickleball'),
+        'can_manage_pickleball'    => ($is_logged_in && function_exists('pba_current_user_can_manage_pickleball'))
+            ? pba_current_user_can_manage_pickleball()
+            : ($is_logged_in && current_user_can('pba_manage_pickleball')),
         'can_see_member_resources' => function_exists('pba_current_person_can_view_member_resources')
             ? pba_current_person_can_view_member_resources()
             : $is_logged_in,
@@ -54,6 +61,8 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
     $committees_url = trailingslashit(home_url('/committees/'));
     $audit_log_url = trailingslashit(home_url('/audit-log/'));
     $profile_url = trailingslashit(home_url('/profile/'));
+    $pickleball_url = trailingslashit(home_url('/pickleball/'));
+    $pickleball_admin_url = trailingslashit(home_url('/pickleball-admin/'));
 
     $photos_url = trailingslashit(home_url('/photos/'));
     $photo_upload_url = trailingslashit(home_url('/photo-upload/'));
@@ -96,6 +105,17 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
 
         if ($item_url === $profile_url || strcasecmp($title, 'Profile') === 0) {
             if (!$state['is_logged_in']) {
+                unset($items[$index]);
+            }
+            continue;
+        }
+
+        if ($item_url === $pickleball_url || strcasecmp($title, 'Pickleball') === 0) {
+            continue;
+        }
+
+        if ($item_url === $pickleball_admin_url || strcasecmp($title, 'Manage Pickleball') === 0 || strcasecmp($title, 'Pickleball Admin') === 0) {
+            if (!$state['can_manage_pickleball']) {
                 unset($items[$index]);
             }
             continue;
@@ -171,23 +191,39 @@ function pba_filter_nav_menu_items_by_role($items, $args) {
 function pba_get_logged_in_menu_items() {
     $state = pba_get_menu_visibility_state();
 
-    $items = array(
-        array(
+    $items = array();
+
+    if ($state['can_see_member_home']) {
+        $items[] = array(
             'label' => 'Home',
             'url'   => home_url('/member-home/'),
-        ),
-        array(
+        );
+    }
+
+    if ($state['can_see_calendar']) {
+        $items[] = array(
             'label' => 'Calendar',
             'url'   => home_url('/calendar/'),
-        ),
-        array(
+        );
+    }
+
+    if ($state['can_see_directory']) {
+        $items[] = array(
             'label' => 'Directory',
             'url'   => home_url('/member-directory/'),
-        ),
-        array(
-            'label' => 'Photos',
-            'url'   => home_url('/photos/'),
-        ),
+        );
+    }
+
+    if ($state['can_see_pickleball']) {
+        $items[] = array(
+            'label' => 'Pickleball',
+            'url'   => home_url('/pickleball/'),
+        );
+    }
+
+    $items[] = array(
+        'label' => 'Photos',
+        'url'   => home_url('/photos/'),
     );
 
     if ($state['can_see_household']) {
@@ -236,6 +272,13 @@ function pba_get_logged_in_menu_items() {
     }
 
     $admin_children = array();
+
+    if ($state['can_manage_pickleball']) {
+        $admin_children[] = array(
+            'label' => 'Manage Pickleball',
+            'url'   => home_url('/pickleball-admin/'),
+        );
+    }
 
     if ($state['is_admin']) {
         $admin_children[] = array(

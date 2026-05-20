@@ -37,6 +37,14 @@ function pba_get_role_definitions() {
             'label'       => 'PBA Committee Member',
             'description' => 'Member access plus committee document access.',
         ),
+        'pba_guest' => array(
+            'label'       => 'PBA Guest',
+            'description' => 'Activity guest access without general member-site privileges.',
+        ),
+        'pba_pickleball_admin' => array(
+            'label'       => 'Pickleball Coordinator',
+            'description' => 'Limited activity administrator for pickleball content and participants.',
+        ),
         'pba_admin' => array(
             'label'       => 'PBA Admin',
             'description' => 'Application administrator with association-wide management privileges.',
@@ -55,6 +63,7 @@ function pba_get_role_capability_map() {
         'pba_view_directory'           => true,
         'pba_view_meeting_info'        => true,
         'pba_view_governing_documents' => true,
+        'pba_view_pickleball'          => true,
     );
 
     return array(
@@ -80,6 +89,17 @@ function pba_get_role_capability_map() {
             'pba_manage_committee_docs' => true,
             'pba_upload_committee_docs' => true,
         )),
+
+        'pba_guest' => array(
+            'read'                => true,
+            'pba_view_pickleball' => true,
+        ),
+
+        'pba_pickleball_admin' => array(
+            'read'                  => true,
+            'pba_view_pickleball'   => true,
+            'pba_manage_pickleball' => true,
+        ),
 
         'pba_admin' => array_merge($member_caps, array(
             'pba_view_household_page'          => true,
@@ -110,6 +130,7 @@ function pba_get_role_capability_map() {
             'pba_view_access_rights'           => true,
             'pba_manage_roles'                 => true,
             'pba_manage_news'                  => true,
+            'pba_manage_pickleball'            => true,
 
             'pba_view_governing_documents'     => true,
             'pba_manage_governing_documents'   => true,
@@ -167,6 +188,8 @@ function pba_get_managed_wp_role_slugs() {
         'pba_house_admin',
         'pba_board_member',
         'pba_committee_member',
+        'pba_guest',
+        'pba_pickleball_admin',
         'pba_admin',
     );
 }
@@ -177,6 +200,8 @@ function pba_get_application_wp_role_slugs() {
         'pba_house_admin',
         'pba_board_member',
         'pba_committee_member',
+        'pba_guest',
+        'pba_pickleball_admin',
         'pba_admin',
     );
 }
@@ -194,6 +219,8 @@ function pba_get_supabase_role_name_to_wp_role_map() {
         'pbahouseholdadmin'  => 'pba_house_admin',
         'pbaboardmember'     => 'pba_board_member',
         'pbacommitteemember' => 'pba_committee_member',
+        'pbaguest'           => 'pba_guest',
+        'pbapickleballadmin' => 'pba_pickleball_admin',
         'pbaadmin'           => 'pba_admin',
     );
 }
@@ -295,8 +322,29 @@ function pba_get_expected_wp_roles_for_person($person_id) {
         ? pba_get_active_supabase_role_names_for_person($person_id)
         : array();
     $role_name_map = pba_get_supabase_role_name_to_wp_role_map();
+    $normalized_supabase_roles = array();
 
-    if ($status !== '' && $status !== 'unregistered') {
+    foreach ($supabase_role_names as $role_name) {
+        $normalized_supabase_roles[] = pba_normalize_supabase_role_name($role_name);
+    }
+
+    $normalized_supabase_roles = array_values(array_unique($normalized_supabase_roles));
+    $activity_only_roles = array('pbaguest', 'pbapickleballadmin');
+    $member_granting_roles = array(
+        'pbamember',
+        'pbahouseholdadmin',
+        'pbaboardmember',
+        'pbacommitteemember',
+        'pbaadmin',
+    );
+    $has_activity_only_role = (bool) array_intersect($activity_only_roles, $normalized_supabase_roles);
+    $has_member_granting_role = (bool) array_intersect($member_granting_roles, $normalized_supabase_roles);
+
+    if (
+        $status !== ''
+        && $status !== 'unregistered'
+        && (!$has_activity_only_role || $has_member_granting_role || empty($normalized_supabase_roles))
+    ) {
         $expected_roles[] = 'pba_member';
     }
 
@@ -421,7 +469,7 @@ if (!function_exists('pba_get_current_person_role_names')) {
 
         $application_roles = function_exists('pba_get_application_wp_role_slugs')
             ? pba_get_application_wp_role_slugs()
-            : array('pba_member', 'pba_house_admin', 'pba_board_member', 'pba_committee_member', 'pba_admin');
+            : array('pba_member', 'pba_house_admin', 'pba_board_member', 'pba_committee_member', 'pba_guest', 'pba_pickleball_admin', 'pba_admin');
 
         $names = array();
 
@@ -482,6 +530,7 @@ if (!function_exists('pba_current_person_has_role')) {
         }
 
         $normalized = strtolower(trim((string) $role_name));
+        $normalized = preg_replace('/[\s_-]+/', '', $normalized);
 
         $aliases = array(
             'pbaadmin'             => 'pba_admin',
@@ -490,6 +539,9 @@ if (!function_exists('pba_current_person_has_role')) {
             'pbacommitteemember'   => 'pba_committee_member',
             'pbahouseholdadmin'    => 'pba_house_admin',
             'houseadmin'           => 'pba_house_admin',
+            'pbaguest'             => 'pba_guest',
+            'pbapickleballadmin'   => 'pba_pickleball_admin',
+            'pickleballcoordinator' => 'pba_pickleball_admin',
         );
 
         if (isset($aliases[$normalized])) {
