@@ -37,10 +37,28 @@ function pba_render_member_home_shortcode() {
         'description' => 'Browse the member directory.',
         'url' => home_url('/member-directory/'),
     );
+
+    if (
+        (function_exists('pba_current_user_can_view_pickleball') && pba_current_user_can_view_pickleball()) ||
+        current_user_can('pba_view_pickleball')
+    ) {
+        $cards[] = array(
+            'title' => 'Pickleball',
+            'description' => 'View pickleball schedule, status, and updates.',
+            'url' => home_url('/pickleball/'),
+        );
+    }
+
     $cards[] = array(
         'title' => 'Photos',
         'description' => 'View community photos and submit photos for review.',
         'url' => home_url('/photos/'),
+    );
+
+    $cards[] = array(
+        'title' => 'Profile',
+        'description' => 'Update your contact information and directory preferences.',
+        'url' => home_url('/profile/'),
     );
 
     if (
